@@ -31,7 +31,7 @@ public static class WitchSpells
 	
 	public static SpellId ShroudOfNight = ModManager.RegisterNewSpell("ShroudOfNight", 0, ((spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 	{
-		return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Shroud of Night", [Trait.Focus, Trait.Cantrip, Trait.Darkness, Trait.Manipulate, THex, WitchLoader.TWitch],
+		return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Shroud of Night", [Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
 				"Your patron blankets the target's eyes in darkness.",
 				"Success The target is unaffected. Failure All creatures are concealed to it.",
 				Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
