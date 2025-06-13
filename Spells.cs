@@ -33,6 +33,7 @@ public static class WitchSpells
 					"At your unspoken plea, your patron temporarily assumes control over your familiar.",
 					"You Command your familiar, allowing it to take its normal actions this turn.",
 					Target.Self(), spellLevel, null)
+				.WithActionCost(0)
 				.WithHexCasting();
 		});
 	public static SpellId PhaseFamiliar = ModManager.RegisterNewSpell("PhaseFamiliar", 1,
@@ -42,6 +43,15 @@ public static class WitchSpells
 				"Your patron momentarily recalls your familiar to the ether, shifting it from its solid, physical form into a ghostly version of itself.",
 				"Against the triggering damage, your familiar gains resistance 5 to all damage and is immune to precision damage.",
 				Target.Self(), spellLevel, null)
+				.WithActionCost(Constants.ACTION_COST_REACTION)
+				.WithCastsAsAReaction((qfPhaseFamiliar, spellItself, castable) =>
+				{
+					// if (!await qfPhaseFamiliar.Owner.Battle.AskToUseReaction(
+					// 	    "Your familiar is about to take damage. Cast Phase Familiar?"))
+					// {
+					// 	
+					// }
+				})
 				.WithHexCasting();
 		});
 	
