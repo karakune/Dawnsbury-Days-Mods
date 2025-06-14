@@ -1,12 +1,15 @@
+using System;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
+using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Modding;
+using Microsoft.Xna.Framework;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
@@ -44,14 +47,36 @@ public static class WitchSpells
 				"Against the triggering damage, your familiar gains resistance 5 to all damage and is immune to precision damage.",
 				Target.Self(), spellLevel, null)
 				.WithActionCost(Constants.ACTION_COST_REACTION)
-				.WithCastsAsAReaction((qfPhaseFamiliar, spellItself, castable) =>
-				{
-					// if (!await qfPhaseFamiliar.Owner.Battle.AskToUseReaction(
-					// 	    "Your familiar is about to take damage. Cast Phase Familiar?"))
-					// {
-					// 	
-					// }
-				})
+				.WithCastsAsAReaction((qfThis, spell, castable) =>
+                {
+                    // Creature witch = qfThis.Owner;
+                    // int reduction = 1;
+                    // qfThis.AddGrantingOfTechnical(
+                    //     cr => cr.FriendOfAndNotSelf(witch) && cr.DistanceTo(witch) <= 6,
+                    //     qfTech =>
+                    //     {
+                    //         Creature ally = qfTech.Owner;
+                    //         qfTech.YouAreDealtDamage = async (qfTech2, attacker, dStuff, defender) =>
+                    //         {
+                    //             if (!await witch.AskToUseReaction(
+                    //                     $"{{b}}Protector's Sacrifice {{icon:Reaction}}{{/b}}\n{ally} is about to take {dStuff.Amount} damage. Redirect {{b}}{reduction}{{/b}} of that damage to yourself?\n{{Red}}Focus Points: {witch.Spellcasting?.FocusPoints ?? 0}{{/Red}}"))
+                    //                 return null;
+                    //             
+                    //             witch.Spellcasting?.UseUpSpellcastingResources(spell);
+                    //
+                    //             int taken = Math.Min(dStuff.Amount, reduction);
+                    //             
+                    //             witch.TakeDamage(taken);
+                    //             witch.Occupies.Overhead(
+                    //                 "-"+taken, Color.Red,
+                    //                 $"{witch.Name} redirects {taken} damage to themselves.", "Damage",
+                    //                 $"{{b}}{reduction} of {dStuff.Amount}{{/b}} Protector's sacrifice\n{{b}}= {taken}{{/b}}\n\n{{b}}{taken}{{/b}} Total damage", true);
+                    //
+                    //             return new ReduceDamageModification(reduction, "Protector's sacrifice");
+                    //         };
+                    //     });
+                })
+                .WithHeighteningNumerical(spellLevel, 1, inCombat, 1, "The damage you redirect increases by 3.")
 				.WithHexCasting();
 		});
 	
