@@ -46,6 +46,11 @@ public class WitchLoader
 		{
 			ModManager.AddFeat(feat);
 		}
+
+		foreach (var feat in FamiliarFeats.CreateFeats())
+		{
+			ModManager.AddFeat(feat);
+		}
 	}
 
 	private static IEnumerable<Feat> CreateFeats()
@@ -76,6 +81,7 @@ public class WitchLoader
 			.WithOnSheet(sheet =>
 			{
 				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(TFirstHex)));
+				sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1, feat => feat.HasTrait(FamiliarFeats.TFamiliar)));
 			});
 	}
 }
