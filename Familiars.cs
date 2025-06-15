@@ -23,26 +23,16 @@ namespace Dawnsbury.Mods.Classes.Witch;
 
 public static class FamiliarFeats
 {
-	public static FeatName FNFamiliar = ModManager.RegisterFeatName("Familiar", "Familiar");
-	public static FeatName FNSnake = ModManager.RegisterFeatName("FamiliarRaven", "Raven");
-
 	public static Trait TFamiliar = ModManager.RegisterTrait("Familiar");
 	public static QEffect QDeadFamiliar = new ("Dead Familiar",
 		"Your familiar has died. It will reappear upon your next long rest.")
 	{
 		StartOfCombat = async qf => qf.Owner.Occupies.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
-	};
-	
-	// public static QEffect QFamiliarCommanded = new ("Familiar was commanded",
-	// 	"You commanded your familiar this turn.", ExpirationCondition.ExpiresAtStartOfYourTurn, null)
-	// {
-	// 	ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn,
-	// 	PreventTakingAction = ca => ca.HasTrait(TFamiliar) ? "You commanded your familiar this turn." : null
-	// }; 
+	}; 
 	
 	public static IEnumerable<Feat> CreateFeats()
 	{
-		yield return CreateFamiliarFeat(FNSnake, IllustrationName.AnimalFormSnake, "Snake Familiar", new List<Feat>());
+		yield return CreateFamiliarFeat(ModManager.RegisterFeatName("FamiliarSnake", "Snake"), IllustrationName.AnimalFormSnake, "Snake Familiar", new List<Feat>());
 	}
 
 	private static Feat CreateFamiliarFeat(FeatName featName, Illustration illustration, string flavorText, List<Feat> innateFeats)
@@ -58,7 +48,6 @@ public static class FamiliarFeats
 				if (owner.HasEffect(QDeadFamiliar))
 					return;
 				
-				// var familiar = Familiar.Create(master, illustration, $"{master.Name}'s Familiar", innateFeats);
 				owner.AddQEffect(new QEffect("Familiar", "You patron granted you a familiar")
 				{
 					StartOfCombat = async qf =>
@@ -70,6 +59,7 @@ public static class FamiliarFeats
 						familiar.LongTermEffects = new LongTermEffects();
 						familiar.LongTermEffects.BeginningOfCombat(familiar);
 						familiar.LongTermEffects.Effects.Clear();
+						familiar.Traits.Add(Trait.NoPhysicalUnarmedAttack);
 						familiar.AddQEffect(new QEffect
 						{
 							Id = QDeadFamiliar.Id,
@@ -90,13 +80,15 @@ public static class FamiliarFeats
 							return null;
 						
 						var combatAction = new CombatAction(master, familiar.Illustration, "Command Familiar", [TFamiliar],
-							"Take 2 actions as your animal companion.\n\nYou can only command your animal companion once per turn.",
+							"Take 2 actions as your familiar.\n\nYou can only command your familiar once per turn.",
 							Target.Self()
 							.WithAdditionalRestriction(_ => GetFamiliarCommandRestriction(effect, familiar)))
 							.WithActionCost(1)
 							.WithEffectOnSelf(async _ =>
 							{
-								// master.AddQEffect(QFamiliarCommanded);
+								effect.UsedThisTurn = true;
+								familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+								familiar.Actions.ActionsLeft = 2;
 								await CommonSpellEffects.YourMinionActs(familiar);
 							});
 						
@@ -119,7 +111,8 @@ public static class FamiliarFeats
 }
 
 public static class Familiar
-{	
+{
+	public static QEffectId QFamiliar = ModManager.RegisterEnumMember<QEffectId>("Familiar");
 	
 	public static Creature Create(Creature master, Illustration illustration, string name, List<Feat> innateFeats)
 	{
@@ -159,7 +152,8 @@ public static class Familiar
 			master.Abilities.Charisma);
 
 		var familiar = new Creature(illustration, name, new List<Trait>(), level, perception, speed, defenses, hp,
-			abilities, skills);
+			abilities, skills)
+			.WithEntersInitiativeOrder(false);
 
 		foreach (var feat in innateFeats)
 		{
@@ -168,8 +162,7 @@ public static class Familiar
 
 		familiar.AddQEffect(new QEffect
 		{
-			Id = QEffectId.RangersCompanion,
-			PreventTakingAction = ca => ca.HasTrait(Trait.Strike) ? "Familiars cannot strike" : null,
+			Id = QFamiliar,
 			Source = master
 		});
 
@@ -178,6 +171,6 @@ public static class Familiar
 	
 	public static Creature? GetFamiliar(Creature master)
 	{
-		return master.Battle.AllCreatures.FirstOrDefault(cr => cr.QEffects.Any(qf => qf.Id == QEffectId.RangersCompanion && qf.Source == master));
+		return master.Battle.AllCreatures.FirstOrDefault(cr => cr.QEffects.Any(qf => qf.Id == QFamiliar && qf.Source == master));
 	}
 }
