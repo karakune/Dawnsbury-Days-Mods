@@ -180,7 +180,7 @@ public static class Familiar
 			stealth: 3 + level,
 			survival: level,
 			thievery: level);
-		var speed = 25;
+		var speed = 5;
 		// RAW familiars don't have their own attribute modifiers, but not assigning them would probably cause a bunch of errors
 		var abilities = new Abilities(
 			master.Abilities.Strength,

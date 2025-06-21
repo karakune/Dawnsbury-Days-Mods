@@ -34,7 +34,7 @@ public static class FamiliarAbilities
 
 			RegisterFamiliarAbility("FamFastMov", "Fast Movement",
 				"Your familiar's speed becomes 40 feet.",
-				creature => creature.BaseSpeed = 40),
+				creature => creature.BaseSpeed = 8),
 
 			RegisterFamiliarAbility("FamFlier", "Flier",
 				"Your familiar gains a fly speed of 25 feet.",
