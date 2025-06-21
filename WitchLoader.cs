@@ -1,30 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Dawnsbury.Audio;
+﻿using System.Collections.Generic;
 using Dawnsbury.Auxiliary;
-using Dawnsbury.Campaign.LongTerm;
-using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.AbilityScores;
 using Dawnsbury.Core.CharacterBuilder.Feats;
-using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Selections.Options;
-using Dawnsbury.Core.CharacterBuilder.Selections.Selected;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
-using Dawnsbury.Core.CombatActions;
-using Dawnsbury.Core.Creatures;
-using Dawnsbury.Core.Mechanics;
-using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
-using Dawnsbury.Core.Mechanics.Targeting;
-using Dawnsbury.Core.Mechanics.Targeting.TargetingRequirements;
-using Dawnsbury.Core.Possibilities;
-using Dawnsbury.Display.Illustrations;
-using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
-using Dawnsbury.Phases.Menus.CharacterBuilderPages;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
@@ -43,14 +26,13 @@ public class WitchLoader
 	public static void LoadMod()
 	{
 		foreach (var feat in CreateFeats())
-		{
 			ModManager.AddFeat(feat);
-		}
 
 		foreach (var feat in FamiliarFeats.CreateFeats())
-		{
 			ModManager.AddFeat(feat);
-		}
+
+		foreach (var feat in FamiliarAbilities.CreateFeats())
+			ModManager.AddFeat(feat);
 	}
 
 	private static IEnumerable<Feat> CreateFeats()

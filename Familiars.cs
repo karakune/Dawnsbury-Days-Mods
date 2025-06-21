@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Dawnsbury.Campaign.LongTerm;
 using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
+using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
@@ -32,17 +31,17 @@ public static class FamiliarFeats
 	
 	public static IEnumerable<Feat> CreateFeats()
 	{
-		yield return CreateFamiliarFeat(ModManager.RegisterFeatName("FamiliarSnake", "Snake"), IllustrationName.AnimalFormSnake, "Snake Familiar", new List<Feat>());
+		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, new List<Feat>());
 	}
 
-	private static Feat CreateFamiliarFeat(FeatName featName, Illustration illustration, string flavorText, List<Feat> innateFeats)
+	private static Feat CreateFamiliarFeat(string familiarKind, Illustration illustration, List<Feat> innateFeats)
 	{
 		// var familiarStatBlock = Familiar.Create(owner.ToCreature(owner.MaximumLevel), illustration, $"{owner.Name}'s Familiar", innateFeats);
 		// familiarStatBlock.RegeneratePossibilities();
 		// familiarStatBlock.RecalculateLandSpeedAndInitiative();
 		// var rulesText = "Your familiar has the following characteristics at level 1:\n\n" + RulesBlock.CreateCreatureDescription(familiarStatBlock);
 
-		return new Feat(featName, flavorText, "", [TFamiliar], null)
+		return new FamiliarFeat(familiarKind, innateFeats)
 			.WithOnCreature(owner =>
 			{
 				if (owner.HasEffect(QDeadFamiliar))
@@ -95,7 +94,8 @@ public static class FamiliarFeats
 						return new ActionPossibility(combatAction);
 					}
 				});
-			});
+			})
+			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption("FamiliarAbilities", "Familiar Abilities", 1, sheet)));
 	}
 
 	private static string? GetFamiliarCommandRestriction(
@@ -107,6 +107,45 @@ public static class FamiliarFeats
 		if (familiar.HasEffect(QEffectId.Paralyzed))
 			return "Your familiar is paralyzed.";
 		return familiar.Actions.ActionsLeft == 0 && (familiar.Actions.QuickenedForActions == null || familiar.Actions.UsedQuickenedAction) ? "Your familiar has no actions it could take." : null;
+	}
+
+	private static MultipleFeatSelectionOption CreateFamiliarFeatsSelectionOption(string key, string name, int level,
+		CalculatedCharacterSheetValues sheet)
+	{
+		var maxChoices = sheet.CurrentLevel switch
+		{
+			< 6 => 3,
+			< 12 => 4,
+			< 18 => 5,
+			_ => 6
+		};
+
+		var familiarFeat = sheet.AllFeats.OfType<FamiliarFeat>().FirstOrDefault();
+		if (familiarFeat == null)
+			return new MultipleFeatSelectionOption(key, name, level, _ => false, 0)
+			{
+				OptionLevel = SelectionOption.MORNING_PREPARATIONS_LEVEL
+			};
+
+		var finalMax = maxChoices - familiarFeat.InnateFeats.Count;
+		
+		return new MultipleFeatSelectionOption(key, name, level,
+			(feat, _) => feat.HasTrait(FamiliarAbilities.TFamiliarAbilitySelection), finalMax)
+		{
+			OptionLevel = SelectionOption.MORNING_PREPARATIONS_LEVEL
+		};
+	}
+}
+
+public class FamiliarFeat : Feat
+{
+	public List<Feat> InnateFeats { get; }
+	
+	public FamiliarFeat(string familiarKind, List<Feat> innateFeats) 
+		: base(ModManager.RegisterFeatName($"Familiar{familiarKind}", familiarKind), $"{familiarKind} Familiar.", 
+			$"You gain a {familiarKind} familiar.", [FamiliarFeats.TFamiliar], null)
+	{
+		InnateFeats = innateFeats;
 	}
 }
 
