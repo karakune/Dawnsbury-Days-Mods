@@ -27,10 +27,13 @@ public static class FamiliarFeats
 		"Your familiar has died. It will reappear upon your next long rest.")
 	{
 		StartOfCombat = async qf => qf.Owner.Occupies.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
-	}; 
+	};
+
+	public static FeatName FNWitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
 	
 	public static IEnumerable<Feat> CreateFeats()
 	{
+		yield return new Feat(FNWitchFamiliarBoost, null, "", [], null);
 		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, new List<Feat>());
 	}
 
@@ -47,7 +50,7 @@ public static class FamiliarFeats
 				if (owner.HasEffect(QDeadFamiliar))
 					return;
 				
-				owner.AddQEffect(new QEffect("Familiar", "You patron granted you a familiar")
+				owner.AddQEffect(new QEffect("Familiar", "You patron has granted you a familiar")
 				{
 					StartOfCombat = async qf =>
 					{
@@ -112,7 +115,9 @@ public static class FamiliarFeats
 	private static MultipleFeatSelectionOption CreateFamiliarFeatsSelectionOption(string key, string name, int level,
 		CalculatedCharacterSheetValues sheet)
 	{
-		var maxChoices = sheet.CurrentLevel switch
+		var isWitch = sheet.HasFeat(FNWitchFamiliarBoost);
+		
+		var technicalMax = !isWitch ? 2 : sheet.CurrentLevel switch
 		{
 			< 6 => 3,
 			< 12 => 4,
@@ -127,7 +132,7 @@ public static class FamiliarFeats
 				OptionLevel = SelectionOption.MORNING_PREPARATIONS_LEVEL
 			};
 
-		var finalMax = maxChoices - familiarFeat.InnateFeats.Count;
+		var finalMax = technicalMax - familiarFeat.InnateFeats.Count;
 		
 		return new MultipleFeatSelectionOption(key, name, level,
 			(feat, _) => feat.HasTrait(FamiliarAbilities.TFamiliarAbilitySelection), finalMax)

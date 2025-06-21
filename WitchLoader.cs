@@ -63,6 +63,7 @@ public class WitchLoader
 			.WithOnSheet(sheet =>
 			{
 				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(TFirstHex)));
+				sheet.GrantFeat(FamiliarFeats.FNWitchFamiliarBoost);
 				sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1, feat => feat.HasTrait(FamiliarFeats.TFamiliar)));
 			});
 	}
