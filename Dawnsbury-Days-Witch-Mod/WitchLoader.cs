@@ -8,11 +8,10 @@ using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Modding;
-using Dawnsbury.Mods.Familiars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
-public class WitchLoader
+public static class WitchLoader
 {
 	public static Trait TWitch = ModManager.RegisterTrait("Witch", new TraitProperties("Witch", true)
 	{
@@ -58,8 +57,10 @@ public class WitchLoader
 			.WithOnSheet(sheet =>
 			{
 				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(TFirstHex)));
-				sheet.GrantFeat(FamiliarFeats.FNWitchFamiliarBoost);
-				sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1, feat => feat.HasTrait(FamiliarFeats.TFamiliar)));
+				if (ModManager.TryParse("WitchFamiliarBoost", out FeatName fnWitchFamiliarBoost))
+					sheet.GrantFeat(fnWitchFamiliarBoost);
+				if (ModManager.TryParse("Familiar", out Trait tFamiliar))
+					sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1, feat => feat.HasTrait(tFamiliar)));
 			});
 	}
 }
