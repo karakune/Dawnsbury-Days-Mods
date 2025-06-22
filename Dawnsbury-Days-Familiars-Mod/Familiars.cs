@@ -125,6 +125,12 @@ public static class FamiliarFeats
 			_ => 6
 		};
 
+		if (sheet.HasFeat(GeneralFeats.FNEnhancedFamiliar))
+			technicalMax += 2;
+
+		if (sheet.HasFeat(GeneralFeats.FNIncredibleFamiliar))
+			technicalMax += 2;
+
 		var familiarFeat = sheet.AllFeats.OfType<FamiliarFeat>().FirstOrDefault();
 		if (familiarFeat == null)
 			return new MultipleFeatSelectionOption(key, name, level, _ => false, 0)
