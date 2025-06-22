@@ -115,9 +115,9 @@ public static class FamiliarFeats
 	private static MultipleFeatSelectionOption CreateFamiliarFeatsSelectionOption(string key, string name, int level,
 		CalculatedCharacterSheetValues sheet)
 	{
-		var isWitch = sheet.HasFeat(FNWitchFamiliarBoost);
+		var isImproved = sheet.HasFeat(FNWitchFamiliarBoost) || sheet.HasFeat(ClassFeats.FNArcaneThesisImpFam);
 		
-		var technicalMax = !isWitch ? 2 : sheet.CurrentLevel switch
+		var technicalMax = !isImproved ? 2 : sheet.CurrentLevel switch
 		{
 			< 6 => 3,
 			< 12 => 4,
