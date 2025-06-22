@@ -1,3 +1,6 @@
+using Dawnsbury.Core.CharacterBuilder.Feats;
+using Dawnsbury.Core.CharacterBuilder.Selections.Options;
+using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Modding;
 
 namespace Dawnsbury.Mods.Familiars;
@@ -12,5 +15,12 @@ public static class FamiliarsLoader
 
 		foreach (var feat in FamiliarAbilities.CreateFeats())
 			ModManager.AddFeat(feat);
+
+		ModManager.AddFeat(new TrueFeat(ModManager.RegisterFeatName("GnomeFamiliar", "Animal Accomplice"), 1,
+				"You build a rapport with an animal, which becomes magically bonded to you.", "You gain a Familiar.",
+				[Trait.Gnome], null)
+			.WithOnSheet(sheet => sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1,
+				feat => feat.HasTrait(FamiliarFeats.TFamiliar))))
+		);
 	}
 }
