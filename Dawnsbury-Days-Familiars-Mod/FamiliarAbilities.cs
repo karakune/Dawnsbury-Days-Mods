@@ -7,7 +7,7 @@ using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Modding;
 
-namespace Dawnsbury.Mods.Classes.Witch;
+namespace Dawnsbury.Mods.Familiars;
 
 public static class FamiliarAbilities
 {

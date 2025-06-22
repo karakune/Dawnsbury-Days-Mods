@@ -18,7 +18,7 @@ using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Modding;
 using Microsoft.Xna.Framework;
 
-namespace Dawnsbury.Mods.Classes.Witch;
+namespace Dawnsbury.Mods.Familiars;
 
 public static class FamiliarFeats
 {

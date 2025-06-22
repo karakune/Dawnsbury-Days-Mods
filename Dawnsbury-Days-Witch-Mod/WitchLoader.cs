@@ -8,6 +8,7 @@ using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Modding;
+using Dawnsbury.Mods.Familiars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
