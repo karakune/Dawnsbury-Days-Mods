@@ -3,6 +3,7 @@ using Dawnsbury.Auxiliary;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.AbilityScores;
 using Dawnsbury.Core.CharacterBuilder.Feats;
+using Dawnsbury.Core.CharacterBuilder.FeatsDb;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
@@ -28,6 +29,13 @@ public static class WitchLoader
 	{
 		foreach (var feat in CreateFeats())
 			ModManager.AddFeat(feat);
+
+		foreach (var feat in AllFeats.All.FindAll(feat =>
+	         feat.FeatName.Equals(ClassFeats.FNEnhancedFamiliar) ||
+	         feat.FeatName.Equals(ClassFeats.FNIncredibleFamiliar)))
+		{
+			feat.Traits.Add(TWitch);
+		}
 	}
 
 	private static IEnumerable<Feat> CreateFeats()
