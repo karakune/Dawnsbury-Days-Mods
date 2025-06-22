@@ -1,4 +1,4 @@
 *.idea
-bin/*
-obj/*
-Folder.DotSettings.user
+*/bin/*
+*/obj/*
+*/Folder.DotSettings.user
