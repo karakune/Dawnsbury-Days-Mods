@@ -11,6 +11,9 @@
         </Reference>
     </ItemGroup>
     <Import Project="./Dawnsbury.Mod.targets" />
+    <ItemGroup>
+        <ProjectReference Include="..\Dawnsbury-Days-Familiars-Mod\Dawnsbury.Mods.Familiars.csproj" />
+    </ItemGroup>
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
       <Exec Command="copy /Y &quot;C:\CodingProjects\Dawnsbury-Days-Mods\Dawnsbury-Days-Witch-Mod\bin\Debug\net9.0-windows\Dawnsbury.Mods.Classes.Witch.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\CustomMods&quot; &amp; copy /Y &quot;C:\CodingProjects\Dawnsbury-Days-Mods\Dawnsbury-Days-Witch-Mod\bin\Debug\net9.0-windows\Dawnsbury.Mods.Classes.Witch.pdb&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\CustomMods&quot;" />
     </Target>
