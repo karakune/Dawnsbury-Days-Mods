@@ -98,7 +98,7 @@ public static class FamiliarFeats
 					}
 				});
 			})
-			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption("FamiliarAbilities", "Familiar Abilities", 1, sheet)));
+			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption("FamiliarAbilities", "Familiar Abilities", -1, sheet)));
 	}
 
 	private static string? GetFamiliarCommandRestriction(

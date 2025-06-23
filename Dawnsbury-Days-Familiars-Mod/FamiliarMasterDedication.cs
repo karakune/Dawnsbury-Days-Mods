@@ -8,7 +8,7 @@ namespace Dawnsbury.Mods.Familiars;
 
 public static class FamiliarMasterDedication
 {
-	public static Trait TFamiliarMaster = ModManager.RegisterTrait("FamiliarMaster");
+	public static Trait TFamiliarMaster = ModManager.RegisterTrait("Familiar Master");
 	public static FeatName FNEnhancedFamiliarDedication;
 	public static FeatName FNIncredibleFamiliarDedication;
 	

@@ -19,14 +19,13 @@ public static class FamiliarsLoader
 		foreach (var feat in ClassFeats.CreateFeats())
 			ModManager.AddFeat(feat);
 		
-		// foreach (var feat in FamiliarMasterDedication.CreateFeats())
-		// 	ModManager.AddFeat(feat);
+		foreach (var feat in FamiliarMasterDedication.CreateFeats())
+			ModManager.AddFeat(feat);
 
 		ModManager.AddFeat(new TrueFeat(ModManager.RegisterFeatName("GnomeFamiliar", "Animal Accomplice"), 1,
 				"You build a rapport with an animal, which becomes magically bonded to you.", "You gain a Familiar.",
 				[Trait.Gnome])
-			.WithOnSheet(sheet => sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1,
-				feat => feat.HasTrait(FamiliarFeats.TFamiliar))))
+			.WithOnSheet(sheet => sheet.GrantFeat(ClassFeats.FNFamiliar))
 		);
 	}
 }

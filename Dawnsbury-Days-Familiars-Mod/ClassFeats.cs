@@ -18,7 +18,7 @@ public static class ClassFeats
 		yield return new TrueFeat(FNFamiliar, 1,
 			"You make a pact with a creature that serves you and assists your spellcasting.", "You gain a familiar.",
 			[Trait.Magus, Trait.Sorcerer, Trait.Wizard])
-			.WithOnSheet(sheet => sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", 1,
+			.WithOnSheet(sheet => sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", -1,
 				feat => feat.HasTrait(FamiliarFeats.TFamiliar)))
 			);
 
