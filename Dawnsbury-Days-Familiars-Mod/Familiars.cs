@@ -125,10 +125,10 @@ public static class FamiliarFeats
 			_ => 6
 		};
 
-		if (sheet.HasFeat(ClassFeats.FNEnhancedFamiliar))
+		if (sheet.HasFeat(ClassFeats.FNEnhancedFamiliar) || sheet.HasFeat(FamiliarMasterDedication.FNEnhancedFamiliarDedication))
 			technicalMax += 2;
 
-		if (sheet.HasFeat(ClassFeats.FNIncredibleFamiliar))
+		if (sheet.HasFeat(ClassFeats.FNIncredibleFamiliar) || sheet.HasFeat(FamiliarMasterDedication.FNIncredibleFamiliarDedication))
 			technicalMax += 2;
 
 		var familiarFeat = sheet.AllFeats.OfType<FamiliarFeat>().FirstOrDefault();
