@@ -24,7 +24,7 @@ public static class FamiliarMasterDedication
 		yield return enhancedFamiliar;
 		
 		var incredibleFamiliar = ArchetypeFeats.DuplicateFeatAsArchetypeFeat(ClassFeats.FNIncredibleFamiliar, TFamiliarMaster, 10);
-		FNEnhancedFamiliarDedication = incredibleFamiliar.FeatName;
+		FNIncredibleFamiliarDedication = incredibleFamiliar.FeatName;
 		yield return incredibleFamiliar;
 	}
 }
