@@ -209,7 +209,20 @@ public static class Familiar
 
 		var familiar = new Creature(illustration, name, [Trait.Animal], level, perception, speed, defenses, hp,
 			abilities, skills)
-			.WithEntersInitiativeOrder(false);
+			.WithEntersInitiativeOrder(false)
+			.AddQEffect(new QEffect {
+				StateCheck = sc => {
+					if (sc.Owner.HasEffect(QEffectId.Dying) || !sc.Owner.Battle.InitiativeOrder.Contains(sc.Owner))
+						return;
+					Creature owner = sc.Owner;
+					int index = (owner.Battle.InitiativeOrder.IndexOf(owner) + 1) % owner.Battle.InitiativeOrder.Count;
+					Creature creature = owner.Battle.InitiativeOrder[index];
+					owner.Actions.HasDelayedYieldingTo = creature;
+					if (owner.Battle.CreatureControllingInitiative == owner)
+						owner.Battle.CreatureControllingInitiative = creature;
+					owner.Battle.InitiativeOrder.Remove(sc.Owner);
+				}
+			});
 
 		foreach (var feat in innateFeats)
 		{
