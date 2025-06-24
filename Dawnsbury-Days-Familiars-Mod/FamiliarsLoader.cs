@@ -16,6 +16,9 @@ public static class FamiliarsLoader
 		foreach (var feat in FamiliarAbilities.CreateFeats())
 			ModManager.AddFeat(feat);
 		
+		foreach (var feat in MasterAbilities.CreateFeats())
+			ModManager.AddFeat(feat);
+		
 		foreach (var feat in ClassFeats.CreateFeats())
 			ModManager.AddFeat(feat);
 		

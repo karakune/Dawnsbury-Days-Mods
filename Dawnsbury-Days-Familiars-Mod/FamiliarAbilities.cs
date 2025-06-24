@@ -63,7 +63,9 @@ public static class FamiliarAbilities
 	{
 		var familiarFeat = new Feat(ModManager.RegisterFeatName(technicalName, displayName), null, rulesText,
 				[TFamiliarAbility], null)
-			.WithOnCreature(effectOnFamiliar);
+			.WithOnCreature(effectOnFamiliar)
+			.WithOnCreature(creature => creature.AddQEffect(new QEffect(displayName, "")));
+		
 		var selectionFeat = new Feat(ModManager.RegisterFeatName($"{technicalName}Selection", displayName), null,
 			rulesText, [TFamiliarAbilitySelection], null)
 			.WithOnCreature(owner =>

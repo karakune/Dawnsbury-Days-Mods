@@ -72,7 +72,7 @@ public static class FamiliarFeats
 					}
 				});
 
-				owner.AddQEffect(new QEffect("CommandFamiliar", "You command your familiar")
+				owner.AddQEffect(new QEffect
 				{
 					ProvideMainAction = effect =>
 					{
