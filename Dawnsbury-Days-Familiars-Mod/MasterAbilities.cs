@@ -12,6 +12,8 @@ namespace Dawnsbury.Mods.Familiars;
 
 public static class MasterAbilities
 {
+	public static QEffectId QFamiliarFocus = ModManager.RegisterEnumMember<QEffectId>("FamiliarFocus");
+	
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		var cantripConnectionDisplay = CreateFamiliarDisplay("MasCantripConnection", "Cantrip Connection");
@@ -44,6 +46,7 @@ public static class MasterAbilities
 			{
 				owner.AddQEffect(new QEffect
 				{
+					Id = QFamiliarFocus,
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
@@ -61,14 +64,20 @@ public static class MasterAbilities
 										
 										if (familiar.HasEffect(QEffectId.Paralyzed))
 											return "Your familiar is paralyzed.";
+
+										if (master.Spellcasting?.FocusPoints >= master.Spellcasting?.FocusPointsMaximum)
+											return "You need to have spent at least 1 Focus Point";
+
+										var commandEffect =
+											master.QEffects.FirstOrDefault(e => e.Id == FamiliarFeats.QCommandFamiliar);
 										
-										return familiar.Actions.ActionsLeft >= 2
-											? "Your familiar must have two actions it can take."
-											: null;
+										return commandEffect is { UsedThisTurn: true } ? "You already commanded your familiar this turn." : null;
 									}))
 							.WithActionCost(1)
 							.WithEffectOnSelf(async _ =>
 							{
+								effect.UsedThisTurn = true;
+								
 								if (master.Spellcasting == null || master.Spellcasting.FocusPoints >=
 								    master.Spellcasting.FocusPointsMaximum)
 									return;

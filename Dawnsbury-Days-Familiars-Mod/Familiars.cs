@@ -29,6 +29,8 @@ public static class FamiliarFeats
 		StartOfCombat = async qf => qf.Owner.Occupies.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
 	};
 
+	public static QEffectId QCommandFamiliar = ModManager.RegisterEnumMember<QEffectId>("CommandFamiliar");
+
 	public static FeatName FNWitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
 	
 	public static IEnumerable<Feat> CreateFeats()
@@ -74,6 +76,7 @@ public static class FamiliarFeats
 
 				owner.AddQEffect(new QEffect
 				{
+					Id = QCommandFamiliar,
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
@@ -105,7 +108,10 @@ public static class FamiliarFeats
 		QEffect qfMaster,
 		Creature familiar)
 	{
-		if (qfMaster.UsedThisTurn)
+		var familiarFocusEffect =
+			qfMaster.Owner.QEffects.FirstOrDefault(e => e.Id == MasterAbilities.QFamiliarFocus);
+
+		if (qfMaster.UsedThisTurn || familiarFocusEffect is { UsedThisTurn: true })
 			return "You already commanded your familiar this turn.";
 		if (familiar.HasEffect(QEffectId.Paralyzed))
 			return "Your familiar is paralyzed.";
