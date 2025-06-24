@@ -100,7 +100,7 @@ public static class FamiliarFeats
 					}
 				});
 			})
-			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption("FamiliarAbilities", "Familiar Abilities", -1, sheet)));
+			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption(sheet)));
 	}
 
 	public static string? GetFamiliarCommandRestriction(
@@ -116,9 +116,11 @@ public static class FamiliarFeats
 		return familiar.Actions.ActionsLeft == 0 && (familiar.Actions.QuickenedForActions == null || familiar.Actions.UsedQuickenedAction) ? "Your familiar has no actions it could take." : null;
 	}
 
-	private static MultipleFeatSelectionOption CreateFamiliarFeatsSelectionOption(string key, string name, int level,
-		CalculatedCharacterSheetValues sheet)
+	public static MultipleFeatSelectionOption CreateFamiliarFeatsSelectionOption(CalculatedCharacterSheetValues sheet)
 	{
+		var key = "FamiliarAbilities";
+		var name = "Familiar Abilities";
+		var level = -1; 
 		var isImproved = sheet.HasFeat(FNWitchFamiliarBoost) || sheet.HasFeat(ClassFeats.FNArcaneThesisImpFam);
 		
 		var technicalMax = !isImproved ? 2 : sheet.CurrentLevel switch

@@ -32,12 +32,24 @@ public static class ClassFeats
 				"You infuse your familiar with additional primal energy, increasing its abilities.",
 				"You can select four familiar or master abilities each day, instead of two.\n\n{b}Special{/b} [Witch] Add the bonus familiar abilities you gain for being a witch to this amount. [Wizard] If your arcane thesis is improved familiar attunement, your familiar’s base number of familiar abilities, before adding any extra abilities from the arcane thesis, is four.",
 				[Trait.Druid, Trait.Magus, Trait.Sorcerer, Trait.Wizard])
-			.WithPrerequisite(FNFamiliar, "Familiar");
+			.WithPrerequisite(FNFamiliar, "Familiar")
+			.WithOnSheet(sheet =>
+				{
+					var index = sheet.SelectionOptions.FindIndex(o => o.Key.EndsWith("FamiliarAbilities"));
+					sheet.SelectionOptions[index] = FamiliarFeats.CreateFamiliarFeatsSelectionOption(sheet);
+				}
+			);
 		
 		yield return new TrueFeat(FNIncredibleFamiliar, 8,
 				"Your familiar is imbued with even more magic than other familiars.",
 				"You can select a base of six familiar or master abilities each day, instead of four.\n\n\n{b}Special{/b} [Witch] Add the bonus familiar abilities you gain for being a witch to this amount.",
 				[])
-			.WithPrerequisite(FNEnhancedFamiliar, "Enhanced Familiar");
+			.WithPrerequisite(FNEnhancedFamiliar, "Enhanced Familiar")
+			.WithOnSheet(sheet =>
+				{
+					var index = sheet.SelectionOptions.FindIndex(o => o.Key.EndsWith("FamiliarAbilities"));
+					sheet.SelectionOptions[index] = FamiliarFeats.CreateFamiliarFeatsSelectionOption(sheet);
+				}
+			);
 	}
 }
