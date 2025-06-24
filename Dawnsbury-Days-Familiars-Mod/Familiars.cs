@@ -23,13 +23,12 @@ namespace Dawnsbury.Mods.Familiars;
 public static class FamiliarFeats
 {
 	public static Trait TFamiliar = ModManager.RegisterTrait("Familiar");
+	public static Trait TFamiliarCommand = ModManager.RegisterTrait("FamiliarCommand");
 	public static QEffect QDeadFamiliar = new ("Dead Familiar",
 		"Your familiar has died. It will reappear upon your next long rest.")
 	{
 		StartOfCombat = async qf => qf.Owner.Occupies.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
 	};
-
-	public static QEffectId QCommandFamiliar = ModManager.RegisterEnumMember<QEffectId>("CommandFamiliar");
 
 	public static FeatName FNWitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
 	
@@ -76,7 +75,7 @@ public static class FamiliarFeats
 
 				owner.AddQEffect(new QEffect
 				{
-					Id = QCommandFamiliar,
+					Traits = [TFamiliarCommand],
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
@@ -104,14 +103,13 @@ public static class FamiliarFeats
 			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption("FamiliarAbilities", "Familiar Abilities", -1, sheet)));
 	}
 
-	private static string? GetFamiliarCommandRestriction(
+	public static string? GetFamiliarCommandRestriction(
 		QEffect qfMaster,
 		Creature familiar)
 	{
-		var familiarFocusEffect =
-			qfMaster.Owner.QEffects.FirstOrDefault(e => e.Id == MasterAbilities.QFamiliarFocus);
+		var hasBeenCommanded = qfMaster.Owner.QEffects.Any(e => e.Traits.Contains(TFamiliarCommand) && e.UsedThisTurn);
 
-		if (qfMaster.UsedThisTurn || familiarFocusEffect is { UsedThisTurn: true })
+		if (hasBeenCommanded)
 			return "You already commanded your familiar this turn.";
 		if (familiar.HasEffect(QEffectId.Paralyzed))
 			return "Your familiar is paralyzed.";

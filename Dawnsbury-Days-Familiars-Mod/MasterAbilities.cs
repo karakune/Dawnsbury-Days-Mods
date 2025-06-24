@@ -1,19 +1,21 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dawnsbury.Audio;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Mechanics;
+using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
 using Dawnsbury.Core.Possibilities;
+using Dawnsbury.Core.Roller;
 using Dawnsbury.Modding;
 
 namespace Dawnsbury.Mods.Familiars;
 
 public static class MasterAbilities
 {
-	public static QEffectId QFamiliarFocus = ModManager.RegisterEnumMember<QEffectId>("FamiliarFocus");
-	
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		var cantripConnectionDisplay = CreateFamiliarDisplay("MasCantripConnection", "Cantrip Connection");
@@ -46,7 +48,7 @@ public static class MasterAbilities
 			{
 				owner.AddQEffect(new QEffect
 				{
-					Id = QFamiliarFocus,
+					Traits = [FamiliarFeats.TFamiliarCommand],
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
@@ -54,24 +56,16 @@ public static class MasterAbilities
 						if (familiar == null)
 							return null;
 						
-						var combatAction = new CombatAction(master, familiar.Illustration, "Familiar Focus", [FamiliarFeats.TFamiliar],
+						var combatAction = new CombatAction(master, familiar.Illustration, "Familiar Focus", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to restore one of your Focus Points.",
 								Target.Self()
+									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(effect, familiar))
 									.WithAdditionalRestriction(_ =>
 									{
 										if (master.PersistentUsedUpResources.UsedUpActions.Contains("FamiliarFocus"))
 											return "You can only use this once per day.";
-										
-										if (familiar.HasEffect(QEffectId.Paralyzed))
-											return "Your familiar is paralyzed.";
 
-										if (master.Spellcasting?.FocusPoints >= master.Spellcasting?.FocusPointsMaximum)
-											return "You need to have spent at least 1 Focus Point";
-
-										var commandEffect =
-											master.QEffects.FirstOrDefault(e => e.Id == FamiliarFeats.QCommandFamiliar);
-										
-										return commandEffect is { UsedThisTurn: true } ? "You already commanded your familiar this turn." : null;
+										return master.Spellcasting?.FocusPoints >= master.Spellcasting?.FocusPointsMaximum ? "You need to have spent at least 1 Focus Point" : null;
 									}))
 							.WithActionCost(1)
 							.WithEffectOnSelf(async _ =>
@@ -94,6 +88,56 @@ public static class MasterAbilities
 			})
 			.WithPrerequisite(sheet => sheet.FocusPointCount > 0, "You must have a focus pool.")
 			.WithOnCreature(owner => owner.AddQEffect(GetDisplayQEffect(familiarFocusDisplay.FeatName)));
+		
+		var restorativeFamDisplay = CreateFamiliarDisplay("MasRestorativeFamiliar", "Restorative Familiar");
+		yield return restorativeFamDisplay;
+		yield return new Feat(ModManager.RegisterFeatName("MasRestorativeFamiliar", "Restorative Familiar"), null,
+				"Once per day, your familiar can use 2 actions with the concentrate trait to give up some of its energy and heal you. It must be within 5 feet of you to do so. You restore a number of Hit Points equal to 1d8 times half your level (minimum 1d8).", 
+				[FamiliarAbilities.TFamiliarAbilitySelection], null)
+			.WithOnCreature((sheet, owner) =>
+			{
+				owner.AddQEffect(new QEffect
+				{
+					Traits = [FamiliarFeats.TFamiliarCommand],
+					ProvideMainAction = effect =>
+					{
+						var master = effect.Owner;
+						var familiar = Familiar.GetFamiliar(master);
+						if (familiar == null)
+							return null;
+						
+						var combatAction = new CombatAction(master, familiar.Illustration, "Restorative Familiar", [FamiliarFeats.TFamiliar, Trait.Concentrate],
+								"Your familiar uses two actions to heal you for 1d8 times half your level.",
+								Target.Self()
+									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(effect, familiar))
+									.WithAdditionalRestriction(_ =>
+									{
+										if (master.PersistentUsedUpResources.UsedUpActions.Contains("RestorativeFamiliar"))
+											return "You can only use this once per day.";
+
+										if (master.HP >= master.MaxHP)
+											return "You need to have lost HP";
+
+										return familiar.DistanceTo(master) > 1 ? "Your familiar must be within 5 feet" : null;
+									}))
+							.WithActionCost(1)
+							.WithEffectOnSelf(async (action, _) => 
+							{
+								effect.UsedThisTurn = true;
+								
+								master.PersistentUsedUpResources.UsedUpActions.Add("RestorativeFamiliar");
+								
+								var diceExpression = (int)Math.Ceiling(master.Level / 2d) + "d8";
+								var diceFormula = DiceFormula.FromText(diceExpression, effect.Name);
+								await master.HealAsync(diceFormula, action);
+								Sfxs.Play(SfxName.Healing);
+							});
+						
+						return new ActionPossibility(combatAction);
+					}
+				});
+			})
+			.WithOnCreature(owner => owner.AddQEffect(GetDisplayQEffect(restorativeFamDisplay.FeatName)));
 	}
 
 	private static Feat CreateFamiliarDisplay(string technicalName, string displayName)
