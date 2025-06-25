@@ -54,7 +54,7 @@ public static class FamiliarFeats
 				if (owner.HasEffect(QDeadFamiliar))
 					return;
 				
-				owner.AddQEffect(new QEffect("Familiar", "Your patron has granted you a familiar")
+				owner.AddQEffect(new QEffect("Familiar", "Your have a familiar")
 				{
 					StartOfCombat = async qf =>
 					{
