@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dawnsbury.Campaign.LongTerm;
@@ -6,7 +5,6 @@ using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
-using Dawnsbury.Core.CharacterBuilder.FeatsDb.TrueFeatDb.Archetypes.Agnostic;
 using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Selections.Selected;
 using Dawnsbury.Core.CombatActions;
@@ -38,17 +36,25 @@ public static class FamiliarFeats
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		yield return new Feat(FNWitchFamiliarBoost, null, "", [], null);
-		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, new List<Feat>());
+		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, []);
+		yield return CreateFamiliarFeat("Leshy", IllustrationName.WoundedLeshy, [FamiliarAbilities.FNPlant]);
 	}
 
-	private static Feat CreateFamiliarFeat(string familiarKind, Illustration illustration, List<Feat> innateFeats)
+	private static Feat CreateFamiliarFeat(string familiarKind, Illustration illustration, List<FeatName> innateFeatNames)
 	{
 		// var familiarStatBlock = Familiar.Create(owner.ToCreature(owner.MaximumLevel), illustration, $"{owner.Name}'s Familiar", innateFeats);
 		// familiarStatBlock.RegeneratePossibilities();
 		// familiarStatBlock.RecalculateLandSpeedAndInitiative();
 		// var rulesText = "Your familiar has the following characteristics at level 1:\n\n" + RulesBlock.CreateCreatureDescription(familiarStatBlock);
-
-		return new FamiliarFeat(familiarKind, innateFeats)
+		
+		return new FamiliarFeat(familiarKind, innateFeatNames.Count)
+			.WithOnSheet(sheet =>
+			{
+				foreach (var innateFeat in innateFeatNames)
+				{
+					sheet.GrantFeat(innateFeat);
+				}
+			})
 			.WithOnCreature(owner =>
 			{
 				if (owner.HasEffect(QDeadFamiliar))
@@ -59,7 +65,7 @@ public static class FamiliarFeats
 					StartOfCombat = async qf =>
 					{
 						var master = qf.Owner;
-						var familiar = Familiar.Create(master, illustration, $"{master.Name}'s Familiar", innateFeats);
+						var familiar = Familiar.Create(master, illustration, $"{master.Name}'s Familiar");
 						familiar.MainName = $"{master.Name}'s Familiar";
 						familiar.InitiativeControlledBy = master;
 						familiar.LongTermEffects = new LongTermEffects();
@@ -117,7 +123,7 @@ public static class FamiliarFeats
 			})
 			.WithOnCreature(owner =>
 			{
-				owner.AddQEffect(new QEffect("ApplyFamiliarName", "Apply familiar name")
+				owner.AddQEffect(new QEffect
 				{
 					StartOfCombat = async effect =>
 					{
@@ -187,7 +193,7 @@ public static class FamiliarFeats
 				OptionLevel = SelectionOption.MORNING_PREPARATIONS_LEVEL
 			};
 
-		var finalMax = technicalMax - familiarFeat.InnateFeats.Count;
+		var finalMax = technicalMax - familiarFeat.InnateFeatsCount;
 		
 		return new MultipleFeatSelectionOption(key, name, level,
 			(feat, _) => feat.HasTrait(FamiliarAbilities.TFamiliarAbilitySelection), finalMax)
@@ -199,13 +205,13 @@ public static class FamiliarFeats
 
 public class FamiliarFeat : Feat
 {
-	public List<Feat> InnateFeats { get; }
+	public int InnateFeatsCount { get; }
 	
-	public FamiliarFeat(string familiarKind, List<Feat> innateFeats) 
+	public FamiliarFeat(string familiarKind, int innateFeatsCount) 
 		: base(ModManager.RegisterFeatName($"Familiar{familiarKind}", familiarKind), $"{familiarKind} Familiar.", 
 			$"You gain a {familiarKind} familiar.", [FamiliarFeats.TFamiliar], null)
 	{
-		InnateFeats = innateFeats;
+		InnateFeatsCount = innateFeatsCount;
 	}
 }
 
@@ -213,7 +219,7 @@ public static class Familiar
 {
 	public static QEffectId QFamiliar = ModManager.RegisterEnumMember<QEffectId>("Familiar");
 	
-	public static Creature Create(Creature master, Illustration illustration, string name, List<Feat> innateFeats)
+	public static Creature Create(Creature master, Illustration illustration, string name)
 	{
 		var level = master.Level;
 		var perception = 3 + master.Level;
@@ -266,11 +272,6 @@ public static class Familiar
 					owner.Battle.InitiativeOrder.Remove(sc.Owner);
 				}
 			});
-
-		foreach (var feat in innateFeats)
-		{
-			familiar = familiar.WithFeat(feat.FeatName);
-		}
 
 		familiar.AddQEffect(new QEffect
 		{
