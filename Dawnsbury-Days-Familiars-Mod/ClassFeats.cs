@@ -36,7 +36,8 @@ public static class ClassFeats
 			.WithOnSheet(sheet =>
 				{
 					var index = sheet.SelectionOptions.FindIndex(o => o.Key.EndsWith("FamiliarAbilities"));
-					sheet.SelectionOptions[index] = FamiliarFeats.CreateFamiliarFeatsSelectionOption(sheet);
+					if (index > 0)
+						sheet.SelectionOptions[index] = FamiliarFeats.CreateFamiliarFeatsSelectionOption(sheet);
 				}
 			);
 		
@@ -48,7 +49,8 @@ public static class ClassFeats
 			.WithOnSheet(sheet =>
 				{
 					var index = sheet.SelectionOptions.FindIndex(o => o.Key.EndsWith("FamiliarAbilities"));
-					sheet.SelectionOptions[index] = FamiliarFeats.CreateFamiliarFeatsSelectionOption(sheet);
+					if (index > 0)
+						sheet.SelectionOptions[index] = FamiliarFeats.CreateFamiliarFeatsSelectionOption(sheet);
 				}
 			);
 	}
