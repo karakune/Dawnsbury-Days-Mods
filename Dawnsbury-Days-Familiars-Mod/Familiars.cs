@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dawnsbury.Campaign.LongTerm;
@@ -5,7 +6,9 @@ using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
+using Dawnsbury.Core.CharacterBuilder.FeatsDb.TrueFeatDb.Archetypes.Agnostic;
 using Dawnsbury.Core.CharacterBuilder.Selections.Options;
+using Dawnsbury.Core.CharacterBuilder.Selections.Selected;
 using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
@@ -51,7 +54,7 @@ public static class FamiliarFeats
 				if (owner.HasEffect(QDeadFamiliar))
 					return;
 				
-				owner.AddQEffect(new QEffect("Familiar", "You patron has granted you a familiar")
+				owner.AddQEffect(new QEffect("Familiar", "Your patron has granted you a familiar")
 				{
 					StartOfCombat = async qf =>
 					{
@@ -100,7 +103,47 @@ public static class FamiliarFeats
 					}
 				});
 			})
-			.WithOnSheet(sheet => sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption(sheet)));
+			.WithOnSheet(sheet =>
+			{
+				string defaultName = $"{sheet.Sheet.IdentityChoice?.Name}'s familiar";
+				sheet.AddSelectionOption(new FreeTextSelectionOption("FamiliarNickname", "Familiar name", -1, $"You can name your familiar.\n\nIf you don't choose a name, it will be called {{b}}{defaultName}{{/b}}.", defaultName, 
+					(v, sName) =>
+				{
+					
+				}).WithIsOptional());
+				
+				
+				sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption(sheet));
+			})
+			.WithOnCreature(owner =>
+			{
+				owner.AddQEffect(new QEffect("ApplyFamiliarName", "Apply familiar name")
+				{
+					StartOfCombat = async effect =>
+					{
+						var master = effect.Owner;
+						var familiar = Familiar.GetFamiliar(master);
+						if (familiar == null)
+							return;
+
+						var familiarNameSelectionOption =
+							master.PersistentCharacterSheet?.Calculated.SelectionOptions.FirstOrDefault(o =>
+								o.Key.EndsWith("FamiliarNickname"));
+
+						if (familiarNameSelectionOption == null)
+							return;
+
+						if (master.PersistentCharacterSheet?.FindChoiceForKey(familiarNameSelectionOption) is not FreeTextSelectedChoice selectedChoice)
+							return;
+
+						var familiarName = selectedChoice.FreeText;
+						if (string.IsNullOrEmpty(familiarName))
+							return;
+						
+						familiar.MainName = familiarName;
+					}
+				});
+			});
 	}
 
 	public static string? GetFamiliarCommandRestriction(
