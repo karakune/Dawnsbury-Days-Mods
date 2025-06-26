@@ -36,17 +36,15 @@ public static class FamiliarFeats
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		yield return new Feat(FNWitchFamiliarBoost, null, "", [], null);
-		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, []);
+		// yield return CreateFamiliarFeat("Cauldron", Illustrations.FamiliarCauldron, [FamiliarAbilities.FNTough, FamiliarAbilities.FNConstruct]);
+		yield return CreateFamiliarFeat("Crow", Illustrations.FamiliarCrow, [FamiliarAbilities.FNFlier]);
+		yield return CreateFamiliarFeat("Frog", Illustrations.FamiliarFrog, [FamiliarAbilities.FNAmphibious]);
 		yield return CreateFamiliarFeat("Leshy", IllustrationName.WoundedLeshy, [FamiliarAbilities.FNPlant]);
+		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, []);
 	}
 
 	private static Feat CreateFamiliarFeat(string familiarKind, Illustration illustration, List<FeatName> innateFeatNames)
 	{
-		// var familiarStatBlock = Familiar.Create(owner.ToCreature(owner.MaximumLevel), illustration, $"{owner.Name}'s Familiar", innateFeats);
-		// familiarStatBlock.RegeneratePossibilities();
-		// familiarStatBlock.RecalculateLandSpeedAndInitiative();
-		// var rulesText = "Your familiar has the following characteristics at level 1:\n\n" + RulesBlock.CreateCreatureDescription(familiarStatBlock);
-		
 		return new FamiliarFeat(familiarKind, innateFeatNames.Count)
 			.WithOnSheet(sheet =>
 			{
