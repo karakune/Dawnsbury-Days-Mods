@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Dawnsbury.Core.CharacterBuilder.Feats;
+using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Enumerations;
@@ -33,24 +34,13 @@ public static class FamiliarAbilities
 					creature.AddQEffect(QEffect.Swimming());
 				}),
 			
-			// RegisterFamiliarAbility(FNConstruct, "FamConstruct", "Construct", 
-			// 	"Your familiar has the construct trait instead of the animal trait. The familiar is immune to death effects, disease, doomed, drained, fatigued, healing, nonlethal attacks, paralyzed, poison, positive, sickened, and negative. Your familiar must have the tough pet ability to select this.", 
-			// 	creature => { 
-			// 		creature.Traits.Remove(Trait.Animal);
-			// 		creature.Traits.Add(Trait.Construct);
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Death));
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Disease));
-			// 		creature.AddQEffect(QEffect.ImmunityToCondition(QEffectId.Doomed));
-			// 		creature.AddQEffect(QEffect.ImmunityToCondition(QEffectId.Drained));
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Healing));
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Nonlethal));
-			// 		creature.AddQEffect(QEffect.ImmunityToCondition(QEffectId.Paralyzed));
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Poison));
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Positive));
-			// 		creature.AddQEffect(QEffect.ImmunityToCondition(QEffectId.Sickened));
-			// 		// creature.AddQEffect(QEffect.ImmunityToCondition(QEffectId.Unconscious));
-			// 		creature.AddQEffect(QEffect.TraitImmunity(Trait.Negative));
-			// 	}, [(FNTough, "Tough")]),
+			RegisterFamiliarAbility(FNConstruct, "FamConstruct", "Construct", 
+				"Your familiar has the construct trait instead of the animal trait."/* Your familiar must have the tough familiar ability to select this."*/, 
+				creature => { 
+					creature.Traits.Remove(Trait.Animal);
+					creature.Traits.Add(Trait.Construct);
+					CommonEnvironmentActions.BecomeConstruct(creature);
+				}/*, [(FNTough, "Tough")]*/),
 			
 			RegisterFamiliarAbility(FNDragon, "FamDragon", "Dragon",
 				"Your familiar has the dragon trait instead of the animal trait.",

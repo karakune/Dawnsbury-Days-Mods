@@ -36,7 +36,7 @@ public static class FamiliarFeats
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		yield return new Feat(FNWitchFamiliarBoost, null, "", [], null);
-		// yield return CreateFamiliarFeat("Cauldron", Illustrations.FamiliarCauldron, [FamiliarAbilities.FNTough, FamiliarAbilities.FNConstruct]);
+		yield return CreateFamiliarFeat("Cauldron", Illustrations.FamiliarCauldron, [FamiliarAbilities.FNTough, FamiliarAbilities.FNConstruct]);
 		yield return CreateFamiliarFeat("Crow", Illustrations.FamiliarCrow, [FamiliarAbilities.FNFlier]);
 		yield return CreateFamiliarFeat("Frog", Illustrations.FamiliarFrog, [FamiliarAbilities.FNAmphibious]);
 		yield return CreateFamiliarFeat("Leshy", IllustrationName.WoundedLeshy, [FamiliarAbilities.FNPlant]);
