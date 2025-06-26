@@ -257,7 +257,7 @@ public static class Familiar
 			master.Abilities.Wisdom,
 			master.Abilities.Charisma);
 
-		var familiar = new Creature(illustration, name, [Trait.Animal], level, perception, speed, defenses, hp,
+		var familiar = new Creature(illustration, name, [Trait.Animal, Trait.Minion], level, perception, speed, defenses, hp,
 			abilities, skills)
 			.WithEntersInitiativeOrder(false)
 			.AddQEffect(new QEffect {
