@@ -160,6 +160,9 @@ public static class FamiliarFeats
 			return "You already commanded your familiar this turn.";
 		if (familiar.HasEffect(QEffectId.Paralyzed))
 			return "Your familiar is paralyzed.";
+		if (familiar.HasEffect(QEffectId.Dying) || familiar.HasEffect(QEffectId.Unconscious))
+			return "Your familiar is unconscious";
+		
 		return familiar.Actions.ActionsLeft == 0 && (familiar.Actions.QuickenedForActions == null || familiar.Actions.UsedQuickenedAction) ? "Your familiar has no actions it could take." : null;
 	}
 
