@@ -25,6 +25,8 @@ public static class FamiliarFeats
 {
 	public static Trait TFamiliar = ModManager.RegisterTrait("Familiar");
 	public static Trait TFamiliarCommand = ModManager.RegisterTrait("FamiliarCommand");
+	public static Trait TFamiliarDeploy = ModManager.RegisterTrait("FamiliarDeploy");
+	public static QEffectId QHasFamiliar = ModManager.RegisterEnumMember<QEffectId>("HasFamiliar");
 	public static QEffect QDeadFamiliar = new ("Dead Familiar",
 		"Your familiar has died. It will reappear upon your next long rest.")
 	{
@@ -36,6 +38,10 @@ public static class FamiliarFeats
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		yield return new Feat(FNWitchFamiliarBoost, null, "", [], null);
+		
+		yield return new Feat(ModManager.RegisterFeatName("FamiliarAutoDeployNo", "No"), "", "", [TFamiliarDeploy], null);
+		yield return new Feat(ModManager.RegisterFeatName("FamiliarAutoDeployYes", "Yes"), "", "", [TFamiliarDeploy], null);
+		
 		yield return CreateFamiliarFeat("Cauldron", Illustrations.FamiliarCauldron, [FamiliarAbilities.FNTough, FamiliarAbilities.FNConstruct]);
 		yield return CreateFamiliarFeat("Crow", Illustrations.FamiliarCrow, [FamiliarAbilities.FNFlier]);
 		yield return CreateFamiliarFeat("Frog", Illustrations.FamiliarFrog, [FamiliarAbilities.FNAmphibious]);
@@ -52,6 +58,8 @@ public static class FamiliarFeats
 				{
 					sheet.GrantFeat(innateFeat);
 				}
+
+				sheet.Tags["FamiliarIllustration"] = illustration;
 			})
 			.WithOnCreature(owner =>
 			{
@@ -60,11 +68,11 @@ public static class FamiliarFeats
 				
 				owner.AddQEffect(new QEffect("Familiar", "Your have a familiar")
 				{
+					Id = QHasFamiliar,
 					StartOfCombat = async qf =>
 					{
 						var master = qf.Owner;
-						var familiar = Familiar.Create(master, illustration, $"{master.Name}'s Familiar");
-						familiar.MainName = $"{master.Name}'s Familiar";
+						var familiar = Familiar.Create(master);
 						familiar.InitiativeControlledBy = master;
 						familiar.LongTermEffects = new LongTermEffects();
 						familiar.LongTermEffects.BeginningOfCombat(familiar);
@@ -86,18 +94,20 @@ public static class FamiliarFeats
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
+						var ill = Familiar.GetIllustration(master);
 						var familiar = Familiar.GetFamiliar(master);
-						if (familiar == null)
-							return null;
 						
-						var combatAction = new CombatAction(master, familiar.Illustration, "Command Familiar", [TFamiliar],
+						var combatAction = new CombatAction(master, ill, "Command Familiar", [TFamiliar],
 							"Take 2 actions as your familiar.\n\nYou can only command your familiar once per turn.",
 							Target.Self()
-							.WithAdditionalRestriction(_ => GetFamiliarCommandRestriction(effect, familiar)))
+							.WithAdditionalRestriction(_ => GetFamiliarCommandRestriction(effect, familiar, isDirectCommand: true)))
 							.WithActionCost(1)
 							.WithEffectOnSelf(async _ =>
 							{
 								effect.UsedThisTurn = true;
+								if (familiar == null)
+									return;
+								
 								familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 								familiar.Actions.ActionsLeft = 2;
 								await CommonSpellEffects.YourMinionActs(familiar);
@@ -112,12 +122,15 @@ public static class FamiliarFeats
 				string defaultName = $"{sheet.Sheet.IdentityChoice?.Name}'s familiar";
 				sheet.AddSelectionOption(new FreeTextSelectionOption("FamiliarNickname", "Familiar name", -1, $"You can name your familiar.\n\nIf you don't choose a name, it will be called {{b}}{defaultName}{{/b}}.", defaultName, 
 					(v, sName) =>
-				{
-					
-				}).WithIsOptional());
-				
+					{
+						v.Tags["FamiliarNickname"] = sName;
+					}).WithIsOptional());
 				
 				sheet.AddSelectionOption(CreateFamiliarFeatsSelectionOption(sheet));
+				sheet.AddSelectionOption(new SingleFeatSelectionOption("PrecombatDeploy", "Have familiar out at encounter start?", -1, feat => feat.HasTrait(TFamiliarDeploy))
+				{
+					OptionLevel = SelectionOption.PRECOMBAT_PREPARATIONS_LEVEL
+				});
 			})
 			.WithOnCreature(owner =>
 			{
@@ -130,19 +143,7 @@ public static class FamiliarFeats
 						if (familiar == null)
 							return;
 
-						var familiarNameSelectionOption =
-							master.PersistentCharacterSheet?.Calculated.SelectionOptions.FirstOrDefault(o =>
-								o.Key.EndsWith("FamiliarNickname"));
-
-						if (familiarNameSelectionOption == null)
-							return;
-
-						if (master.PersistentCharacterSheet?.FindChoiceForKey(familiarNameSelectionOption) is not FreeTextSelectedChoice selectedChoice)
-							return;
-
-						var familiarName = selectedChoice.FreeText;
-						if (string.IsNullOrEmpty(familiarName))
-							return;
+						var familiarName = Familiar.GetNickname(master);
 						
 						familiar.MainName = familiarName;
 					}
@@ -150,18 +151,25 @@ public static class FamiliarFeats
 			});
 	}
 
-	public static string? GetFamiliarCommandRestriction(
-		QEffect qfMaster,
-		Creature familiar)
+	public static string? GetFamiliarCommandRestriction(QEffect qfMaster, Creature? familiar, bool isDirectCommand = false)
 	{
 		var hasBeenCommanded = qfMaster.Owner.QEffects.Any(e => e.Traits.Contains(TFamiliarCommand) && e.UsedThisTurn);
-
 		if (hasBeenCommanded)
 			return "You already commanded your familiar this turn.";
+
+		if (familiar == null)
+		{
+			if (qfMaster.Owner.QEffects.Contains(QDeadFamiliar))
+				return "Your familiar is out of combat.";
+			if (isDirectCommand)
+				return "You must deploy your familiar to use this action.";
+			return null;
+		}
+
 		if (familiar.HasEffect(QEffectId.Paralyzed))
 			return "Your familiar is paralyzed.";
 		if (familiar.HasEffect(QEffectId.Dying) || familiar.HasEffect(QEffectId.Unconscious))
-			return "Your familiar is unconscious";
+			return "Your familiar is unconscious.";
 		
 		return familiar.Actions.ActionsLeft == 0 && (familiar.Actions.QuickenedForActions == null || familiar.Actions.UsedQuickenedAction) ? "Your familiar has no actions it could take." : null;
 	}
@@ -220,7 +228,7 @@ public static class Familiar
 {
 	public static QEffectId QFamiliar = ModManager.RegisterEnumMember<QEffectId>("Familiar");
 	
-	public static Creature Create(Creature master, Illustration illustration, string name)
+	public static Creature Create(Creature master)
 	{
 		var level = master.Level;
 		var perception = 3 + master.Level;
@@ -257,7 +265,7 @@ public static class Familiar
 			master.Abilities.Wisdom,
 			master.Abilities.Charisma);
 
-		var familiar = new Creature(illustration, name, [Trait.Animal, Trait.Minion], level, perception, speed, defenses, hp,
+		var familiar = new Creature(GetIllustration(master), GetNickname(master), [Trait.Animal, Trait.Minion], level, perception, speed, defenses, hp,
 			abilities, skills)
 			.WithEntersInitiativeOrder(false)
 			.AddQEffect(new QEffect {
@@ -286,5 +294,18 @@ public static class Familiar
 	public static Creature? GetFamiliar(Creature master)
 	{
 		return master.Battle.AllCreatures.FirstOrDefault(cr => cr.QEffects.Any(qf => qf.Id == QFamiliar && qf.Source == master));
+	}
+
+	public static Illustration GetIllustration(Creature master)
+	{
+		var illustration = master.PersistentCharacterSheet?.Calculated.Tags["FamiliarIllustration"] as Illustration;
+		return illustration ?? IllustrationName.AnimalForm;
+	}
+
+	public static string GetNickname(Creature master)
+	{
+		var nickname = master.PersistentCharacterSheet?.Calculated.Tags["FamiliarNickname"] as string;
+		
+		return !string.IsNullOrWhiteSpace(nickname) ? nickname : $"{master.Name}'s Familiar";
 	}
 }

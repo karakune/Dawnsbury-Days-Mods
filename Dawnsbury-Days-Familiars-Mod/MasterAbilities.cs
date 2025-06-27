@@ -52,11 +52,10 @@ public static class MasterAbilities
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
+						var illustration = Familiar.GetIllustration(master);
 						var familiar = Familiar.GetFamiliar(master);
-						if (familiar == null)
-							return null;
 						
-						var combatAction = new CombatAction(master, familiar.Illustration, "Familiar Focus", [FamiliarFeats.TFamiliar, Trait.Concentrate],
+						var combatAction = new CombatAction(master, illustration, "Familiar Focus", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to restore one of your Focus Points.",
 								Target.Self()
 									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(effect, familiar))
@@ -71,6 +70,9 @@ public static class MasterAbilities
 							.WithEffectOnSelf(async _ =>
 							{
 								effect.UsedThisTurn = true;
+
+								if (familiar == null)
+									return;
 								
 								if (master.Spellcasting == null || master.Spellcasting.FocusPoints >=
 								    master.Spellcasting.FocusPointsMaximum)
@@ -102,11 +104,10 @@ public static class MasterAbilities
 					ProvideMainAction = effect =>
 					{
 						var master = effect.Owner;
+						var illustration = Familiar.GetIllustration(master);
 						var familiar = Familiar.GetFamiliar(master);
-						if (familiar == null)
-							return null;
 						
-						var combatAction = new CombatAction(master, familiar.Illustration, "Restorative Familiar", [FamiliarFeats.TFamiliar, Trait.Concentrate],
+						var combatAction = new CombatAction(master, illustration, "Restorative Familiar", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to heal you for 1d8 times half your level.",
 								Target.Self()
 									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(effect, familiar))
@@ -117,6 +118,9 @@ public static class MasterAbilities
 
 										if (master.HP >= master.MaxHP)
 											return "You need to have lost HP";
+
+										if (familiar == null)
+											return null;
 
 										return familiar.DistanceTo(master) > 1 ? "Your familiar must be within 5 feet" : null;
 									}))
