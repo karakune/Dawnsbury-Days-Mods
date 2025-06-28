@@ -260,15 +260,17 @@ public static class Familiar
 
 	public static Illustration GetIllustration(Creature master)
 	{
-		var illustration = master.PersistentCharacterSheet?.Calculated.Tags["FamiliarIllustration"] as Illustration;
-		return illustration ?? IllustrationName.AnimalForm;
+		if (master.PersistentCharacterSheet?.Calculated.Tags.TryGetValue("FamiliarIllustration", out var value ) == true && value is Illustration illustration)
+			return illustration;
+		return IllustrationName.AnimalForm;
 	}
 
 	public static string GetNickname(Creature master)
 	{
-		var nickname = master.PersistentCharacterSheet?.Calculated.Tags["FamiliarNickname"] as string;
+		if (master.PersistentCharacterSheet?.Calculated.Tags.TryGetValue("FamiliarNickname", out var value) == true && value is string nickname)
+			return string.IsNullOrWhiteSpace(nickname) ? nickname : $"{master.Name}'s Familiar";
 		
-		return !string.IsNullOrWhiteSpace(nickname) ? nickname : $"{master.Name}'s Familiar";
+		return $"{master.Name}'s Familiar";
 	}
 	
 	private static Creature Create(Creature master)
