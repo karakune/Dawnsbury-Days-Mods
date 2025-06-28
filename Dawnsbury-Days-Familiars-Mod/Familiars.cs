@@ -102,7 +102,7 @@ public static class FamiliarFeats
 						var combatAction = new CombatAction(master, ill, "Command Familiar", [TFamiliar],
 							"Take 2 actions as your familiar.\n\nYou can only command your familiar once per turn.",
 							Target.Self()
-							.WithAdditionalRestriction(_ => GetFamiliarCommandRestriction(effect, familiar, isDirectCommand: true)))
+							.WithAdditionalRestriction(_ => GetFamiliarCommandRestriction(master, familiar, isDirectCommand: true)))
 							.WithActionCost(1)
 							.WithEffectOnSelf(async _ =>
 							{
@@ -153,15 +153,15 @@ public static class FamiliarFeats
 			});
 	}
 
-	public static string? GetFamiliarCommandRestriction(QEffect qfMaster, Creature? familiar, bool isDirectCommand = false)
+	public static string? GetFamiliarCommandRestriction(Creature master, Creature? familiar, bool isDirectCommand = false)
 	{
-		var hasBeenCommanded = qfMaster.Owner.QEffects.Any(e => e.Traits.Contains(TFamiliarCommand) && e.UsedThisTurn);
+		var hasBeenCommanded = master.QEffects.Any(e => e.Traits.Contains(TFamiliarCommand) && e.UsedThisTurn);
 		if (hasBeenCommanded)
 			return "You already commanded your familiar this turn.";
 
 		if (familiar == null)
 		{
-			if (qfMaster.Owner.QEffects.Contains(Familiar.QDeadFamiliar))
+			if (master.QEffects.Contains(Familiar.QDeadFamiliar))
 				return "Your familiar is out of combat.";
 			if (isDirectCommand)
 				return "You must deploy your familiar to use this action.";

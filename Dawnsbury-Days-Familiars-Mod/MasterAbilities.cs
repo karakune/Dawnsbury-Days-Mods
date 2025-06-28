@@ -58,7 +58,7 @@ public static class MasterAbilities
 						var combatAction = new CombatAction(master, illustration, "Familiar Focus", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to restore one of your Focus Points.",
 								Target.Self()
-									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(effect, familiar))
+									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(master, familiar))
 									.WithAdditionalRestriction(_ =>
 									{
 										if (master.PersistentUsedUpResources.UsedUpActions.Contains("FamiliarFocus"))
@@ -110,7 +110,7 @@ public static class MasterAbilities
 						var combatAction = new CombatAction(master, illustration, "Restorative Familiar", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to heal you for 1d8 times half your level.",
 								Target.Self()
-									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(effect, familiar))
+									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(master, familiar))
 									.WithAdditionalRestriction(_ =>
 									{
 										if (master.PersistentUsedUpResources.UsedUpActions.Contains("RestorativeFamiliar"))

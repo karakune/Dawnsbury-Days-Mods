@@ -45,12 +45,12 @@ public static class WitchLoader
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),
-				null, "Gain the Patron's Puppet focus spell and a focus point.", [TFirstHex], null)
+				null, "Gain the Patron's Puppet hex and a focus point.", [TFirstHex], null)
 			.WithOnSheet(sheet =>
 				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PatronsPuppet));
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPhaseFamiliar", "Phase Familiar"),
-				null, "Gain the Phase Familiar focus spell and a focus point.", [TFirstHex], null)
+				null, "Gain the Phase Familiar hex and a focus point.", [TFirstHex], null)
 			.WithOnSheet(sheet =>
 				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PhaseFamiliar));
 		

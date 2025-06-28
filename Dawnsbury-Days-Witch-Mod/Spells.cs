@@ -1,15 +1,15 @@
-using System;
+using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
-using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
+using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Modding;
-using Microsoft.Xna.Framework;
+using Dawnsbury.Mods.Familiars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
@@ -35,9 +35,23 @@ public static class WitchSpells
 			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Patron's Puppet", [Trait.Focus, THex, WitchLoader.TWitch],
 					"At your unspoken plea, your patron temporarily assumes control over your familiar.",
 					"You Command your familiar, allowing it to take its normal actions this turn.",
-					Target.Self(), spellLevel, null)
+					Target.Self()
+						.WithAdditionalRestriction(master => FamiliarFeats.GetFamiliarCommandRestriction(master, Familiar.GetFamiliar(master), isDirectCommand: true))
+					, spellLevel, null)
 				.WithActionCost(0)
-				.WithHexCasting();
+				.WithHexCasting()
+				.WithEffectOnSelf(async master =>
+				{
+					master.AddQEffect(new QEffect { Traits = [FamiliarFeats.TFamiliarCommand], UsedThisTurn = true, ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn});
+					
+					var familiar = Familiar.GetFamiliar(master);
+					if (familiar == null)
+						return;
+					
+					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+					familiar.Actions.ActionsLeft = 2;
+					await CommonSpellEffects.YourMinionActs(familiar);
+				});
 		});
 	public static SpellId PhaseFamiliar = ModManager.RegisterNewSpell("PhaseFamiliar", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
