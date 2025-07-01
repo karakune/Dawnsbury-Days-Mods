@@ -1,3 +1,5 @@
+using Dawnsbury.Audio;
+using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
@@ -8,6 +10,7 @@ using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
 using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
+using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
 using Dawnsbury.Mods.Familiars;
 
@@ -96,21 +99,29 @@ public static class WitchSpells
 	
 	public static SpellId ShroudOfNight = ModManager.RegisterNewSpell("ShroudOfNight", 0, (spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 	{
-		return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Shroud of Night", [Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
+		return Spells.CreateModern(IllustrationName.AshenWind, "Shroud of Night", [Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
 				"Your patron blankets the target's eyes in darkness.",
-				"Success The target is unaffected. Failure All creatures are concealed to it.",
+				$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)}",
 				Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
 			.WithActionCost(1)
-			// .WithSoundEffect(ModManager.RegisterNewSoundEffect("AcidicBurstAssets/AcidicBurstSfx.mp3"))
+			.WithSoundEffect(SfxName.DazzlingFlash)
 			.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 			{
 				if (result >= CheckResult.Success)
 					return;
-					
-				// target.AddQEffect(new QEffect("Murky Darkness", "All creatures are concealed to you", ExpirationCondition.ExpiresAtEndOfSourcesTurn))
-					
-				// await CommonSpellEffects.DealBasicDamage(spell, caster, target, result, (spellLevel * 2) + "d6", DamageKind.Acid);
-				// await CommonConditionEffects.RollAgainstConfusion()
+
+				// Basically QEffect.Dazzled() but with a different name
+				var effect = new QEffect("Shroud of Night", "All creatures are concealed to you (20% miss chance).",
+					ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster, illustration: IllustrationName.Blinded)
+				{
+					CannotExpireThisTurn = true,
+					SubsumedBy = [QEffectId.Blinded],
+					SightReductionTo = DetectionStrength.Concealed,
+					CountsAsADebuff = true
+				};
+				
+				target.AddQEffect(effect);
+				caster.AddQEffect(QEffect.Sustaining(spell, effect));
 			})
 			.WithHexCasting();
 	});
