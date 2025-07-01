@@ -9,7 +9,6 @@ using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Modding;
-using Dawnsbury.Mods.Familiars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
@@ -29,10 +28,13 @@ public static class WitchLoader
 	{
 		foreach (var feat in CreateFeats())
 			ModManager.AddFeat(feat);
+		
+		foreach (var feat in ClassFeats.CreateFeats())
+			ModManager.AddFeat(feat);
 
 		foreach (var feat in AllFeats.All.FindAll(feat =>
-	         feat.FeatName.Equals(ClassFeats.FNEnhancedFamiliar) ||
-	         feat.FeatName.Equals(ClassFeats.FNIncredibleFamiliar)))
+	         feat.FeatName.Equals(Familiars.ClassFeats.FNEnhancedFamiliar) ||
+	         feat.FeatName.Equals(Familiars.ClassFeats.FNIncredibleFamiliar)))
 		{
 			feat.Traits.Add(TWitch);
 		}
@@ -66,8 +68,8 @@ public static class WitchLoader
 			.WithOnSheet(sheet =>
 			{
 				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(TFirstHex)));
-				sheet.GrantFeat(FamiliarFeats.FNWitchFamiliarBoost);
-				sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", -1, feat => feat.HasTrait(FamiliarFeats.TFamiliar)));
+				sheet.GrantFeat(Familiars.FamiliarFeats.FNWitchFamiliarBoost);
+				sheet.AddSelectionOption(new SingleFeatSelectionOption("Familiar", "Familiar", -1, feat => feat.HasTrait(Familiars.FamiliarFeats.TFamiliar)));
 			});
 	}
 }

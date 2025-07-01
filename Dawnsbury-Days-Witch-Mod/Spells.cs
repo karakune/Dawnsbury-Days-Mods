@@ -35,27 +35,35 @@ public static class WitchSpells
 	public static SpellId PatronsPuppet = ModManager.RegisterNewSpell("PatronsPuppet", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Patron's Puppet", [Trait.Focus, THex, WitchLoader.TWitch],
+			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Patron's Puppet",
+					[Trait.Focus, THex, WitchLoader.TWitch],
 					"At your unspoken plea, your patron temporarily assumes control over your familiar.",
 					"You Command your familiar, allowing it to take its normal actions this turn.",
 					Target.Self()
-						.WithAdditionalRestriction(master => FamiliarFeats.GetFamiliarCommandRestriction(master, Familiar.GetFamiliar(master), isDirectCommand: true))
+						.WithAdditionalRestriction(master =>
+							FamiliarFeats.GetFamiliarCommandRestriction(master, Familiar.GetFamiliar(master),
+								isDirectCommand: true))
 					, spellLevel, null)
 				.WithActionCost(0)
 				.WithHexCasting()
 				.WithEffectOnSelf(async master =>
 				{
-					master.AddQEffect(new QEffect { Traits = [FamiliarFeats.TFamiliarCommand], UsedThisTurn = true, ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn});
-					
+					master.AddQEffect(new QEffect
+					{
+						Traits = [FamiliarFeats.TFamiliarCommand], UsedThisTurn = true,
+						ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn
+					});
+
 					var familiar = Familiar.GetFamiliar(master);
 					if (familiar == null)
 						return;
-					
+
 					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 					familiar.Actions.ActionsLeft = 2;
 					await CommonSpellEffects.YourMinionActs(familiar);
 				});
 		});
+	
 	public static SpellId PhaseFamiliar = ModManager.RegisterNewSpell("PhaseFamiliar", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
@@ -96,33 +104,54 @@ public static class WitchSpells
                 .WithHeighteningNumerical(spellLevel, 1, inCombat, 1, "The damage you redirect increases by 3.")
 				.WithHexCasting();
 		});
-	
-	public static SpellId ShroudOfNight = ModManager.RegisterNewSpell("ShroudOfNight", 0, (spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
-	{
-		return Spells.CreateModern(IllustrationName.AshenWind, "Shroud of Night", [Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
-				"Your patron blankets the target's eyes in darkness.",
-				$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)}",
-				Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
-			.WithActionCost(1)
-			.WithSoundEffect(SfxName.DazzlingFlash)
-			.WithEffectOnEachTarget(async (spell, caster, target, result) =>
-			{
-				if (result >= CheckResult.Success)
-					return;
 
-				// Basically QEffect.Dazzled() but with a different name
-				var effect = new QEffect("Shroud of Night", "All creatures are concealed to you (20% miss chance).",
-					ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster, illustration: IllustrationName.Blinded)
+	public static SpellId ShroudOfNight = ModManager.RegisterNewSpell("ShroudOfNight", 0,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.AshenWind, "Shroud of Night",
+					[Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
+					"Your patron blankets the target's eyes in darkness.",
+					$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)}",
+					Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.DazzlingFlash)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
-					CannotExpireThisTurn = true,
-					SubsumedBy = [QEffectId.Blinded],
-					SightReductionTo = DetectionStrength.Concealed,
-					CountsAsADebuff = true
-				};
-				
-				target.AddQEffect(effect);
-				caster.AddQEffect(QEffect.Sustaining(spell, effect));
-			})
-			.WithHexCasting();
-	});
+					if (result >= CheckResult.Success)
+						return;
+
+					// Basically QEffect.Dazzled() but with a different name
+					var effect = new QEffect("Shroud of Night", "All creatures are concealed to you (20% miss chance).",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster,
+						illustration: IllustrationName.Blinded)
+					{
+						CannotExpireThisTurn = true,
+						SubsumedBy = [QEffectId.Blinded],
+						SightReductionTo = DetectionStrength.Concealed,
+						CountsAsADebuff = true
+					};
+
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHexCasting();
+		});
+
+	public static SpellId Cackle = ModManager.RegisterNewSpell("Cackle", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.HideousLaughter, "Cackle",
+					[Trait.Concentrate, Trait.Focus, THex, WitchLoader.TWitch],
+					"With a quick burst of laughter, you prolong a magical effect you created.",
+					"You Sustain a spell.",
+					Target.Self().WithAdditionalRestriction(caster => caster.HasEffect(QEffectId.Sustaining) ? null : "You must be able to sustain a spell."), 
+					spellLevel, null)
+				.WithActionCost(0)
+				.WithHexCasting()
+				.WithEffectOnSelf(async caster =>
+				{
+					if (caster.FindQEffect(QEffectId.Sustaining)?.Tag is QEffect sustainedEffect)
+						sustainedEffect.CannotExpireThisTurn = true;
+				});
+		});
 }
