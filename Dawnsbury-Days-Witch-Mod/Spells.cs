@@ -154,4 +154,17 @@ public static class WitchSpells
 						sustainedEffect.CannotExpireThisTurn = true;
 				});
 		});
+	
+	public static SpellId VeilOfDreams = ModManager.RegisterNewSpell("Veil of Dreams", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.HideousLaughter, "Veil of Dreams",
+					[Trait.Concentrate, Trait.Focus, THex, WitchLoader.TWitch],
+					"",
+					"",
+					Target.Self(), 
+					spellLevel, null)
+				.WithActionCost(2)
+				.WithHexCasting();
+		});
 }

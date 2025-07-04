@@ -1,12 +1,12 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Dawnsbury.Audio;
 using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb;
+using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
+using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
-using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
@@ -17,7 +17,9 @@ namespace Dawnsbury.Mods.Classes.Witch;
 
 public static class ClassFeats
 {
-	public static Trait TSympStrike = ModManager.RegisterTrait("SympatheticStrike");
+	public static Trait TSympStrike = ModManager.RegisterTrait("SympatheticStrike", new TraitProperties("", relevant: false));
+	public static Trait TBasicLesson = ModManager.RegisterTrait("BasicLesson", new TraitProperties("", relevant: false));
+	public static Trait TGreaterLesson = ModManager.RegisterTrait("GreaterLesson", new TraitProperties("", relevant: false));
 	public static QEffect QSympStrikeUsed = new()
 	{
 		ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn
@@ -149,10 +151,56 @@ public static class ClassFeats
 				});
 			});
 
+		yield return new TrueFeat(ModManager.RegisterFeatName("Basic Lesson"), 2,
+			"",
+			"",
+			[WitchLoader.TWitch],
+			[
+				CreateLesson(TBasicLesson, "Dreams", "Dreams can be a window to greater insights.", WitchSpells.VeilOfDreams, SpellId.Sleep),
+				CreateLesson(TBasicLesson, "Life", "Life can be shared.", WitchSpells.LifeBoost, WitchSpells.SpiritLink),
+				CreateLesson(TBasicLesson, "Protection", "An ounce of protection is worth a pound of cure.", WitchSpells.BloodWard, SpellId.MageArmor),
+				CreateLessonElements(TBasicLesson, "Elements", "Natural disasters and inclement weather hold more power than the mightiest creature.", WitchSpells.ElementalBetrayal, [SpellId.BurningHands, WitchSpells.GustOfWind, SpellId.HydraulicPush, SpellId.PummelingRubble]),
+				CreateLesson(TBasicLesson, "Vengeance", "Suffer not even the smallest slights.", WitchSpells.NeedleOfVengeance, SpellId.PhantomPain)
+			]);
+
+		yield return new TrueFeat(ModManager.RegisterFeatName("Greater Lesson"), 4,
+				"",
+				"",
+				[WitchLoader.TWitch],
+				[
+					CreateLesson(TGreaterLesson, "Mischief", "Nothing's wrong with some mischief, now and then.", WitchSpells.DeceiverCloak, WitchSpells.MadMonkeys),
+					CreateLesson(TGreaterLesson, "Shadow", "A shadow is far from empty — it contains something of the person who casts it.", WitchSpells.MaliciousShadow, SpellId.ChillingDarkness),
+					CreateLesson(TGreaterLesson, "Snow", "Emulate snow, for it can snuff out life despite its gentleness.", WitchSpells.PersonalBlizzard, WitchSpells.WallOfWind)
+				]);
+
 		// yield return new TrueFeat(ModManager.RegisterFeatName("WitchBottle", "Witch's Bottle"), 8,
 		// 	"",
 		// 	"",
 		// 	[WitchLoader.TWitch])
 		// 	.WithPrerequisite(cauldron, "Cauldron");
+	}
+
+	private static Feat CreateLesson(Trait rank, string name, string flavorText, SpellId hex, SpellId spell)
+	{
+		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
+			$"You gain the {AllSpells.TemplateSpells[hex].Name} hex, and you add {AllSpells.TemplateSpells[spell].Name} to your spell list.",
+			[rank], null)
+			.WithOnSheet(sheet =>
+			{
+				sheet.AddFocusSpellAndFocusPoint(WitchLoader.TWitch, Ability.Intelligence, hex);
+				sheet.SpellRepertoires[WitchLoader.TWitch].AdditionalSpellsAllowed.Add(spell);
+			});
+	}
+
+	private static Feat CreateLessonElements(Trait rank, string name, string flavorText, SpellId hex, SpellId[] spell)
+	{
+		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
+				$"You gain the {AllSpells.TemplateSpells[hex].Name} hex, and you add {AllSpells.TemplateSpells[spell[0]].Name}, {AllSpells.TemplateSpells[spell[1]].Name}, {AllSpells.TemplateSpells[spell[2]].Name} and {AllSpells.TemplateSpells[spell[3]].Name} to your spell list.",
+				[rank], null)
+			.WithOnSheet(sheet =>
+			{
+				sheet.AddFocusSpellAndFocusPoint(WitchLoader.TWitch, Ability.Intelligence, hex);
+				sheet.SpellRepertoires[WitchLoader.TWitch].AdditionalSpellsAllowed.AddRange(spell);
+			});
 	}
 }
