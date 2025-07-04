@@ -20,8 +20,7 @@ public static class ClassFeats
 	public static Trait TSympStrike = ModManager.RegisterTrait("SympatheticStrike");
 	public static QEffect QSympStrikeUsed = new()
 	{
-		ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn,
-		PreventTakingAction = ca => ca.HasTrait(TSympStrike) ? "You already used Sympathetic Strike this round." : null,
+		ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn
 	}; 
 	
 	public static IEnumerable<Feat> CreateFeats()
@@ -64,32 +63,22 @@ public static class ClassFeats
 		// });
 
 		var nails = new Item(IllustrationName.DragonClaws, "Eldritch Claws", Trait.Brawling, Trait.Agile,
-				Trait.Unarmed)
+				Trait.Unarmed, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d6", DamageKind.Slashing))
 			.WithSoundEffect(SfxName.ScratchFlesh);
-		var nailsSymp = new Item(IllustrationName.DragonClaws, "Eldritch Claws (Sympathetic Strike)", Trait.Brawling, Trait.Agile,
-				Trait.Unarmed)
-			.WithWeaponProperties(new WeaponProperties("1d6", DamageKind.Slashing))
-			.WithSoundEffect(SfxName.ScratchFlesh)
-			.WithAdditionalWeaponProperties(property => property.WithOnTarget(ApplySympatheticLink));
 		var nailsFeat = new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsNails", "Witch's Armaments (Eldritch Nails)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
 				"Your nails are supernaturally long and sharp. You gain a nails unarmed attack that deals 1d6 slashing damage, is in the brawling group, and has the agile and unarmed traits.",
-				[WitchLoader.TWitch, TSympStrike])
-			.WithTag(nailsSymp)
+				[WitchLoader.TWitch])
 			.WithOnCreature(creature => creature.WithAdditionalUnarmedStrike(nails));
 		yield return nailsFeat;
 
-		var teeth = new Item(IllustrationName.Jaws, "Iron Teeth", Trait.Brawling)
+		var teeth = new Item(IllustrationName.Jaws, "Iron Teeth", Trait.Brawling, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d8", DamageKind.Piercing)).WithSoundEffect(SfxName.BiteApple);
-		var teethSymp = new Item(IllustrationName.Jaws, "Iron Teeth (Sympathetic Strike)", Trait.Brawling)
-			.WithWeaponProperties(new WeaponProperties("1d8", DamageKind.Piercing)).WithSoundEffect(SfxName.BiteApple)
-			.WithAdditionalWeaponProperties(property => property.WithOnTarget(ApplySympatheticLink));
 		var teethFeat = new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsTeeth", "Witch's Armaments (Iron Teeth)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
 				"With a click of your jaw, your teeth transform into long metallic points. You gain a jaws unarmed attack that deals 1d8 piercing damage and is in the brawling group.",
-				[WitchLoader.TWitch, TSympStrike])
-			.WithTag(teethSymp)
+				[WitchLoader.TWitch])
 			.WithOnCreature(creature =>
 			{
 				creature.WithAdditionalUnarmedStrike(teeth);
@@ -97,19 +86,13 @@ public static class ClassFeats
 		yield return teethFeat;
 
 		var hair = new Item(IllustrationName.BlackTentacles, "Living Hair", Trait.Brawling, Trait.Agile,
-				Trait.Disarm, Trait.Finesse, Trait.Trip, Trait.Unarmed)
+				Trait.Disarm, Trait.Finesse, Trait.Trip, Trait.Unarmed, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d4", DamageKind.Bludgeoning))
 			.WithSoundEffect(SfxName.BiteApple); // TODO: sound effect
-		var hairSymp = new Item(IllustrationName.BlackTentacles, "Living Hair (Sympathetic Strike)", Trait.Brawling, Trait.Agile,
-				Trait.Disarm, Trait.Finesse, Trait.Trip, Trait.Unarmed)
-			.WithWeaponProperties(new WeaponProperties("1d4", DamageKind.Bludgeoning))
-			.WithSoundEffect(SfxName.BiteApple) // TODO: sound effect
-			.WithAdditionalWeaponProperties(property => property.WithOnTarget(ApplySympatheticLink));
 		var hairFeat =  new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsHair", "Witch's Armaments (Living Hair)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
 				"You can instantly grow or shrink your hair, eyebrows, beard, or mustache by up to several feet and manipulate your hair for use as a weapon, though your control isn’t fine enough for more dexterous tasks. You gain a hair unarmed attack that deals 1d4 bludgeoning damage; is in the brawling group; and has the agile, disarm, finesse, trip, and unarmed traits.",
-				[WitchLoader.TWitch, TSympStrike])
-			.WithTag(hairSymp)
+				[WitchLoader.TWitch])
 			.WithOnCreature(creature => creature.WithAdditionalUnarmedStrike(hair));
 		yield return hairFeat;
 
@@ -124,18 +107,46 @@ public static class ClassFeats
 				if (calculated == null)
 					return;
 				
-				var armamentFeats = calculated.AllFeats.FindAll(feat => feat.HasTrait(TSympStrike));
-
-				foreach (var armamentFeat in armamentFeats)
+				witch.AddQEffect(new QEffect
 				{
-					if (armamentFeat.Tag is not Item armament)
-						continue;
-
-					witch.AddQEffect(new QEffect
+					ProvideStrikeModifier = item =>
 					{
-						AdditionalUnarmedStrike = armament
-					});
-				}
+						if (witch.HasEffect(QSympStrikeUsed))
+							return null;
+							
+						if (!item.HasTrait(TSympStrike))
+							return null;
+							
+						var strikeModifiers = new StrikeModifiers
+						{
+							OnEachTarget = async (caster, target, result) =>
+							{
+								caster.AddQEffect(QSympStrikeUsed);
+								switch (result)
+								{
+									case < CheckResult.Success:
+										return;
+									case CheckResult.Success:
+										target.AddQEffect(new QEffect("Sympathetic Link", "You take a –1 circumstance penalty to saves against hexes", ExpirationCondition.ExpiresAtStartOfSourcesTurn, caster)
+										{
+											BonusToDefenses = (effect, action, defense) => action != null && action.HasTrait(WitchSpells.THex) ? new Bonus(-1, BonusType.Circumstance, "Sympathetic Link") : null
+										});
+										break;
+									case CheckResult.CriticalSuccess:
+										target.AddQEffect(new QEffect("Sympathetic Link", "You take a –2 circumstance penalty to saves against hexes", ExpirationCondition.ExpiresAtStartOfSourcesTurn, caster)
+										{
+											BonusToDefenses = (effect, action, defense) => action != null && action.HasTrait(WitchSpells.THex) ? new Bonus(-2, BonusType.Circumstance, "Sympathetic Link") : null
+										});
+										break;
+								}
+							}
+						};
+							
+						var strike = witch.CreateStrike(item, strikeModifiers: strikeModifiers);
+						strike.Name = item.Name + " (Sympathetic Strike)";
+						return strike;
+					}
+				});
 			});
 
 		// yield return new TrueFeat(ModManager.RegisterFeatName("WitchBottle", "Witch's Bottle"), 8,
@@ -143,21 +154,5 @@ public static class ClassFeats
 		// 	"",
 		// 	[WitchLoader.TWitch])
 		// 	.WithPrerequisite(cauldron, "Cauldron");
-	}
-
-	private static async Task ApplySympatheticLink(CombatAction spell, Creature caster, Creature target, CheckResult result)
-	{
-		caster.AddQEffect(QSympStrikeUsed);
-		switch (result)
-		{
-			case < CheckResult.Success:
-				return;
-			case CheckResult.Success:
-				target.AddQEffect(new QEffect("Sympathetic Link", "You take a –1 circumstance penalty to saves against hexes", ExpirationCondition.ExpiresAtStartOfSourcesTurn, caster) { BonusToSpellSaveDCsForSpecificSpell = (effect, action) => action.HasTrait(WitchSpells.THex) ? new Bonus(-1, BonusType.Circumstance, "Sympathetic Link") : null });
-				break;
-			case CheckResult.CriticalSuccess:
-				target.AddQEffect(new QEffect("Sympathetic Link", "You take a –2 circumstance penalty to saves against hexes", ExpirationCondition.ExpiresAtStartOfSourcesTurn, caster) { BonusToSpellSaveDCsForSpecificSpell = (effect, action) => action.HasTrait(WitchSpells.THex) ? new Bonus(-2, BonusType.Circumstance, "Sympathetic Link") : null });
-				break;
-		}
 	}
 }
