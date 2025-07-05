@@ -1,3 +1,4 @@
+using System;
 using Dawnsbury.Audio;
 using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
@@ -205,8 +206,61 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 
-	public static SpellId LifeBoost = RegisterNotImplementedSpell("LifeBoost", true);
-	public static SpellId SpiritLink = RegisterNotImplementedSpell("SpiritLink", false);
+	public static SpellId LifeBoost = ModManager.RegisterNewSpell("Life Boost", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.HealingWell, "Life Boost",
+					[Trait.Focus, Trait.Healing, THex, Trait.Manipulate, Trait.Necromancy, WitchLoader.TWitch],
+					"Life force from your patron floods into the target, ensuring they can continue doing your patron's will for just a little longer.",
+					"The target gains fast healing 2.",
+					Target.RangedFriend(6), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.Healing)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					target.AddQEffect(QEffect.FastHealing(2).WithExpirationAtStartOfSourcesTurn(caster, 4));
+				})
+				.WithHexCasting();
+		});
+
+	public static SpellId SpiritLink = ModManager.RegisterNewSpell("Spirit Link", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(new SideBySideIllustration(IllustrationName.GhostMage, IllustrationName.HealingWell), "Spirit Link",
+					[Trait.Divine, Trait.Occult, Trait.Focus, Trait.Healing, Trait.Manipulate],
+					"You form a spiritual link with another creature, taking in its pain.",
+					"When you Cast this Spell and at the start of each of your turns for the rest of the encounter, if the target is below maximum Hit Points, it regains 2 Hit Points (or the difference between its current and maximum Hit Points, if that's lower). You lose as many Hit Points as the target regained.\nThis is a spiritual transfer, so no effects apply that would increase the Hit Points the target regains or decrease the Hit Points you lose. This transfer also ignores any temporary Hit Points you or the target have. Since this effect doesn't involve vitality or void energy, spirit link works even if you or the target is undead. While the duration persists, you gain no benefit from regeneration or fast healing. You can Dismiss this spell, and if you're ever at 0 Hit Points, spirit link ends automatically.",
+					Target.RangedFriend(6), spellLevel, null)
+				.WithActionCost(2)
+				.WithSoundEffect(SfxName.Healing)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var hpToTransfer = 2 * spell.SpellLevel;
+					target.AddQEffect(new QEffect("Spirit Link",
+						$"You regain {hpToTransfer} every turn if hurt, and the caster loses as much.",
+						ExpirationCondition.Never, caster, IllustrationName.GhostMage)
+					{
+						StartOfSourcesTurn = async effect =>
+						{
+							if (caster.HP <= 0)
+							{
+								effect.ExpiresAt = ExpirationCondition.Immediately;
+								return;
+							}
+							
+							var actualTransferredHp = Math.Min(hpToTransfer, target.MaxHPMinusDrained - target.HP);
+
+							if (actualTransferredHp <= 0)
+								return;
+
+							// target.HealAsync(); // TODO
+							caster.TakeDamage(actualTransferredHp);
+						}
+					});
+				})
+				.WithHeighteningNumerical(spellLevel, 1, true, 1, "The number of Hit Points transferred each time increases by 2.");
+		});
+	
 	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true);
 	public static SpellId ElementalBetrayal = RegisterNotImplementedSpell("ElementalBetrayal", true);
 	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false);
@@ -224,7 +278,7 @@ public static class WitchSpells
 
 	private static SpellId RegisterNotImplementedSpell(string title, bool isHex)
 	{
-		return ModManager.RegisterNewSpell(title, 1,
+		return ModManager.RegisterNewSpell(title + " (Not implemented)", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			var spell = Spells.CreateModern(IllustrationName.DawnsburyDaysPureLogo, title,
