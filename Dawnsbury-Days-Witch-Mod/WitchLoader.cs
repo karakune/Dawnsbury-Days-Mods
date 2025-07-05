@@ -106,7 +106,7 @@ public class WitchPatronFeat : Feat
 						});
 				}
 
-				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchSpells.THex,
+				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchLoader.TWitch,
 					() => new SpellRepertoire(Ability.Intelligence, spellTradition));
 				repertoire.SpellsKnown.Add(AllSpells.CreateModernSpell(hexCantrip, null, sheet.MaximumSpellLevel,
 					false, new SpellInformation

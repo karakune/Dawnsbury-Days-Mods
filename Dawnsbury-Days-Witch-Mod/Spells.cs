@@ -26,11 +26,6 @@ public static class WitchSpells
 	{
 		PreventTakingAction = ca => ca.HasTrait(THex) ? "You already casted a Hex this round." : null,
 	}; 
-	
-	public static CombatAction WithHexCasting(this CombatAction combatAction) => combatAction.WithEffectOnSelf(creature =>
-	{
-		creature.AddQEffect(QHexCasted);
-	});
 
 	public static SpellId PatronsPuppet = ModManager.RegisterNewSpell("PatronsPuppet", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
@@ -158,13 +153,104 @@ public static class WitchSpells
 	public static SpellId VeilOfDreams = ModManager.RegisterNewSpell("Veil of Dreams", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(IllustrationName.HideousLaughter, "Veil of Dreams",
-					[Trait.Concentrate, Trait.Focus, THex, WitchLoader.TWitch],
-					"",
-					"",
-					Target.Self(), 
-					spellLevel, null)
-				.WithActionCost(2)
+			return Spells.CreateModern(IllustrationName.VeilOfConfidence, "Veil of Dreams",
+					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
+					"Your patron draws the target into a drowsy state, causing daydreams and sluggishness.",
+					$"{S.FourDegreesOfSuccessReverse(null, "As success, and any time the target uses a concentrate action, it must succeed at a DC 5 flat check or the action is disrupted.", "The target takes a –1 status penalty to Perception, attack rolls, and Will saves. This penalty increases to –2 for Will saves against sleep effects.", "The target is unaffected.")}",
+					Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.AeroBlade)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					if (result == CheckResult.CriticalSuccess)
+						return;
+					
+					var effect = new QEffect("Drowsy",
+						"You have a –1 status penalty to Perception, attack rolls, and Will saves. This penalty increases to –2 for Will saves against sleep effects.",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster,
+						illustration: IllustrationName.Blinded)
+					{
+						CannotExpireThisTurn = true,
+						CountsAsADebuff = true,
+						BonusToDefenses = (effect, action, defense) =>
+						{
+							Bonus? bonus = null;
+							if (defense == Defense.Will)
+								bonus = new Bonus(-1, BonusType.Circumstance, "Drowsy");
+							if (action != null && action.HasTrait(Trait.Sleep))
+								bonus = new Bonus(-2, BonusType.Circumstance, "Drowsy");
+							return bonus;
+						},
+						BonusToAttackRolls = (_, _, _) => new Bonus(-1, BonusType.Circumstance, "Drowsy"),
+						BonusToPerception = _ => new Bonus(-1, BonusType.Circumstance, "Drowsy")
+					};
+
+					if (result < CheckResult.Success)
+					{
+						effect.Description += " In addition, Concentrate actions have a 20% chance to be disrupted.";
+						effect.FizzleOutgoingActions = async (qf, ca, stringBuilder) =>
+						{
+							if (!ca.HasTrait(Trait.Concentrate))
+								return false;
+							
+							var flatCheck = Checks.RollFlatCheck(5);
+							stringBuilder.AppendLine("Doing a Concentrate action while drowsy: " + flatCheck.Item2);
+							return flatCheck.Item1 < CheckResult.Success;
+						};
+					}
+
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
 				.WithHexCasting();
 		});
+
+	public static SpellId LifeBoost = RegisterNotImplementedSpell("LifeBoost", true);
+	public static SpellId SpiritLink = RegisterNotImplementedSpell("SpiritLink", false);
+	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true);
+	public static SpellId ElementalBetrayal = RegisterNotImplementedSpell("ElementalBetrayal", true);
+	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false);
+	public static SpellId NeedleOfVengeance = RegisterNotImplementedSpell("NeedleOfVengeance", true);
+	public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true);
+	public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false);
+	public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true);
+	public static SpellId PersonalBlizzard = RegisterNotImplementedSpell("PersonalBlizzard", true);
+	public static SpellId WallOfWind = RegisterNotImplementedSpell("WallOfWind", false);
+	
+	private static CombatAction WithHexCasting(this CombatAction combatAction) => combatAction.WithEffectOnSelf(creature =>
+	{
+		creature.AddQEffect(QHexCasted);
+	});
+
+	private static SpellId RegisterNotImplementedSpell(string title, bool isHex)
+	{
+		return ModManager.RegisterNewSpell(title, 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			var spell = Spells.CreateModern(IllustrationName.DawnsburyDaysPureLogo, title,
+					[Trait.Concentrate],
+					"",
+					"",
+					Target.Self(),
+					spellLevel, null)
+				.WithActionCost(0)
+				.WithNotImplemented();
+
+			if (isHex)
+			{
+				spell.Traits.Add(Trait.Focus);
+				spell.Traits.Add(THex);
+				spell.Traits.Add(WitchLoader.TWitch);
+				spell = spell.WithHexCasting();
+			}
+
+			return spell;
+		});
+	}
+	
+	private static CombatAction WithNotImplemented(this CombatAction combatAction) => combatAction.WithEffectOnSelf(creature =>
+	{
+		creature.AddQEffect(new QEffect("Not Implemented", "Spell has not been implemented",
+			ExpirationCondition.ExpiresAtEndOfYourTurn, null, IllustrationName.DawnsburyDaysPureLogo));
+	});
 }

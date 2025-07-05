@@ -23,7 +23,7 @@ public static class ClassFeats
 	public static QEffect QSympStrikeUsed = new()
 	{
 		ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn
-	}; 
+	};
 	
 	public static IEnumerable<Feat> CreateFeats()
 	{
@@ -183,7 +183,7 @@ public static class ClassFeats
 	private static Feat CreateLesson(Trait rank, string name, string flavorText, SpellId hex, SpellId spell)
 	{
 		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
-			$"You gain the {AllSpells.TemplateSpells[hex].Name} hex, and you add {AllSpells.TemplateSpells[spell].Name} to your spell list.",
+			$"You gain the {AllSpells.CreateModernSpellTemplate(hex, WitchLoader.TWitch).ToSpellLink()} hex, and you add {AllSpells.CreateModernSpellTemplate(spell, WitchLoader.TWitch).ToSpellLink()} to your spell list.",
 			[rank], null)
 			.WithOnSheet(sheet =>
 			{
@@ -192,15 +192,15 @@ public static class ClassFeats
 			});
 	}
 
-	private static Feat CreateLessonElements(Trait rank, string name, string flavorText, SpellId hex, SpellId[] spell)
+	private static Feat CreateLessonElements(Trait rank, string name, string flavorText, SpellId hex, SpellId[] spells)
 	{
 		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
-				$"You gain the {AllSpells.TemplateSpells[hex].Name} hex, and you add {AllSpells.TemplateSpells[spell[0]].Name}, {AllSpells.TemplateSpells[spell[1]].Name}, {AllSpells.TemplateSpells[spell[2]].Name} and {AllSpells.TemplateSpells[spell[3]].Name} to your spell list.",
+				$"You gain the {AllSpells.CreateModernSpellTemplate(hex, WitchLoader.TWitch).ToSpellLink()} hex, and you add {AllSpells.CreateModernSpellTemplate(spells[0], WitchLoader.TWitch).ToSpellLink()}, {AllSpells.CreateModernSpellTemplate(spells[1], WitchLoader.TWitch).ToSpellLink()}, {AllSpells.CreateModernSpellTemplate(spells[2], WitchLoader.TWitch).ToSpellLink()} and {AllSpells.CreateModernSpellTemplate(spells[3], WitchLoader.TWitch).ToSpellLink()} to your spell list.",
 				[rank], null)
 			.WithOnSheet(sheet =>
 			{
 				sheet.AddFocusSpellAndFocusPoint(WitchLoader.TWitch, Ability.Intelligence, hex);
-				sheet.SpellRepertoires[WitchLoader.TWitch].AdditionalSpellsAllowed.AddRange(spell);
+				sheet.SpellRepertoires[WitchLoader.TWitch].AdditionalSpellsAllowed.AddRange(spells);
 			});
 	}
 }
