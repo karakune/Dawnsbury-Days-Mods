@@ -9,6 +9,7 @@ using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
+using Dawnsbury.Core.Possibilities;
 using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Display.Text;
@@ -209,7 +210,7 @@ public static class WitchSpells
 	public static SpellId LifeBoost = ModManager.RegisterNewSpell("Life Boost", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(IllustrationName.HealingWell, "Life Boost",
+			return Spells.CreateModern(IllustrationName.Heal, "Life Boost",
 					[Trait.Focus, Trait.Healing, THex, Trait.Manipulate, Trait.Necromancy, WitchLoader.TWitch],
 					"Life force from your patron floods into the target, ensuring they can continue doing your patron's will for just a little longer.",
 					"The target gains fast healing 2.",
@@ -226,8 +227,8 @@ public static class WitchSpells
 	public static SpellId SpiritLink = ModManager.RegisterNewSpell("Spirit Link", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(new SideBySideIllustration(IllustrationName.GhostMage, IllustrationName.HealingWell), "Spirit Link",
-					[Trait.Divine, Trait.Occult, Trait.Focus, Trait.Healing, Trait.Manipulate],
+			return Spells.CreateModern(IllustrationName.HealingWell, "Spirit Link",
+					[Trait.Divine, Trait.Occult, Trait.Healing, Trait.Manipulate],
 					"You form a spiritual link with another creature, taking in its pain.",
 					"When you Cast this Spell and at the start of each of your turns for the rest of the encounter, if the target is below maximum Hit Points, it regains 2 Hit Points (or the difference between its current and maximum Hit Points, if that's lower). You lose as many Hit Points as the target regained.\nThis is a spiritual transfer, so no effects apply that would increase the Hit Points the target regains or decrease the Hit Points you lose. This transfer also ignores any temporary Hit Points you or the target have. Since this effect doesn't involve vitality or void energy, spirit link works even if you or the target is undead. While the duration persists, you gain no benefit from regeneration or fast healing. You can Dismiss this spell, and if you're ever at 0 Hit Points, spirit link ends automatically.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -236,25 +237,54 @@ public static class WitchSpells
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
 					var hpToTransfer = 2 * spell.SpellLevel;
-					target.AddQEffect(new QEffect("Spirit Link",
-						$"You regain {hpToTransfer} every turn if hurt, and the caster loses as much.",
-						ExpirationCondition.Never, caster, IllustrationName.GhostMage)
+
+					// TODO: prevent Fast Healing from applying
+					
+					var spiritLinkEffect = new QEffect("Spirit Link",
+						$"{target.Name} regains {hpToTransfer} HP every turn if hurt, and you lose as much.",
+						ExpirationCondition.Never, caster, IllustrationName.HealingWell)
 					{
-						StartOfSourcesTurn = async effect =>
+						Id = QEffectId.RegenerationDeactivated,
+						StartOfYourPrimaryTurn = async (effect, creature) =>
 						{
-							if (caster.HP <= 0)
+							if (creature.HP <= 0)
 							{
 								effect.ExpiresAt = ExpirationCondition.Immediately;
 								return;
 							}
-							
+
 							var actualTransferredHp = Math.Min(hpToTransfer, target.MaxHPMinusDrained - target.HP);
 
 							if (actualTransferredHp <= 0)
 								return;
 
-							// target.HealAsync(); // TODO
-							caster.TakeDamage(actualTransferredHp);
+							// Heal target
+							var currentDamage = target.Damage;
+							var damageNewValue = Math.Max(currentDamage - actualTransferredHp, 0);
+							var creatureType = target.GetType();
+
+							var prop = creatureType.GetProperty("Damage");
+
+							prop?.SetValue(target, damageNewValue, null);
+
+							// Damage caster
+							creature.TakeDamage(actualTransferredHp);
+						}
+					};
+
+					caster.AddQEffect(spiritLinkEffect);
+					caster.AddQEffect(new QEffect
+					{
+						ProvideMainAction = effect =>
+						{
+							return new ActionPossibility(new CombatAction(effect.Owner, IllustrationName.HealingWell,
+									"Dismiss Spirit Link", [Trait.Concentrate], "", Target.Self())
+								.WithActionCost(1)
+								.WithEffectOnSelf(_ =>
+								{
+									spiritLinkEffect.ExpiresAt = ExpirationCondition.Immediately;
+									effect.ExpiresAt = ExpirationCondition.Immediately;
+								}));
 						}
 					});
 				})
