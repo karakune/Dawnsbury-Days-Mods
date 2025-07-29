@@ -23,8 +23,8 @@ namespace Dawnsbury.Mods.Familiars;
 public static class FamiliarFeats
 {
 	public static Trait TFamiliar = ModManager.RegisterTrait("Familiar");
-	public static Trait TFamiliarCommand = ModManager.RegisterTrait("FamiliarCommand");
-	public static Trait TFamiliarDeploy = ModManager.RegisterTrait("FamiliarDeploy");
+	public static Trait TFamiliarCommand = ModManager.RegisterTrait("FamiliarCommand", new TraitProperties("", relevant: false));
+	public static Trait TFamiliarDeploy = ModManager.RegisterTrait("FamiliarDeploy", new TraitProperties("", relevant: false));
 	public static QEffectId QHasFamiliar = ModManager.RegisterEnumMember<QEffectId>("HasFamiliar");
 
 	public static FeatName FNWitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
@@ -73,7 +73,7 @@ public static class FamiliarFeats
 		yield return CreateFamiliarFeat("Snake", IllustrationName.AnimalFormSnake, []);
 	}
 
-	private static Feat CreateFamiliarFeat(string familiarKind, Illustration illustration, List<FeatName> innateFeatNames)
+	public static Feat CreateFamiliarFeat(string familiarKind, Illustration illustration, List<FeatName> innateFeatNames)
 	{
 		return new FamiliarFeat(familiarKind, innateFeatNames.Count)
 			.WithOnSheet(sheet =>
@@ -233,7 +233,7 @@ public static class Familiar
 	public static QEffect QDeadFamiliar = new ("Dead Familiar",
 		"Your familiar has died. It will reappear upon your next long rest.")
 	{
-		StartOfCombat = async qf => qf.Owner.Occupies.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
+		StartOfCombat = async qf => qf.Owner.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
 	};
 
 	public static void Spawn(Creature master)
