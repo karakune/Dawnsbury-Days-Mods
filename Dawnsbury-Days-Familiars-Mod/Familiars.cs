@@ -63,7 +63,11 @@ public static class FamiliarFeats
 			.WithOnCreature(owner => owner.AddQEffect(new QEffect("Familiar", "You have a familiar")
 			{
 				Id = QHasFamiliar,
-				StartOfCombat = async qf => Familiar.Spawn(qf.Owner)
+				StartOfCombat = async qf =>
+				{
+					Familiar.Spawn(qf.Owner);
+					qf.Owner.AddQEffect(new QEffect { Id = Familiar.QFamiliarDeployed});
+				}
 			}));
 		
 		yield return CreateFamiliarFeat("Cauldron", Illustrations.FamiliarCauldron, [FamiliarAbilities.FNTough, FamiliarAbilities.FNConstruct]);
