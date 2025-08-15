@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using Dawnsbury.Audio;
 using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
+using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
@@ -291,19 +293,72 @@ public static class WitchSpells
 				.WithHeighteningNumerical(spellLevel, 1, true, 1, "The number of Hit Points transferred each time increases by 2.");
 		});
 	
+	public static SpellId NeedleOfVengeance = ModManager.RegisterNewSpell("Needle of Vengeance", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.MagneticPinions, "Needle of Vengeance",
+					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
+					"A long, jagged needle jabs into the target foe's psyche whenever it tries to attack a creature your patron holds in special regard.",
+					$"Choose yourself or one of your allies. The target takes {S.HeightenedVariable(2*spellLevel, 2)} mental damage any time it uses a hostile action against the named creature, with a basic Will save.",
+					Target.MultipleCreatureTargets(Target.RangedFriend(6), Target.Ranged(6)).WithMinimumTargets(2), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.Healing)
+				.WithEffectOnChosenTargets(async (spell, caster, targets) => 
+				{
+					Creature chosenAlly;
+					Creature chosenVictim;
+					
+					var chosenCreatures = targets.ChosenCreatures;
+					if (chosenCreatures[0].OwningFaction.AlliedFactionOf(caster.OwningFaction))
+					{
+						chosenAlly = chosenCreatures[0];
+						chosenVictim = chosenCreatures[1];
+					}
+					else
+					{
+						chosenAlly = chosenCreatures[1];
+						chosenVictim = chosenCreatures[0];
+					}
+					
+					var damage = 2 * spell.SpellLevel;
+					var effect = new QEffect("Needle of Vengeance", $"You take {damage} damage (basic Will save) every time you take a hostile action towards {chosenAlly.Name}",
+							ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster,
+							illustration: IllustrationName.MagneticPinions)
+					{
+						CannotExpireThisTurn = true,
+						CountsAsADebuff = true,
+						AfterYouTakeHostileAction = (qEffect, action) =>
+						{
+							if (!action.ChosenTargets.GetAllTargetCreatures().Contains(chosenAlly))
+								return;
+							
+							var willSaveResult = CommonSpellEffects.RollSavingThrow(qEffect.Owner, spell, Defense.Will, caster.ClassOrSpellDC());
+							
+							CommonSpellEffects.DealBasicDamage(spell, caster, qEffect.Owner, willSaveResult, $"{damage}", DamageKind.Mental);
+						}
+					};
+					chosenVictim.AddQEffect(effect);
+					
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHeighteningNumerical(spellLevel, 1, inCombat, 1, $"The damage increases by 2.")
+				.WithHexCasting();
+		});
+	
 	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true);
 	public static SpellId ElementalBetrayal = RegisterNotImplementedSpell("ElementalBetrayal", true);
 	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false);
-	public static SpellId NeedleOfVengeance = RegisterNotImplementedSpell("NeedleOfVengeance", true);
 	public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true);
 	public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false);
 	public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true);
 	public static SpellId PersonalBlizzard = RegisterNotImplementedSpell("PersonalBlizzard", true);
 	public static SpellId WallOfWind = RegisterNotImplementedSpell("WallOfWind", false);
 	
-	private static CombatAction WithHexCasting(this CombatAction combatAction) => combatAction.WithEffectOnSelf(creature =>
+	private static CombatAction WithHexCasting(this CombatAction combatAction) => combatAction.WithEffectOnEachTarget( 
+		async (spell, caster, target, result) =>
 	{
-		creature.AddQEffect(QHexCasted);
+		if (!caster.HasEffect(QHexCasted))
+			caster.AddQEffect(QHexCasted);
 	});
 
 	private static SpellId RegisterNotImplementedSpell(string title, bool isHex)

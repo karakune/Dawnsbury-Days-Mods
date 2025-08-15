@@ -18,7 +18,7 @@ public static class WitchLoader
 		IsClassTrait = true
 	});
 
-	public static Trait TFirstHex = ModManager.RegisterTrait("First Hex");
+	public static Trait TFirstHex = ModManager.RegisterTrait("First Hex", new TraitProperties("", relevant: false));
 
 	private static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
 	
