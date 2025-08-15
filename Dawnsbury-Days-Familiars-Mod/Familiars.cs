@@ -50,7 +50,7 @@ public static class FamiliarFeats
 							Target.Self()
 						)
 						.WithActionCost(0)
-						.WithEffectOnSelf(async _ =>
+						.WithEffectOnEachTarget(async (action, source, target, result) =>
 						{
 							Familiar.Spawn(master);
 							master.AddQEffect(new QEffect { Id = Familiar.QFamiliarDeployed});
@@ -103,12 +103,12 @@ public static class FamiliarFeats
 						var ill = Familiar.GetIllustration(master);
 						var familiar = Familiar.GetFamiliar(master);
 						
-						var combatAction = new CombatAction(master, ill, "Command Familiar", [TFamiliar],
+						var combatAction = new CombatAction(master, ill, "Command Familiar", [TFamiliar, Trait.Basic],
 							"Take 2 actions as your familiar.\n\nYou can only command your familiar once per turn.",
 							Target.Self()
 							.WithAdditionalRestriction(_ => GetFamiliarCommandRestriction(master, familiar, isDirectCommand: true)))
 							.WithActionCost(1)
-							.WithEffectOnSelf(async _ =>
+							.WithEffectOnEachTarget(async (action, source, target, result) =>
 							{
 								effect.UsedThisTurn = true;
 								if (familiar == null)

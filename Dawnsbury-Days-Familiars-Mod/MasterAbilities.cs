@@ -58,16 +58,19 @@ public static class MasterAbilities
 						var combatAction = new CombatAction(master, illustration, "Familiar Focus", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to restore one of your Focus Points.",
 								Target.Self()
-									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(master, familiar))
 									.WithAdditionalRestriction(_ =>
 									{
+										var result = FamiliarFeats.GetFamiliarCommandRestriction(master, familiar);
+										if (result != null)
+											return result;
+										
 										if (master.PersistentUsedUpResources.UsedUpActions.Contains("FamiliarFocus"))
 											return "You can only use this once per day.";
 
 										return master.Spellcasting?.FocusPoints >= master.Spellcasting?.FocusPointsMaximum ? "You need to have spent at least 1 Focus Point" : null;
 									}))
 							.WithActionCost(1)
-							.WithEffectOnSelf(async _ =>
+							.WithEffectOnEachTarget(async (action, source, target, result) =>
 							{
 								effect.UsedThisTurn = true;
 
@@ -110,9 +113,12 @@ public static class MasterAbilities
 						var combatAction = new CombatAction(master, illustration, "Restorative Familiar", [FamiliarFeats.TFamiliar, Trait.Concentrate],
 								"Your familiar uses two actions to heal you for 1d8 times half your level.",
 								Target.Self()
-									.WithAdditionalRestriction(_ => FamiliarFeats.GetFamiliarCommandRestriction(master, familiar))
 									.WithAdditionalRestriction(_ =>
 									{
+										var result = FamiliarFeats.GetFamiliarCommandRestriction(master, familiar);
+										if (result != null)
+											return result;
+										
 										if (master.PersistentUsedUpResources.UsedUpActions.Contains("RestorativeFamiliar"))
 											return "You can only use this once per day.";
 
@@ -125,7 +131,7 @@ public static class MasterAbilities
 										return familiar.DistanceTo(master) > 1 ? "Your familiar must be within 5 feet" : null;
 									}))
 							.WithActionCost(1)
-							.WithEffectOnSelf(async (action, _) => 
+							.WithEffectOnEachTarget(async (action, source, target, result) => 
 							{
 								effect.UsedThisTurn = true;
 								
