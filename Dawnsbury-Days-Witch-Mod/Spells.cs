@@ -45,7 +45,7 @@ public static class WitchSpells
 					, spellLevel, null)
 				.WithActionCost(0)
 				.WithHexCasting()
-				.WithEffectOnSelf(async master =>
+				.WithEffectOnEachTarget(async (_, master, _, _) =>
 				{
 					master.AddQEffect(new QEffect
 					{
@@ -147,7 +147,7 @@ public static class WitchSpells
 					spellLevel, null)
 				.WithActionCost(0)
 				.WithHexCasting()
-				.WithEffectOnSelf(async caster =>
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
 					if (caster.FindQEffect(QEffectId.Sustaining)?.Tag is QEffect sustainedEffect)
 						sustainedEffect.CannotExpireThisTurn = true;
@@ -282,7 +282,7 @@ public static class WitchSpells
 							return new ActionPossibility(new CombatAction(effect.Owner, IllustrationName.HealingWell,
 									"Dismiss Spirit Link", [Trait.Concentrate], "", Target.Self())
 								.WithActionCost(1)
-								.WithEffectOnSelf(_ =>
+								.WithEffectOnEachTarget(async (_, _, _, _) =>
 								{
 									spiritLinkEffect.ExpiresAt = ExpirationCondition.Immediately;
 									effect.ExpiresAt = ExpirationCondition.Immediately;
@@ -387,7 +387,7 @@ public static class WitchSpells
 		});
 	}
 	
-	private static CombatAction WithNotImplemented(this CombatAction combatAction) => combatAction.WithEffectOnSelf(creature =>
+	private static CombatAction WithNotImplemented(this CombatAction combatAction) => combatAction.WithEffectOnEachTarget(async (spell, caster, creature, result) =>
 	{
 		creature.AddQEffect(new QEffect("Not Implemented", "Spell has not been implemented",
 			ExpirationCondition.ExpiresAtEndOfYourTurn, null, IllustrationName.DawnsburyDaysPureLogo));
