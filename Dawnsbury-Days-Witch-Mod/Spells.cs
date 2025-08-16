@@ -271,27 +271,45 @@ public static class WitchSpells
 
 							// Damage caster
 							creature.TakeDamage(actualTransferredHp);
-						},
-						EndOfYourTurnDetrimentalEffect = async (effect, creature) =>
+						}
+					};
+					
+					var fastHealingBlocker = new QEffect("Fast Healing Blocker",
+						$"You cannot regain hp from Fast Healing.",
+						ExpirationCondition.Never, caster, IllustrationName.HealingWell)
+					{
+						WhenYouAcquireThis = _ =>
 						{
 							var fastHealingEffect = caster.FindQEffect(QEffectId.FastHealing);
-							if (fastHealingEffect != null && fastHealingEffect.Value != 0)
+							if (fastHealingEffect == null)
+								return;
+							
+							var healing = fastHealingEffect.StartOfYourPrimaryTurn;
+							fastHealingEffect.StartOfYourPrimaryTurn = async (effect, creature) =>
 							{
-								fastHealingEffect.Tag = fastHealingEffect.Value;
-								fastHealingEffect.Value = 0;
-							}
+								if (caster.HasEffect(spiritLinkEffect))
+									return;
+								healing?.Invoke(effect, creature);
+							};
 						},
-						WhenExpires = async effect =>
+						YouAcquireQEffect = (output, original) =>
 						{
-							var fastHealingEffect = caster.FindQEffect(QEffectId.FastHealing);
-							if (fastHealingEffect is { Value: 0, Tag: int })
+							if (original.Id != QEffectId.FastHealing)
+								return original;
+							
+							var healing = original.StartOfYourPrimaryTurn;
+							original.StartOfYourPrimaryTurn = async (effect, creature) =>
 							{
-								fastHealingEffect.Value = (int)fastHealingEffect.Tag;
-							}
+								if (caster.HasEffect(spiritLinkEffect))
+									return;
+								healing?.Invoke(effect, creature);
+							};
+							return original;
 						}
 					};
 
 					caster.AddQEffect(spiritLinkEffect);
+					caster.AddQEffect(fastHealingBlocker);
 					caster.AddQEffect(new QEffect
 					{
 						ProvideMainAction = effect =>
@@ -302,6 +320,7 @@ public static class WitchSpells
 								.WithEffectOnEachTarget(async (_, _, _, _) =>
 								{
 									spiritLinkEffect.ExpiresAt = ExpirationCondition.Immediately;
+									fastHealingBlocker.ExpiresAt = ExpirationCondition.Immediately;
 									effect.ExpiresAt = ExpirationCondition.Immediately;
 								}));
 						}
