@@ -25,6 +25,9 @@ public static class WitchLoader
 	[DawnsburyDaysModMainMethod]
 	public static void LoadMod()
 	{
+		foreach (var feat in FamiliarAbilities.CreateFeats())
+			ModManager.AddFeat(feat);
+		
 		foreach (var feat in CreateFeats())
 			ModManager.AddFeat(feat);
 		
@@ -35,7 +38,7 @@ public static class WitchLoader
 	private static IEnumerable<Feat> CreateFeats()
 	{
 		List<Feat> subclasses = [
-			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, "")
+			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, FamiliarAbilities.FNStalkingNight, "")
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),
@@ -73,11 +76,12 @@ public class WitchPatronFeat : Feat
 	{
 	}
 
-	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, string flavorText)
+	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, FeatName familiarAbility, string flavorText)
 	{
 		return new WitchPatronFeat(patronName, flavorText)
 			.WithOnSheet(sheet =>
 			{
+				sheet.GrantFeat(familiarAbility);
 				sheet.SpellTraditionsKnown.Add(spellTradition);
 				sheet.TrainInThisOrSubstitute(skill);
 				sheet.PreparedSpells.Add(WitchLoader.TWitch, new PreparedSpellSlots(Ability.Intelligence, Trait.Occult));

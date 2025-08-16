@@ -76,7 +76,7 @@ public static class FamiliarAbilities
 				yield return feat;
 	}
 
-	private static Feat[] RegisterFamiliarAbility(FeatName selectionFeatName, string technicalName, string displayName, string rulesText,
+	public static Feat[] RegisterFamiliarAbility(FeatName selectionFeatName, string technicalName, string displayName, string rulesText,
 		Action<Creature> effectOnFamiliar, List<(FeatName, string)>? prerequisiteSelectionFeats = null)
 	{
 		var familiarFeat = new Feat(ModManager.RegisterFeatName(technicalName, displayName), null, rulesText,

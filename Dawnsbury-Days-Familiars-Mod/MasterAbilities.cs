@@ -150,14 +150,14 @@ public static class MasterAbilities
 			.WithOnCreature(owner => owner.AddQEffect(GetDisplayQEffect(restorativeFamDisplay.FeatName)));
 	}
 
-	private static Feat CreateFamiliarDisplay(string technicalName, string displayName)
+	public static Feat CreateFamiliarDisplay(string technicalName, string displayName)
 	{
 		return new Feat(ModManager.RegisterFeatName($"{technicalName}Display", displayName), 
 			null, "", [FamiliarAbilities.TFamiliarAbility], null)
 			.WithOnCreature(creature => creature.AddQEffect(new QEffect(displayName, "")));
 	}
 
-	private static QEffect GetDisplayQEffect(FeatName displayed)
+	public static QEffect GetDisplayQEffect(FeatName displayed)
 	{
 		return new QEffect
 		{
