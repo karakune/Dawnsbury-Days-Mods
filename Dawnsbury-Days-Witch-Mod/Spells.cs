@@ -7,6 +7,7 @@ using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
+using Dawnsbury.Core.Creatures.Parts;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
@@ -361,8 +362,54 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 	
+	public static SpellId ElementalBetrayal = ModManager.RegisterNewSpell("Elemental Betrayal", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.ElementalBlast, "Elemental Betrayal",
+					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
+					"Your patron uses its superior command of the elements, empowering them to undermine your foe.",
+					$"Choose air, earth, metal, fire, water, or wood. The target gains weakness {S.HeightenedVariable((spellLevel + 1) / 2, 2)} to that trait.",
+					Target.Ranged(6), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.Healing)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var prompt = await caster.AskForChoiceAmongButtons(IllustrationName.ElementalBlast,
+						$"Which element should {target.Name} be weak to?",
+						["air", "earth", "metal", "fire", "water", "wood"]);
+
+					var (element, illustration) = prompt.Index switch
+					{
+						0 => (Trait.Air, IllustrationName.ElementAir),
+						1 => (Trait.Earth, IllustrationName.ElementEarth),
+						2 => (Trait.Metal, IllustrationName.ElementMetal),
+						3 => (Trait.Fire, IllustrationName.ElementFire),
+						4 => (Trait.Water, IllustrationName.ElementWater),
+						5 => (Trait.Wood, IllustrationName.ElementWood),
+						_ => (Trait.Uncommon, IllustrationName.QuestionMark)
+					};
+
+					var effect = new QEffect("Elemental Betrayal",
+						$"You have weakness {(spellLevel + 1) / 2} to {element}.",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster,
+						illustration)
+					{
+						CannotExpireThisTurn = true,
+						CountsAsADebuff = true,
+						StateCheck = qEffect => 
+						{
+							target.WeaknessAndResistance.Weaknesses.Add(new SpecialResistance(element.ToString(), (action, kind) => action?.HasTrait(element) ?? false, (spellLevel + 1) / 2, null));
+						}
+					};
+					
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHeighteningNumerical(spellLevel, 1, inCombat, 2, $"Increase the weakness by 1.")
+				.WithHexCasting();
+		});
+	
 	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true);
-	public static SpellId ElementalBetrayal = RegisterNotImplementedSpell("ElementalBetrayal", true);
 	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false);
 	public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true);
 	public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false);
