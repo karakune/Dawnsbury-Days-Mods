@@ -37,7 +37,12 @@ public static class ClassFeats
 		];
 
 		foreach (var feat in AllFeats.All.FindAll(feat => addWitchTraitTo.Contains(feat.FeatName)))
-			feat.Traits.Add(WitchLoader.TWitch);
+		{
+			if (feat is not TrueFeat tf)
+				continue;
+
+			tf.WithAllowsForAdditionalClassTrait(WitchLoader.TWitch);
+		}
 		
 		yield return new TrueFeat(ModManager.RegisterFeatName("Cackle"), 1,
 			"Your patron’s power fills you with confidence, letting you sustain a magical working even as a quick burst of laughter leaves your lips.",
