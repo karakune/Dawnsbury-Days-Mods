@@ -215,14 +215,15 @@ public static class WitchSpells
 			return Spells.CreateModern(IllustrationName.Heal, "Life Boost",
 					[Trait.Focus, Trait.Healing, THex, Trait.Manipulate, Trait.Necromancy, WitchLoader.TWitch],
 					"Life force from your patron floods into the target, ensuring they can continue doing your patron's will for just a little longer.",
-					"The target gains fast healing 2.",
+					$"The target gains fast healing {S.HeightenedVariable(2 * spellLevel, 2)}.",
 					Target.RangedFriend(6), spellLevel, null)
 				.WithActionCost(1)
 				.WithSoundEffect(SfxName.Healing)
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
-					target.AddQEffect(QEffect.FastHealing(2).WithExpirationAtStartOfSourcesTurn(caster, 4));
+					target.AddQEffect(QEffect.FastHealing(2 * spellLevel).WithExpirationAtStartOfSourcesTurn(caster, 4));
 				})
+				.WithHeighteningNumerical(spellLevel, 1, inCombat, 1, "The fast healing increases by 2.")
 				.WithHexCasting();
 		});
 
@@ -232,15 +233,13 @@ public static class WitchSpells
 			return Spells.CreateModern(IllustrationName.HealingWell, "Spirit Link",
 					[Trait.Divine, Trait.Occult, Trait.Healing, Trait.Manipulate],
 					"You form a spiritual link with another creature, taking in its pain.",
-					"When you Cast this Spell and at the start of each of your turns for the rest of the encounter, if the target is below maximum Hit Points, it regains 2 Hit Points (or the difference between its current and maximum Hit Points, if that's lower). You lose as many Hit Points as the target regained.\nThis is a spiritual transfer, so no effects apply that would increase the Hit Points the target regains or decrease the Hit Points you lose. This transfer also ignores any temporary Hit Points you or the target have. Since this effect doesn't involve vitality or void energy, spirit link works even if you or the target is undead. While the duration persists, you gain no benefit from regeneration or fast healing. You can Dismiss this spell, and if you're ever at 0 Hit Points, spirit link ends automatically.",
-					Target.RangedFriend(6), spellLevel, null)
+					$"When you Cast this Spell and at the start of each of your turns for the rest of the encounter, if the target is below maximum Hit Points, it regains {S.HeightenedVariable(2 * spellLevel, 2)} Hit Points (or the difference between its current and maximum Hit Points, if that's lower). You lose as many Hit Points as the target regained.\nThis is a spiritual transfer, so no effects apply that would increase the Hit Points the target regains or decrease the Hit Points you lose. This transfer also ignores any temporary Hit Points you or the target have.\nWhile the duration persists, you gain no benefit from regeneration or fast healing.",
+					Target.RangedFriend(6).WithAdditionalConditionOnTargetCreature((self, ally) => self == ally ? Usability.NotUsableOnThisCreature("Cannot target yourself") : Usability.Usable), spellLevel, null)
 				.WithActionCost(2)
 				.WithSoundEffect(SfxName.Healing)
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
 					var hpToTransfer = 2 * spell.SpellLevel;
-
-					// TODO: prevent Fast Healing from applying
 					
 					var spiritLinkEffect = new QEffect("Spirit Link",
 						$"{target.Name} regains {hpToTransfer} HP every turn if hurt, and you lose as much.",
@@ -271,6 +270,23 @@ public static class WitchSpells
 
 							// Damage caster
 							creature.TakeDamage(actualTransferredHp);
+						},
+						EndOfYourTurnDetrimentalEffect = async (effect, creature) =>
+						{
+							var fastHealingEffect = caster.FindQEffect(QEffectId.FastHealing);
+							if (fastHealingEffect != null && fastHealingEffect.Value != 0)
+							{
+								fastHealingEffect.Tag = fastHealingEffect.Value;
+								fastHealingEffect.Value = 0;
+							}
+						},
+						WhenExpires = async effect =>
+						{
+							var fastHealingEffect = caster.FindQEffect(QEffectId.FastHealing);
+							if (fastHealingEffect is { Value: 0, Tag: int })
+							{
+								fastHealingEffect.Value = (int)fastHealingEffect.Tag;
+							}
 						}
 					};
 
