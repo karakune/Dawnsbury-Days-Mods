@@ -164,6 +164,8 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 
+	public static SpellId NudgeFate = RegisterNotImplementedSpell("Nudge Fate", true, true);
+
 	public static SpellId Cackle = ModManager.RegisterNewSpell("Cackle", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{

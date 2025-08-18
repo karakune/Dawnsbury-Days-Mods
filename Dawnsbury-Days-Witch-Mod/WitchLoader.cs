@@ -22,6 +22,7 @@ public static class WitchLoader
 
 	private static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
 	private static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
+	private static FeatName FNSpinnerOfThreads = ModManager.RegisterFeatName("SpinnerOfThreads", "Spinner of Threads");
 	
 	[DawnsburyDaysModMainMethod]
 	public static void LoadMod()
@@ -41,6 +42,7 @@ public static class WitchLoader
 		List<Feat> subclasses = [
 			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, SpellId.Fear, FamiliarAbilities.FNStalkingNight, ""),
 			WitchPatronFeat.Create(FNFaithsFlamekeeper, Trait.Divine, Skill.Religion, WitchSpells.StokeTheHeart, SpellId.Command, FamiliarAbilities.FNRestoredSpirit, ""),
+			WitchPatronFeat.Create(FNSpinnerOfThreads, Trait.Occult, Skill.Occultism, WitchSpells.NudgeFate, SpellId.TrueStrike, FamiliarAbilities.FNBalancedLuck, ""),
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),
