@@ -192,8 +192,8 @@ public static class ClassFeats
 			[rank], null)
 			.WithOnSheet(sheet =>
 			{
-				sheet.AddFocusSpellAndFocusPoint(WitchLoader.TWitch, Ability.Intelligence, hex);
-				sheet.SpellRepertoires[WitchLoader.TWitch].AdditionalSpellsAllowed.Add(spell);
+				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, hex);
+				sheet.ClericAdditionalPreparableSpells.Add(spell);
 			});
 	}
 
@@ -204,8 +204,8 @@ public static class ClassFeats
 				[rank], null)
 			.WithOnSheet(sheet =>
 			{
-				sheet.AddFocusSpellAndFocusPoint(WitchLoader.TWitch, Ability.Intelligence, hex);
-				sheet.SpellRepertoires[WitchLoader.TWitch].AdditionalSpellsAllowed.AddRange(spells);
+				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, hex);
+				sheet.ClericAdditionalPreparableSpells.AddRange(spells);
 			});
 	}
 }

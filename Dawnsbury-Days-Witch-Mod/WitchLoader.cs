@@ -38,18 +38,18 @@ public static class WitchLoader
 	private static IEnumerable<Feat> CreateFeats()
 	{
 		List<Feat> subclasses = [
-			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, FamiliarAbilities.FNStalkingNight, "")
+			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, SpellId.Fear, FamiliarAbilities.FNStalkingNight, "")
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),
 				null, "Gain the Patron's Puppet hex and a focus point.", [TFirstHex], null)
 			.WithOnSheet(sheet =>
-				sheet.AddFocusSpellAndFocusPoint(TWitch, Ability.Intelligence, WitchSpells.PatronsPuppet));
+				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PatronsPuppet));
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPhaseFamiliar", "Phase Familiar"),
 				null, "Gain the Phase Familiar hex and a focus point.", [TFirstHex], null)
 			.WithOnSheet(sheet =>
-				sheet.AddFocusSpellAndFocusPoint(TWitch, Ability.Intelligence, WitchSpells.PhaseFamiliar));
+				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PhaseFamiliar));
 		
 		yield return new ClassSelectionFeat(ModManager.RegisterFeatName("FeatWitch", "Witch"),
 			"The Witch",
@@ -76,7 +76,7 @@ public class WitchPatronFeat : Feat
 	{
 	}
 
-	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, FeatName familiarAbility, string flavorText)
+	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, SpellId extraPreparableSpell, FeatName familiarAbility, string flavorText)
 	{
 		return new WitchPatronFeat(patronName, flavorText)
 			.WithOnSheet(sheet =>
@@ -110,13 +110,15 @@ public class WitchPatronFeat : Feat
 						});
 				}
 
-				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchLoader.TWitch,
+				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchSpells.THex,
 					() => new SpellRepertoire(Ability.Intelligence, spellTradition));
 				repertoire.SpellsKnown.Add(AllSpells.CreateModernSpell(hexCantrip, null, sheet.MaximumSpellLevel,
 					false, new SpellInformation
 					{
-						ClassOfOrigin = WitchLoader.TWitch
+						ClassOfOrigin = WitchSpells.THex
 					}));
+				
+				sheet.ClericAdditionalPreparableSpells.Add(extraPreparableSpell);
 				
 				sheet.AddAtLevel(5, values => values.SetProficiency(Trait.Fortitude, Proficiency.Expert));
 				sheet.AddAtLevel(7, values => values.SetProficiency(Trait.Spell, Proficiency.Expert));
