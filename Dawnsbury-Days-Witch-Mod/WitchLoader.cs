@@ -21,6 +21,7 @@ public static class WitchLoader
 	public static Trait TFirstHex = ModManager.RegisterTrait("First Hex", new TraitProperties("", relevant: false));
 
 	private static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
+	private static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
 	
 	[DawnsburyDaysModMainMethod]
 	public static void LoadMod()
@@ -38,7 +39,8 @@ public static class WitchLoader
 	private static IEnumerable<Feat> CreateFeats()
 	{
 		List<Feat> subclasses = [
-			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, SpellId.Fear, FamiliarAbilities.FNStalkingNight, "")
+			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, SpellId.Fear, FamiliarAbilities.FNStalkingNight, ""),
+			WitchPatronFeat.Create(FNFaithsFlamekeeper, Trait.Divine, Skill.Religion, WitchSpells.StokeTheHeart, SpellId.Command, FamiliarAbilities.FNRestoredSpirit, ""),
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),
@@ -84,7 +86,7 @@ public class WitchPatronFeat : Feat
 				sheet.GrantFeat(familiarAbility);
 				sheet.SpellTraditionsKnown.Add(spellTradition);
 				sheet.TrainInThisOrSubstitute(skill);
-				sheet.PreparedSpells.Add(WitchLoader.TWitch, new PreparedSpellSlots(Ability.Intelligence, Trait.Occult));
+				sheet.PreparedSpells.Add(WitchLoader.TWitch, new PreparedSpellSlots(Ability.Intelligence, spellTradition));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip1"));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip2"));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip3"));

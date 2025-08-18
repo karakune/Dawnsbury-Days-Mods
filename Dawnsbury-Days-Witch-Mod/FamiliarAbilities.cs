@@ -84,7 +84,7 @@ public static class FamiliarAbilities
 						var target = await source.Battle.AskToChooseACreature(source,
 							source.Battle.AllCreatures.Where(c =>
 								c.OwningFaction.AlliedFactionOf(source.OwningFaction) && source.DistanceTo(c) <= 3), 
-							IllustrationName.Heal, "Choose an ally to receive temp hp",
+							IllustrationName.Heal, "Choose an ally to receive temporary Hit Points.",
 							"Choose this one", "Pass");
 
 						if (target == null)

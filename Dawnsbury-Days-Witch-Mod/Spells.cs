@@ -137,6 +137,33 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 
+	public static SpellId StokeTheHeart = ModManager.RegisterNewSpell("StokeTheHeart", 0,
+		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
+		{
+			return Spells.CreateModern(IllustrationName.FlashForge, "Stoke the Heart",
+					[Trait.Cantrip, Trait.Concentrate, Trait.Emotion, THex, WitchLoader.TWitch],
+					"Your patron fills a creature with fervor, empowering their blows.",
+					$"The target gains a +{S.HeightenedVariable(2 + (spellLevel / 2), 2)} status bonus to damage rolls.",
+					Target.RangedFriend(6), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.ElementalBlastMetal)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var effect = new QEffect("Stoke the Heart", $"You have a +{S.HeightenedVariable(2 + (spellLevel / 2), 2)} status bonus to damage rolls.",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster,
+						illustration: IllustrationName.FlashForge)
+					{
+						CannotExpireThisTurn = true,
+						BonusToDamage = (qEffect, action, arg3) => new Bonus(2 + (spellLevel / 2), BonusType.Status, "Stoke the Heart", true) 
+					};
+
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHeighteningNumerical(spellLevel, 1, inCombat, 2, $"The status bonus to damage increases by 1.")
+				.WithHexCasting();
+		});
+
 	public static SpellId Cackle = ModManager.RegisterNewSpell("Cackle", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
@@ -428,13 +455,13 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 	
-	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true);
-	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false);
-	public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true);
-	public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false);
-	public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true);
-	public static SpellId PersonalBlizzard = RegisterNotImplementedSpell("PersonalBlizzard", true);
-	public static SpellId WallOfWind = RegisterNotImplementedSpell("WallOfWind", false);
+	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true, false);
+	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false, false);
+	public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true, false);
+	public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false, false);
+	public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true, false);
+	public static SpellId PersonalBlizzard = RegisterNotImplementedSpell("PersonalBlizzard", true, false);
+	public static SpellId WallOfWind = RegisterNotImplementedSpell("WallOfWind", false, false);
 	
 	private static CombatAction WithHexCasting(this CombatAction combatAction) => combatAction.WithEffectOnEachTarget( 
 		async (spell, caster, target, result) =>
@@ -443,9 +470,10 @@ public static class WitchSpells
 			caster.AddQEffect(QHexCasted);
 	});
 
-	private static SpellId RegisterNotImplementedSpell(string title, bool isHex)
+	private static SpellId RegisterNotImplementedSpell(string title, bool isHex, bool isCantrip)
 	{
-		return ModManager.RegisterNewSpell(title + " (Not implemented)", 1,
+		var minLevel = isCantrip ? 0 : 1;
+		return ModManager.RegisterNewSpell(title + " (Not implemented)", minLevel,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			var spell = Spells.CreateModern(IllustrationName.DawnsburyDaysPureLogo, title,
@@ -457,6 +485,9 @@ public static class WitchSpells
 				.WithActionCost(0)
 				.WithNotImplemented();
 
+			if (isCantrip)
+				spell.Traits.Add(Trait.Cantrip);
+			
 			if (isHex)
 			{
 				spell.Traits.Add(Trait.Focus);
