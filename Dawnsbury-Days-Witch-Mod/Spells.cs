@@ -24,6 +24,7 @@ namespace Dawnsbury.Mods.Classes.Witch;
 public static class WitchSpells
 {
 	public static Trait THex = ModManager.RegisterTrait("Hex");
+	private static QEffectId NudgeFateId = ModManager.RegisterEnumMember<QEffectId>("");
 
 	public static QEffect QHexCasted = new ("Hex casted",
 		"You casted a hex this round and must wait for the next round to cast another one.",
@@ -164,7 +165,75 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 
-	public static SpellId NudgeFate = RegisterNotImplementedSpell("Nudge Fate", true, true);
+	public static SpellId NudgeFate =  ModManager.RegisterNewSpell("NudgeFate", 0,
+		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
+		{
+			return Spells.CreateModern(IllustrationName.QuestionMark, "Nudge Fate",
+					[Trait.Cantrip, Trait.Concentrate, THex, WitchLoader.TWitch],
+					"The barest spin of your patron's spool is enough to alter fate.",
+					"When the target fails an attack roll, skill check, or saving throw and a +1 status bonus would turn a critical failure into a failure, or failure into a success, you grant the target a +1 status bonus to the check retroactively, changing the outcome appropriately. The spell then ends.",
+					Target.RangedFriend(6), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.Fabric)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var effect = new QEffect("Nudge Fate", $"",
+						ExpirationCondition.Never, source: caster,
+						illustration: IllustrationName.QuestionMark)
+					{
+						Id = NudgeFateId,
+						RerollSavingThrow = async (self, breakdownResult, action) =>
+						{
+							var breakdown = CombatActionExecution.BreakdownSavingThrowForTooltip(action, self.Owner, action.SavingThrow!);
+							var successDc = breakdown.TotalDC;
+							var totalRollValue = breakdownResult.TotalRollValue;
+
+							if (successDc - totalRollValue != 1 && successDc - totalRollValue != 11)
+								return RerollDirection.DoNothing;
+							
+							self.Owner.AddQEffect(new QEffect
+							{
+								ExpiresAt = ExpirationCondition.Ephemeral,
+								BonusToAllChecksAndDCs = _ => new Bonus(1, BonusType.Status, "Nudge Fate", true)
+							});
+							
+							self.ExpiresAt = ExpirationCondition.Immediately;
+
+							return RerollDirection.KeepRollButRedoCalculation;
+						},
+						RerollActiveRoll = async (self, breakdownResult, action, actionTarget) =>
+						{
+							var breakdown = CombatActionExecution.BreakdownAttackForTooltip(action, self.Owner);
+							var successDc = breakdown.TotalDC;
+							var totalRollValue = breakdownResult.TotalRollValue;
+
+							// TODO: Feint had a difference of 1 between successDc in code vs success DC in game, but elemental blast didn't. Ask Petr
+							if (successDc - totalRollValue != 1 && successDc - totalRollValue != 11)
+								return RerollDirection.DoNothing;
+							
+							self.Owner.AddQEffect(new QEffect
+							{
+								ExpiresAt = ExpirationCondition.Ephemeral,
+								BonusToAllChecksAndDCs = _ => new Bonus(1, BonusType.Status, "Nudge Fate", true)
+							});
+							
+							self.ExpiresAt = ExpirationCondition.Immediately;
+
+							return RerollDirection.KeepRollButRedoCalculation;
+						}
+					};
+
+					foreach (var creature in target.Battle.AllCreatures)
+					{
+						var instance = creature.FindQEffect(NudgeFateId);
+						if (instance != null && instance.Source == caster)
+							instance.ExpiresAt = ExpirationCondition.Immediately;
+					}
+
+					target.AddQEffect(effect);
+				})
+				.WithHexCasting();
+		});
 
 	public static SpellId Cackle = ModManager.RegisterNewSpell("Cackle", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
