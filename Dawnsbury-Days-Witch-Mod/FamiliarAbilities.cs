@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Dawnsbury.Auxiliary;
 using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CombatActions;
@@ -7,6 +9,9 @@ using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Rules;
+using Dawnsbury.Core.Mechanics.Zoning;
+using Dawnsbury.Core.Tiles;
+using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Modding;
 using Dawnsbury.Mods.Familiars;
 
@@ -140,6 +145,63 @@ public static class FamiliarAbilities
 				});
 			})
 			.WithOnCreature(owner => owner.AddQEffect(MasterAbilities.GetDisplayQEffect(balancedLuckDisplay.FeatName)));
+		
+		var freezingRimeDisplay = MasterAbilities.CreateFamiliarDisplay("WiFamFreezingRime", "Familiar of Balanced Luck");
+		yield return freezingRimeDisplay;
+		yield return new Feat(FNFreezingRime, null,
+				"When you Cast or Sustain a hex, you can cause ice to form in a 5-foot burst centered on a square of your familiar's space. Those squares are difficult terrain until the start of your next turn.", 
+				[], null)
+			.WithOnCreature((sheet, master) =>
+			{
+				var familiar = Familiar.GetFamiliar(master);
+				master.AddQEffect(new QEffect
+				{
+					AfterYouTakeAction = async (effect, action) =>
+					{
+						if (!IsCastingOrSustainingHex(action))
+							return;
+						
+						if (master.QEffects.Contains(Familiar.QDeadFamiliar))
+							return;
+						
+						// Source is master if familiar is not deployed
+						var source = familiar ?? master;
+
+						var response = await source.Battle.AskForConfirmation(source, IllustrationName.WintersClutch,
+							"(Familiar of Freezing Rime) Create a 5-foot burst of difficult terrain around your familiar?",
+							"Yes");
+						
+						if (!response)
+							return;
+
+						var tiles = source.Battle.Map.AllTiles.Where(tile => source.DistanceTo(tile) <= 1).ToList();
+
+						var burstQf = new QEffect
+						{
+							Source = source,
+							ExpiresAt = ExpirationCondition.ExpiresAtStartOfSourcesTurn
+						};
+
+						source.AddQEffect(burstQf);
+						
+						Zone.SpawnStaticAndApply(burstQf, tiles, zone =>
+						{
+							zone.TileEffectCreator = (Func<Tile, TileQEffect>) (tile => new TileQEffect(tile)
+							{
+								Illustration = (Illustration) new[]
+								{
+									IllustrationName.SnowTile1,
+									IllustrationName.SnowTile2,
+									IllustrationName.SnowTile3,
+									IllustrationName.SnowTile4
+								}.GetRandomVisualOnly(),
+								TransformsTileIntoDifficultTerrain = true,
+							});
+						});
+					}
+				});
+			})
+			.WithOnCreature(owner => owner.AddQEffect(MasterAbilities.GetDisplayQEffect(freezingRimeDisplay.FeatName)));
 	}
 
 	private static bool IsCastingOrSustainingHex(CombatAction action)

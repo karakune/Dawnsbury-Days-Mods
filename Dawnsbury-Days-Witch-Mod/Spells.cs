@@ -10,9 +10,11 @@ using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Core;
+using Dawnsbury.Core.Mechanics.Damage;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
 using Dawnsbury.Core.Possibilities;
+using Dawnsbury.Core.Roller;
 using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Display.Text;
@@ -113,7 +115,7 @@ public static class WitchSpells
 					[Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
 					"Your patron blankets the target's eyes in darkness.",
 					$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)}",
-					Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
+					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
 				.WithActionCost(1)
 				.WithSoundEffect(SfxName.DazzlingFlash)
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
@@ -235,6 +237,62 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 
+	public static SpellId ClingingIce = ModManager.RegisterNewSpell("ClingingIce", 0,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.WintersClutch, "Clinging Ice",
+					[Trait.Cantrip, Trait.Cold, THex, Trait.Manipulate, WitchLoader.TWitch],
+					$"Freezing sleet and heavy snowfall collect on the target's feet and legs, dealing {S.HeightenedVariable(spellLevel, 1)}d4 cold damage and other effects depending on its Reflex save.",
+					$"{S.FourDegreesOfSuccessReverse("The target takes double damage and a –10-foot circumstance penalty to its Speeds until the spell ends.", "The target takes full damage and a –5-foot circumstance penalty to its Speeds until the spell ends.", "The target takes half damage.", "The target is unaffected.")}",
+					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Reflex))
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.WintersClutch)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var speedReduction = 0;
+					var damage = new DamageEvent(spell, target, result,
+					[
+						new KindedDamage(DiceFormula.FromText($"{spellLevel}d4"),
+							DamageKind.Cold)
+					], result == CheckResult.CriticalFailure, result == CheckResult.Success);
+					switch (result)
+					{
+						case CheckResult.CriticalFailure:
+							speedReduction = 2;
+							await CommonSpellEffects.DealDirectDamage(damage);
+							break;
+						case CheckResult.Failure:
+							speedReduction = 1;
+							await CommonSpellEffects.DealDirectDamage(damage);
+							break;
+						case CheckResult.Success:
+							await CommonSpellEffects.DealDirectDamage(damage);
+							break;
+						case CheckResult.CriticalSuccess:
+							break;
+						default:
+							throw new ArgumentOutOfRangeException(nameof(result), result, null);
+					}
+					
+					if (result >= CheckResult.Success)
+						return;
+
+					var effect = new QEffect("Clinging Ice", $"You have a -{speedReduction * 5}-foot speed reduction.",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster,
+						illustration: IllustrationName.WintersClutch)
+					{
+						CannotExpireThisTurn = true,
+						CountsAsADebuff = true,
+						BonusToAllSpeeds = _ => new Bonus(-speedReduction, BonusType.Circumstance, caster.Name, false) 
+					};
+
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHeighteningNumerical(spellLevel, 1, inCombat, 1, "The damage increases by 1d4.")
+				.WithHexCasting();
+		});
+
 	public static SpellId Cackle = ModManager.RegisterNewSpell("Cackle", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
@@ -260,7 +318,7 @@ public static class WitchSpells
 					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
 					"Your patron draws the target into a drowsy state, causing daydreams and sluggishness.",
 					$"{S.FourDegreesOfSuccessReverse(null, "As success, and any time the target uses a concentrate action, it must succeed at a DC 5 flat check or the action is disrupted.", "The target takes a –1 status penalty to Perception, attack rolls, and Will saves. This penalty increases to –2 for Will saves against sleep effects.", "The target is unaffected.")}",
-					Target.RangedCreature(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
+					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
 				.WithActionCost(1)
 				.WithSoundEffect(SfxName.AeroBlade)
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
@@ -524,6 +582,42 @@ public static class WitchSpells
 				})
 				.WithHeighteningNumerical(spellLevel, 1, inCombat, 2, $"Increase the weakness by 1.")
 				.WithHexCasting();
+		});
+
+	public static SpellId GougingClaw = ModManager.RegisterNewSpell("Gouging Claw", 0,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.MagicFang, "Gouging Claw",
+					[
+						Trait.Attack,
+						Trait.Cantrip,
+						Trait.Manipulate,
+						Trait.Morph,
+						Trait.Primal,
+					], "You temporarily morph your limb into a clawed appendage.",
+					$"Make a melee spell attack roll. If you hit, you deal your choice of {S.HeightenedVariable(spellLevel, 1)}d6 slashing or piercing damage (whichever is better), plus {S.HeightenedVariable(spellLevel + 1, 2)} persistent bleed damage. On a critical success, you deal double damage and double bleed damage.",
+					Target.Touch(), spellLevel, null)
+				.WithSpellAttackRoll()
+				.WithSoundEffect(SfxName.AcidSplash)
+				.WithEffectOnEachTarget(async (spell, caster, target, checkResult) =>
+				{
+					var baseDamageKind =
+						target.WeaknessAndResistance.IsDamageKindSameAsOrBetterAgainstMe(DamageKind.Piercing,
+							[DamageKind.Slashing])
+							? DamageKind.Piercing
+							: DamageKind.Slashing;
+					
+					await CommonSpellEffects.DealAttackRollDamage(spell, caster, target, checkResult,
+						spellLevel + "d6", baseDamageKind);
+					
+					if (checkResult < CheckResult.Success)
+						return;
+
+					var persistentDamage = checkResult == CheckResult.CriticalSuccess ? 2 * (spellLevel + 1) : spellLevel + 1;
+					
+					target.AddQEffect(QEffect.PersistentDamage(persistentDamage.ToString(), DamageKind.Bleed));
+				}).WithHeighteningNumerical(spellLevel, 1, inCombat, 1,
+					"The damage increases by 1d6 and the persistent bleed damage increases by 1.");
 		});
 	
 	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true, false);
