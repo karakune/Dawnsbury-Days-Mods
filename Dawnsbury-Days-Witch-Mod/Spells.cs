@@ -242,8 +242,8 @@ public static class WitchSpells
 		{
 			return Spells.CreateModern(IllustrationName.WintersClutch, "Clinging Ice",
 					[Trait.Cantrip, Trait.Cold, THex, Trait.Manipulate, WitchLoader.TWitch],
-					$"Freezing sleet and heavy snowfall collect on the target's feet and legs, dealing {S.HeightenedVariable(spellLevel, 1)}d4 cold damage and other effects depending on its Reflex save.",
-					$"{S.FourDegreesOfSuccessReverse("The target takes double damage and a –10-foot circumstance penalty to its Speeds until the spell ends.", "The target takes full damage and a –5-foot circumstance penalty to its Speeds until the spell ends.", "The target takes half damage.", "The target is unaffected.")}",
+					$"Freezing sleet and heavy snowfall collect on the target's feet and legs.",
+					$"Deal {S.HeightenedVariable(spellLevel, 1)}d4 cold damage and other effects depending on the target's Reflex save.{S.FourDegreesOfSuccessReverse("The target takes double damage and a –10-foot circumstance penalty to its Speeds until the spell ends.", "The target takes full damage and a –5-foot circumstance penalty to its Speeds until the spell ends.", "The target takes half damage.", "The target is unaffected.")}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Reflex))
 				.WithActionCost(1)
 				.WithSoundEffect(SfxName.WintersClutch)
@@ -422,8 +422,15 @@ public static class WitchSpells
 							var creatureType = target.GetType();
 
 							var prop = creatureType.GetProperty("Damage");
-
 							prop?.SetValue(target, damageNewValue, null);
+
+							var unconsciousEffect = target.FindQEffect(QEffectId.Unconscious);
+							if (unconsciousEffect != null) 
+								unconsciousEffect.ExpiresAt = ExpirationCondition.Immediately;
+							
+							var dyingEffect = target.FindQEffect(QEffectId.Dying);
+							if (dyingEffect != null) 
+								dyingEffect.ExpiresAt = ExpirationCondition.Immediately;
 
 							// Damage caster
 							creature.TakeDamage(actualTransferredHp);

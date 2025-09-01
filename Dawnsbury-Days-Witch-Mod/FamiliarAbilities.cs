@@ -35,7 +35,6 @@ public static class FamiliarAbilities
 				[], null)
 			.WithOnCreature((sheet, master) =>
 			{
-				var familiar = Familiar.GetFamiliar(master);
 				master.AddQEffect(new QEffect
 				{
 					AfterYouExpendSpellcastingResources = (effect, action) =>
@@ -47,7 +46,9 @@ public static class FamiliarAbilities
 							return;
 						
 						// Source is master if familiar is not deployed
+						var familiar = Familiar.GetFamiliar(master);
 						var source = familiar ?? master;
+						
 						var enemies =
 							source.Battle.AllCreatures.Where(c => c.OwningFaction.EnemyFactionOf(source.OwningFaction));
 						foreach (var enemy in enemies)
@@ -73,7 +74,6 @@ public static class FamiliarAbilities
 				[], null)
 			.WithOnCreature((sheet, master) =>
 			{
-				var familiar = Familiar.GetFamiliar(master);
 				master.AddQEffect(new QEffect
 				{
 					AfterYouTakeAction = async (effect, action) =>
@@ -85,6 +85,7 @@ public static class FamiliarAbilities
 							return;
 						
 						// Source is master if familiar is not deployed
+						var familiar = Familiar.GetFamiliar(master);
 						var source = familiar ?? master;
 
 						var target = await source.Battle.AskToChooseACreature(source,
@@ -110,7 +111,6 @@ public static class FamiliarAbilities
 				[], null)
 			.WithOnCreature((sheet, master) =>
 			{
-				var familiar = Familiar.GetFamiliar(master);
 				master.AddQEffect(new QEffect
 				{
 					AfterYouTakeAction = async (effect, action) =>
@@ -122,6 +122,7 @@ public static class FamiliarAbilities
 							return;
 						
 						// Source is master if familiar is not deployed
+						var familiar = Familiar.GetFamiliar(master);
 						var source = familiar ?? master;
 
 						var target = await source.Battle.AskToChooseACreature(source,
@@ -153,7 +154,6 @@ public static class FamiliarAbilities
 				[], null)
 			.WithOnCreature((sheet, master) =>
 			{
-				var familiar = Familiar.GetFamiliar(master);
 				master.AddQEffect(new QEffect
 				{
 					AfterYouTakeAction = async (effect, action) =>
@@ -165,6 +165,7 @@ public static class FamiliarAbilities
 							return;
 						
 						// Source is master if familiar is not deployed
+						var familiar = Familiar.GetFamiliar(master);
 						var source = familiar ?? master;
 
 						var response = await source.Battle.AskForConfirmation(source, IllustrationName.WintersClutch,
