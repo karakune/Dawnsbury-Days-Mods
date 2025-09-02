@@ -28,19 +28,34 @@ public static class FamiliarFeats
 	public static QEffectId QHasFamiliar = ModManager.RegisterEnumMember<QEffectId>("HasFamiliar");
 
 	public static FeatName FNWitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
+	public static LongTermEffect? LDeadFamiliar;
+	public static QEffectId QDeadFamiliarMaster = ModManager.RegisterEnumMember<QEffectId>("DeadFamiliar");
 	
 	public static IEnumerable<Feat> CreateFeats()
 	{
+		LongTermEffects.EasyRegister("DeadFamiliar", LongTermEffectDuration.UntilLongRest,
+			() => new QEffect("Dead Familiar",
+				"Your familiar has died. It will reappear upon your next long rest.")
+			{
+				Id = QDeadFamiliarMaster,
+				StartOfCombat = async qf => qf.Owner.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
+			});
+		
+		LDeadFamiliar = WellKnownLongTermEffects.CreateLongTermEffect("DeadFamiliar");
+		
 		yield return new Feat(FNWitchFamiliarBoost, null, "", [], null);
 		
 		yield return new Feat(ModManager.RegisterFeatName("FamiliarAutoDeployNo", "No"), "", "", [TFamiliarDeploy], null)
-			.WithOnCreature(owner => owner.AddQEffect(new QEffect("Familiar", "You have a familiar. You may deploy it onto the battlefied during your turn using a free action")
+			.WithOnCreature(owner => owner.AddQEffect(new QEffect("Familiar", "You have a familiar. You may deploy it onto the battlefield during your turn using a free action")
 			{
 				Id = QHasFamiliar,
 				ProvideMainAction = effect =>
 				{
 					var master = effect.Owner;
 					if (master.HasEffect(Familiar.QFamiliarDeployed))
+						return null;
+
+					if (Familiar.IsFamiliarDead(master))
 						return null;
 					
 					var ill = Familiar.GetIllustration(master);
@@ -65,6 +80,9 @@ public static class FamiliarFeats
 				Id = QHasFamiliar,
 				StartOfCombat = async qf =>
 				{
+					if (Familiar.IsFamiliarDead(qf.Owner))
+						return;
+					
 					Familiar.Spawn(qf.Owner);
 					qf.Owner.AddQEffect(new QEffect { Id = Familiar.QFamiliarDeployed});
 				}
@@ -91,7 +109,7 @@ public static class FamiliarFeats
 			})
 			.WithOnCreature(owner =>
 			{
-				if (owner.HasEffect(Familiar.QDeadFamiliar))
+				if (Familiar.IsFamiliarDead(owner))
 					return;
 
 				owner.AddQEffect(new QEffect
@@ -165,7 +183,7 @@ public static class FamiliarFeats
 
 		if (familiar == null)
 		{
-			if (master.QEffects.Contains(Familiar.QDeadFamiliar))
+			if (Familiar.IsFamiliarDead(master))
 				return "Your familiar is out of combat.";
 			if (isDirectCommand)
 				return "You must deploy your familiar to use this action.";
@@ -234,11 +252,6 @@ public static class Familiar
 {
 	public static QEffectId QFamiliar = ModManager.RegisterEnumMember<QEffectId>("Familiar");
 	public static QEffectId QFamiliarDeployed = ModManager.RegisterEnumMember<QEffectId>("FamiliarDeployed");
-	public static QEffect QDeadFamiliar = new ("Dead Familiar",
-		"Your familiar has died. It will reappear upon your next long rest.")
-	{
-		StartOfCombat = async qf => qf.Owner.Overhead("no familiar", Color.Green, qf.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
-	};
 
 	public static void Spawn(Creature master)
 	{
@@ -250,9 +263,18 @@ public static class Familiar
 		familiar.Traits.Add(Trait.NoPhysicalUnarmedAttack);
 		familiar.AddQEffect(new QEffect
 		{
-			Id = QDeadFamiliar.Id,
 			Source = master,
-			WhenMonsterDies = _ => master.AddQEffect(QDeadFamiliar)
+			WhenMonsterDies = _ =>
+			{
+				master.AddQEffect(new QEffect("Dead Familiar",
+					"Your familiar has died. It will reappear upon your next long rest.")
+				{
+					Id = FamiliarFeats.QDeadFamiliarMaster
+				});
+				master.LongTermEffects ??= new LongTermEffects();
+				if (master.LongTermEffects.Effects.FirstOrDefault(lt => lt.Id == FamiliarFeats.LDeadFamiliar?.Id) == null)
+					master.LongTermEffects.Add(FamiliarFeats.LDeadFamiliar!);
+			}
 		});
 		master.Battle.SpawnCreature(familiar, master.OwningFaction, master.Occupies);
 	}
@@ -275,6 +297,11 @@ public static class Familiar
 			return string.IsNullOrWhiteSpace(nickname) ? nickname : $"{master.Name}'s Familiar";
 		
 		return $"{master.Name}'s Familiar";
+	}
+
+	public static bool IsFamiliarDead(Creature master)
+	{
+		return master.HasEffect(FamiliarFeats.QDeadFamiliarMaster);
 	}
 	
 	private static Creature Create(Creature master)

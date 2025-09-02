@@ -42,7 +42,7 @@ public static class FamiliarAbilities
 						if (!IsCastingOrSustainingHex(action))
 							return;
 						
-						if (master.QEffects.Contains(Familiar.QDeadFamiliar))
+						if (Familiar.IsFamiliarDead(master))
 							return;
 						
 						// Source is master if familiar is not deployed
@@ -81,7 +81,7 @@ public static class FamiliarAbilities
 						if (!IsCastingOrSustainingHex(action))
 							return;
 						
-						if (master.QEffects.Contains(Familiar.QDeadFamiliar))
+						if (Familiar.IsFamiliarDead(master))
 							return;
 						
 						// Source is master if familiar is not deployed
@@ -118,7 +118,7 @@ public static class FamiliarAbilities
 						if (!IsCastingOrSustainingHex(action))
 							return;
 						
-						if (master.QEffects.Contains(Familiar.QDeadFamiliar))
+						if (Familiar.IsFamiliarDead(master))
 							return;
 						
 						// Source is master if familiar is not deployed
@@ -161,7 +161,7 @@ public static class FamiliarAbilities
 						if (!IsCastingOrSustainingHex(action))
 							return;
 						
-						if (master.QEffects.Contains(Familiar.QDeadFamiliar))
+						if (Familiar.IsFamiliarDead(master))
 							return;
 						
 						// Source is master if familiar is not deployed
