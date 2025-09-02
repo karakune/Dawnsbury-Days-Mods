@@ -170,7 +170,7 @@ public static class WitchSpells
 	public static SpellId NudgeFate =  ModManager.RegisterNewSpell("NudgeFate", 0,
 		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
 		{
-			return Spells.CreateModern(IllustrationName.QuestionMark, "Nudge Fate",
+			return Spells.CreateModern(IllustrationName.Chaos, "Nudge Fate",
 					[Trait.Cantrip, Trait.Concentrate, THex, WitchLoader.TWitch],
 					"The barest spin of your patron's spool is enough to alter fate.",
 					"When the target fails an attack roll, skill check, or saving throw and a +1 status bonus would turn a critical failure into a failure, or failure into a success, you grant the target a +1 status bonus to the check retroactively, changing the outcome appropriately. The spell then ends.",
@@ -179,9 +179,9 @@ public static class WitchSpells
 				.WithSoundEffect(SfxName.Fabric)
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
-					var effect = new QEffect("Nudge Fate", $"",
+					var effect = new QEffect("Nudge Fate", "If you fail (or critically fail) an attack roll, skill check, or saving throw by 1, gain +1",
 						ExpirationCondition.Never, source: caster,
-						illustration: IllustrationName.QuestionMark)
+						illustration: IllustrationName.Chaos)
 					{
 						Id = NudgeFateId,
 						RerollSavingThrow = async (self, breakdownResult, action) =>
@@ -205,11 +205,10 @@ public static class WitchSpells
 						},
 						RerollActiveRoll = async (self, breakdownResult, action, actionTarget) =>
 						{
-							var breakdown = CombatActionExecution.BreakdownAttackForTooltip(action, self.Owner);
+							var breakdown = CombatActionExecution.BreakdownAttackForTooltip(action, actionTarget);
 							var successDc = breakdown.TotalDC;
 							var totalRollValue = breakdownResult.TotalRollValue;
 
-							// TODO: Feint had a difference of 1 between successDc in code vs success DC in game, but elemental blast didn't. Ask Petr
 							if (successDc - totalRollValue != 1 && successDc - totalRollValue != 11)
 								return RerollDirection.DoNothing;
 							
