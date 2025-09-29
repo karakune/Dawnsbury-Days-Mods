@@ -124,7 +124,7 @@ public class WitchPatronFeat : Feat
 						ClassOfOrigin = WitchSpells.THex
 					}));
 				
-				sheet.ClericAdditionalPreparableSpells.Add(extraPreparableSpell);
+				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Add(extraPreparableSpell);
 				
 				sheet.AddAtLevel(5, values => values.SetProficiency(Trait.Fortitude, Proficiency.Expert));
 				sheet.AddAtLevel(7, values => values.SetProficiency(Trait.Spell, Proficiency.Expert));
