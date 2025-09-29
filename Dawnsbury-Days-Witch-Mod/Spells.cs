@@ -39,7 +39,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Patron's Puppet",
-					[Trait.Focus, THex, WitchLoader.TWitch],
+					[Trait.Focus, THex, WitchLoader.TWitch, Trait.Uncommon],
 					"At your unspoken plea, your patron temporarily assumes control over your familiar.",
 					"You Command your familiar, allowing it to take its normal actions this turn.",
 					Target.Self()
@@ -70,7 +70,7 @@ public static class WitchSpells
 	public static SpellId PhaseFamiliar = ModManager.RegisterNewSpell("PhaseFamiliar", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Phase Familiar", [Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch],
+			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Phase Familiar", [Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
 				"Your patron momentarily recalls your familiar to the ether, shifting it from its solid, physical form into a ghostly version of itself.",
 				"Against the triggering damage, your familiar gains resistance 5 to all damage and is immune to precision damage.",
 				Target.Self(), spellLevel, null)
@@ -112,7 +112,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.AshenWind, "Shroud of Night",
-					[Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch],
+					[Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
 					"Your patron blankets the target's eyes in darkness.",
 					$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
@@ -144,7 +144,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
 		{
 			return Spells.CreateModern(IllustrationName.FlashForge, "Stoke the Heart",
-					[Trait.Cantrip, Trait.Concentrate, Trait.Emotion, THex, WitchLoader.TWitch],
+					[Trait.Cantrip, Trait.Concentrate, Trait.Emotion, THex, WitchLoader.TWitch, Trait.Uncommon],
 					"Your patron fills a creature with fervor, empowering their blows.",
 					$"The target gains a +{S.HeightenedVariable(2 + (spellLevel / 2), 2)} status bonus to damage rolls.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -171,7 +171,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
 		{
 			return Spells.CreateModern(IllustrationName.Chaos, "Nudge Fate",
-					[Trait.Cantrip, Trait.Concentrate, THex, WitchLoader.TWitch],
+					[Trait.Cantrip, Trait.Concentrate, THex, WitchLoader.TWitch, Trait.Uncommon],
 					"The barest spin of your patron's spool is enough to alter fate.",
 					"When the target fails an attack roll, skill check, or saving throw and a +1 status bonus would turn a critical failure into a failure, or failure into a success, you grant the target a +1 status bonus to the check retroactively, changing the outcome appropriately. The spell then ends.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -240,7 +240,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.WintersClutch, "Clinging Ice",
-					[Trait.Cantrip, Trait.Cold, THex, Trait.Manipulate, WitchLoader.TWitch],
+					[Trait.Cantrip, Trait.Cold, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
 					$"Freezing sleet and heavy snowfall collect on the target's feet and legs.",
 					$"Deal {S.HeightenedVariable(spellLevel, 1)}d4 cold damage and other effects depending on the target's Reflex save.{S.FourDegreesOfSuccessReverse("The target takes double damage and a –10-foot circumstance penalty to its Speeds until the spell ends.", "The target takes full damage and a –5-foot circumstance penalty to its Speeds until the spell ends.", "The target takes half damage.", "The target is unaffected.")}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Reflex))
@@ -296,7 +296,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.HideousLaughter, "Cackle",
-					[Trait.Concentrate, Trait.Focus, THex, WitchLoader.TWitch],
+					[Trait.Concentrate, Trait.Focus, THex, WitchLoader.TWitch, Trait.Uncommon],
 					"With a quick burst of laughter, you prolong a magical effect you created.",
 					"You Sustain a spell.",
 					Target.Self().WithAdditionalRestriction(caster => caster.HasEffect(QEffectId.Sustaining) ? null : "You must be able to sustain a spell."), 
@@ -314,7 +314,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.VeilOfConfidence, "Veil of Dreams",
-					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
+					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch, Trait.Uncommon],
 					"Your patron draws the target into a drowsy state, causing daydreams and sluggishness.",
 					$"{S.FourDegreesOfSuccessReverse(null, "As success, and any time the target uses a concentrate action, it must succeed at a DC 5 flat check or the action is disrupted.", "The target takes a –1 status penalty to Perception, attack rolls, and Will saves. This penalty increases to –2 for Will saves against sleep effects.", "The target is unaffected.")}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
@@ -369,7 +369,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.Heal, "Life Boost",
-					[Trait.Focus, Trait.Healing, THex, Trait.Manipulate, Trait.Necromancy, WitchLoader.TWitch],
+					[Trait.Focus, Trait.Healing, THex, Trait.Manipulate, Trait.Necromancy, WitchLoader.TWitch, Trait.Uncommon],
 					"Life force from your patron floods into the target, ensuring they can continue doing your patron's will for just a little longer.",
 					$"The target gains fast healing {S.HeightenedVariable(2 * spellLevel, 2)}.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -495,7 +495,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.MagneticPinions, "Needle of Vengeance",
-					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
+					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch, Trait.Uncommon],
 					"A long, jagged needle jabs into the target foe's psyche whenever it tries to attack a creature your patron holds in special regard.",
 					$"Choose yourself or one of your allies. The target takes {S.HeightenedVariable(2*spellLevel, 2)} mental damage any time it uses a hostile action against the named creature, with a basic Will save.",
 					Target.MultipleCreatureTargets(Target.RangedFriend(6), Target.Ranged(6)).WithMinimumTargets(2), spellLevel, null)
@@ -547,7 +547,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.ElementalBlast, "Elemental Betrayal",
-					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch],
+					[Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch, Trait.Uncommon],
 					"Your patron uses its superior command of the elements, empowering them to undermine your foe.",
 					$"Choose air, earth, metal, fire, water, or wood. The target gains weakness {S.HeightenedVariable((spellLevel + 1) / 2, 2)} to that trait.",
 					Target.Ranged(6), spellLevel, null)
@@ -664,6 +664,7 @@ public static class WitchSpells
 				spell.Traits.Add(Trait.Focus);
 				spell.Traits.Add(THex);
 				spell.Traits.Add(WitchLoader.TWitch);
+				spell.Traits.Add(Trait.Uncommon);
 				spell = spell.WithHexCasting();
 			}
 
