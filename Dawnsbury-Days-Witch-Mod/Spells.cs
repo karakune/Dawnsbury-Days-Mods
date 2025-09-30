@@ -72,39 +72,41 @@ public static class WitchSpells
 		{
 			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Phase Familiar", [Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
 				"Your patron momentarily recalls your familiar to the ether, shifting it from its solid, physical form into a ghostly version of itself.",
-				"Against the triggering damage, your familiar gains resistance 5 to all damage and is immune to precision damage.",
-				Target.Self(), spellLevel, null)
+				$"Against the triggering damage, your familiar gains resistance {S.HeightenedVariable(3 + (spellLevel * 2), 5)} to all damage and is immune to precision damage.",
+				Target.Uncastable(), spellLevel, null)
 				.WithActionCost(Constants.ACTION_COST_REACTION)
 				.WithCastsAsAReaction((qfThis, spell, castable) =>
                 {
-                    // Creature witch = qfThis.Owner;
-                    // int reduction = 1;
-                    // qfThis.AddGrantingOfTechnical(
-                    //     cr => cr.FriendOfAndNotSelf(witch) && cr.DistanceTo(witch) <= 6,
-                    //     qfTech =>
-                    //     {
-                    //         Creature ally = qfTech.Owner;
-                    //         qfTech.YouAreDealtDamage = async (qfTech2, attacker, dStuff, defender) =>
-                    //         {
-                    //             if (!await witch.AskToUseReaction(
-                    //                     $"{{b}}Protector's Sacrifice {{icon:Reaction}}{{/b}}\n{ally} is about to take {dStuff.Amount} damage. Redirect {{b}}{reduction}{{/b}} of that damage to yourself?\n{{Red}}Focus Points: {witch.Spellcasting?.FocusPoints ?? 0}{{/Red}}"))
-                    //                 return null;
-                    //             
-                    //             witch.Spellcasting?.UseUpSpellcastingResources(spell);
-                    //
-                    //             int taken = Math.Min(dStuff.Amount, reduction);
-                    //             
-                    //             witch.TakeDamage(taken);
-                    //             witch.Occupies.Overhead(
-                    //                 "-"+taken, Color.Red,
-                    //                 $"{witch.Name} redirects {taken} damage to themselves.", "Damage",
-                    //                 $"{{b}}{reduction} of {dStuff.Amount}{{/b}} Protector's sacrifice\n{{b}}= {taken}{{/b}}\n\n{{b}}{taken}{{/b}} Total damage", true);
-                    //
-                    //             return new ReduceDamageModification(reduction, "Protector's sacrifice");
-                    //         };
-                    //     });
+                    var witch = qfThis.Owner;
+                    var reduction = 3 + (spellLevel * 2);
+                    qfThis.AddGrantingOfTechnical(
+                        cr => cr.FriendOfAndNotSelf(witch) && cr.DistanceTo(witch) <= 12,
+                        qfTech =>
+                        {
+	                        var familiar = Familiar.GetFamiliar(witch);
+                            var ally = qfTech.Owner;
+                            if (familiar == null || ally != familiar)
+	                            return;
+
+                            qfTech.YouAreDealtDamage = async (qfTech2, attacker, damageStuff, defender) =>
+                            {
+	                            var focusPoints = witch.Spellcasting?.FocusPoints ?? 0;
+
+	                            if (focusPoints <= 0)
+		                            return null;
+	                            
+                                if (!await witch.AskToUseReaction($"{{b}}Phase Familiar {{icon:Reaction}}{{/b}}\n{ally} is about to take {damageStuff.Amount} damage. Grant resistance {{b}}{reduction}{{/b}} to all damage and immunity to precision damage for this attack?\n{{Red}}Focus Points: {focusPoints}{{/Red}}"))
+                                    return null;
+                                
+                                witch.Spellcasting?.UseUpSpellcastingResources(spell);
+
+                                // TODO: immunity fails because YouAreDealtDamage happens after resistance calculation
+                                defender.AddQEffect(QEffect.TraitImmunity(Trait.PrecisionDamage).WithExpirationEphemeral());
+                                return new ReduceDamageModification(reduction, "Phase Familiar");
+                            };
+                        });
                 })
-                .WithHeighteningNumerical(spellLevel, 1, inCombat, 1, "The damage you redirect increases by 3.")
+                .WithHeighteningNumerical(spellLevel, 1, inCombat, 1, "Increase the resistance by 2.")
 				.WithHexCasting();
 		});
 
