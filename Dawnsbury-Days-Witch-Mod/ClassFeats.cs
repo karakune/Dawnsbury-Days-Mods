@@ -166,20 +166,20 @@ public static class ClassFeats
 			[
 				CreateLesson(TBasicLesson, "Dreams", "Dreams can be a window to greater insights.", WitchSpells.VeilOfDreams, SpellId.Sleep),
 				CreateLesson(TBasicLesson, "Life", "Life can be shared.", WitchSpells.LifeBoost, WitchSpells.SpiritLink),
-				CreateLesson(TBasicLesson, "Protection", "An ounce of protection is worth a pound of cure.", WitchSpells.BloodWard, SpellId.MageArmor),
+				// CreateLesson(TBasicLesson, "Protection", "An ounce of protection is worth a pound of cure.", WitchSpells.BloodWard, SpellId.MageArmor),
 				CreateLessonElements(TBasicLesson, "Elements", "Natural disasters and inclement weather hold more power than the mightiest creature.", WitchSpells.ElementalBetrayal, [SpellId.BurningHands, WitchSpells.GustOfWind, SpellId.HydraulicPush, SpellId.PummelingRubble]),
 				CreateLesson(TBasicLesson, "Vengeance", "Suffer not even the smallest slights.", WitchSpells.NeedleOfVengeance, SpellId.PhantomPain)
 			]);
 
-		yield return new TrueFeat(ModManager.RegisterFeatName("Greater Lesson"), 4,
-				"",
-				"",
-				[WitchLoader.TWitch],
-				[
-					CreateLesson(TGreaterLesson, "Mischief", "Nothing's wrong with some mischief, now and then.", WitchSpells.DeceiverCloak, WitchSpells.MadMonkeys),
-					CreateLesson(TGreaterLesson, "Shadow", "A shadow is far from empty — it contains something of the person who casts it.", WitchSpells.MaliciousShadow, SpellId.ChillingDarkness),
-					CreateLesson(TGreaterLesson, "Snow", "Emulate snow, for it can snuff out life despite its gentleness.", WitchSpells.PersonalBlizzard, WitchSpells.WallOfWind)
-				]);
+		// yield return new TrueFeat(ModManager.RegisterFeatName("Greater Lesson"), 4,
+		// 		"",
+		// 		"",
+		// 		[WitchLoader.TWitch],
+		// 		[
+		// 			CreateLesson(TGreaterLesson, "Mischief", "Nothing's wrong with some mischief, now and then.", WitchSpells.DeceiverCloak, WitchSpells.MadMonkeys),
+		// 			CreateLesson(TGreaterLesson, "Shadow", "A shadow is far from empty — it contains something of the person who casts it.", WitchSpells.MaliciousShadow, SpellId.ChillingDarkness),
+		// 			CreateLesson(TGreaterLesson, "Snow", "Emulate snow, for it can snuff out life despite its gentleness.", WitchSpells.PersonalBlizzard, WitchSpells.WallOfWind)
+		// 		]);
 
 		// yield return new TrueFeat(ModManager.RegisterFeatName("WitchBottle", "Witch's Bottle"), 8,
 		// 	"",
@@ -191,7 +191,7 @@ public static class ClassFeats
 	private static Feat CreateLesson(Trait rank, string name, string flavorText, SpellId hex, SpellId spell)
 	{
 		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
-			$"You gain the {AllSpells.CreateModernSpellTemplate(hex, WitchLoader.TWitch).ToSpellLink()} hex, and you add {AllSpells.CreateModernSpellTemplate(spell, WitchLoader.TWitch).ToSpellLink()} to your spell list.",
+			$"You gain the {AllSpells.CreateSpellLink(hex, WitchSpells.THex)} hex, and you add {AllSpells.CreateSpellLink(spell, WitchLoader.TWitch)} to your spell list.",
 			[rank], null)
 			.WithOnSheet(sheet =>
 			{
@@ -203,7 +203,7 @@ public static class ClassFeats
 	private static Feat CreateLessonElements(Trait rank, string name, string flavorText, SpellId hex, SpellId[] spells)
 	{
 		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
-				$"You gain the {AllSpells.CreateModernSpellTemplate(hex, WitchLoader.TWitch).ToSpellLink()} hex, and you add {AllSpells.CreateModernSpellTemplate(spells[0], WitchLoader.TWitch).ToSpellLink()}, {AllSpells.CreateModernSpellTemplate(spells[1], WitchLoader.TWitch).ToSpellLink()}, {AllSpells.CreateModernSpellTemplate(spells[2], WitchLoader.TWitch).ToSpellLink()} and {AllSpells.CreateModernSpellTemplate(spells[3], WitchLoader.TWitch).ToSpellLink()} to your spell list.",
+				$"You gain the {AllSpells.CreateSpellLink(hex, WitchSpells.THex)} hex, and you add {AllSpells.CreateSpellLink(spells[0], WitchLoader.TWitch)}, {AllSpells.CreateSpellLink(spells[1], WitchLoader.TWitch)}, {AllSpells.CreateSpellLink(spells[2], WitchLoader.TWitch)} and {AllSpells.CreateSpellLink(spells[3], WitchLoader.TWitch)} to your spell list.",
 				[rank], null)
 			.WithOnSheet(sheet =>
 			{

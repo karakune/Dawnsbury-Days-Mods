@@ -626,13 +626,13 @@ public static class WitchSpells
 					"The damage increases by 1d6 and the persistent bleed damage increases by 1.");
 		});
 	
-	public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true, false);
+	// public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true, false);
 	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false, false);
-	public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true, false);
-	public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false, false);
-	public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true, false);
-	public static SpellId PersonalBlizzard = RegisterNotImplementedSpell("PersonalBlizzard", true, false);
-	public static SpellId WallOfWind = RegisterNotImplementedSpell("WallOfWind", false, false);
+	// public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true, false);
+	// public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false, false);
+	// public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true, false);
+	// public static SpellId PersonalBlizzard = RegisterNotImplementedSpell("PersonalBlizzard", true, false);
+	// public static SpellId WallOfWind = RegisterNotImplementedSpell("WallOfWind", false, false);
 	
 	private static CombatAction WithHexCasting(this CombatAction combatAction) => combatAction.WithEffectOnEachTarget( 
 		async (spell, caster, target, result) =>
@@ -647,10 +647,10 @@ public static class WitchSpells
 		return ModManager.RegisterNewSpell(title + " (Not implemented)", minLevel,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			var spell = Spells.CreateModern(IllustrationName.DawnsburyDaysPureLogo, title,
+			var spell = Spells.CreateModern(IllustrationName.DawnsburyDaysPureLogo, title + " (Not Implemented)",
 					[Trait.Concentrate],
 					"",
-					"",
+					"This spell  has not been implemented.",
 					Target.Self(),
 					spellLevel, null)
 				.WithActionCost(0)
