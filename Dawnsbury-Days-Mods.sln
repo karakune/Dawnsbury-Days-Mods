@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.Classes.Witc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.Familiars", "Dawnsbury-Days-Familiars-Mod\Dawnsbury.Mods.Familiars.csproj", "{F99D5A23-CE0A-472A-89F3-758FF127A5AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.MagusTraditions", "Dawnsbury.Mods.MagusTraditions\Dawnsbury.Mods.MagusTraditions.csproj", "{DA6B8307-44CC-493B-A902-A44C713180D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6B8307-44CC-493B-A902-A44C713180D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6B8307-44CC-493B-A902-A44C713180D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6B8307-44CC-493B-A902-A44C713180D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6B8307-44CC-493B-A902-A44C713180D1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
