@@ -22,6 +22,11 @@ public static class MagusTraditionsLoader
 		{
 			sheet.AddSelectionOption(new SingleFeatSelectionOption("SpellTradition", "Magus Spell Tradition", -1, feat => feat.HasTrait(TTradition)));
 		});
+		
+		AllFeats.GetFeatByStringFromCustomName("MagusDedication")?.WithOnSheet(sheet =>
+		{
+			sheet.AddSelectionOption(new SingleFeatSelectionOption("SpellTradition", "Magus Spell Tradition", -1, feat => feat.HasTrait(TTradition)));
+		});
 	}
 
 	private static IEnumerable<Feat> CreateFeats()
