@@ -37,7 +37,7 @@ public static class FamiliarAbilities
 			{
 				master.AddQEffect(new QEffect
 				{
-					AfterYouExpendSpellcastingResources = (effect, action) =>
+					AfterYouTakeAction = async (effect, action) =>
 					{
 						if (!IsCastingOrSustainingHex(action))
 							return;
@@ -147,7 +147,7 @@ public static class FamiliarAbilities
 			})
 			.WithOnCreature(owner => owner.AddQEffect(MasterAbilities.GetDisplayQEffect(balancedLuckDisplay.FeatName)));
 		
-		var freezingRimeDisplay = MasterAbilities.CreateFamiliarDisplay("WiFamFreezingRime", "Familiar of Balanced Luck");
+		var freezingRimeDisplay = MasterAbilities.CreateFamiliarDisplay("WiFamFreezingRime", "Familiar of Freezing Rime");
 		yield return freezingRimeDisplay;
 		yield return new Feat(FNFreezingRime, null,
 				"When you Cast or Sustain a hex, you can cause ice to form in a 5-foot burst centered on a square of your familiar's space. Those squares are difficult terrain until the start of your next turn.", 
