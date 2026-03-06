@@ -249,7 +249,7 @@ public class DeployableFamiliarTag : FamiliarTag
 		return values.Tags.GetValueOrDefault(Familiars.FAMILIAR_KEY) as DeployableFamiliarTag;
 	}
 
-	public static bool FamiliarIsDead(Creature master) =>
+	public static bool IsFamiliarDead(Creature master) =>
 		master.HasEffect(ModData.QEffectIds.YourFamiliarIsDead);
 
 	public static Creature? FindMaster(Creature familiar) =>

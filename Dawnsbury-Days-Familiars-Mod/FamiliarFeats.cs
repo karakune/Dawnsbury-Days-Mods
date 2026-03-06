@@ -52,7 +52,7 @@ public static class FamiliarFeats
 							StateCheck = qfThis =>
 							{
 								CornerIllustration? cornerIllCur = qfThis.Owner.Illustration as CornerIllustration;
-								bool shouldHideFamiliar = qfThis.Owner.HasEffect(ModData.QEffectIds.FamiliarDeployed) || DeployableFamiliarTag.FamiliarIsDead(qfThis.Owner);
+								bool shouldHideFamiliar = qfThis.Owner.HasEffect(ModData.QEffectIds.FamiliarDeployed) || DeployableFamiliarTag.IsFamiliarDead(qfThis.Owner);
 								if (shouldHideFamiliar)
 								{
 									if (cornerIllCur is not null) // Only need to do this once
@@ -138,7 +138,7 @@ public static class FamiliarFeats
 			.WithOnCreature(self =>
 			{
 				if (DeployableFamiliarTag.FindTag(self) is null
-				    || DeployableFamiliarTag.FamiliarIsDead(self))
+				    || DeployableFamiliarTag.IsFamiliarDead(self))
 					return;
 
 				QEffect commandGranter = new QEffect
@@ -149,7 +149,7 @@ public static class FamiliarFeats
 					ProvideMainAction = qfThis =>
 					{
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not { } fTag
-						    || DeployableFamiliarTag.FamiliarIsDead(self)
+						    || DeployableFamiliarTag.IsFamiliarDead(self)
 						    || DeployableFamiliarTag.FindFamiliar(qfThis.Owner) is not { } familiar)
 							return null;
 						if (qfThis.UsedThisTurn)
@@ -213,7 +213,7 @@ public static class FamiliarFeats
 							return null;
 
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not {} fTag
-						    || DeployableFamiliarTag.FamiliarIsDead(qfThis.Owner))
+						    || DeployableFamiliarTag.IsFamiliarDead(qfThis.Owner))
 							return null;
 						
 						// TODO: rework into commanding the familiar with one fewer action. Increase cost from 0 to 1.
@@ -248,7 +248,7 @@ public static class FamiliarFeats
 					StartOfCombat = async qfThis =>
 					{
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not {} fTag
-						    || DeployableFamiliarTag.FamiliarIsDead(qfThis.Owner))
+						    || DeployableFamiliarTag.IsFamiliarDead(qfThis.Owner))
 							return;
 						
 						fTag.Spawn(qfThis.Owner);

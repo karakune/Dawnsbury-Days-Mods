@@ -10,6 +10,7 @@ using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Modding;
+using Dawnsbury.Mods.DeployableFamiliars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
@@ -79,8 +80,8 @@ public static class WitchLoader
 			.WithOnSheet(sheet =>
 			{
 				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(TFirstHex)));
-				sheet.GrantFeat(Familiars.FamiliarFeats.FNWitchFamiliarBoost);
-				sheet.GrantFeat(Familiars.ClassFeats.FNFamiliar);
+				sheet.GrantFeat(FeatName.ClassFamiliar);
+				sheet.GrantFeat(ModData.FeatNames.WitchFamiliarBoost);
 			});
 	}
 }

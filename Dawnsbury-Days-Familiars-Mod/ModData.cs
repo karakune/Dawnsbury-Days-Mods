@@ -100,7 +100,7 @@ public static class ModData
         {
             if (DeployableFamiliarTag.FindTag(self) is not { } fTag)
                 return "You don't have a familiar.";
-            if (DeployableFamiliarTag.FamiliarIsDead(self))
+            if (DeployableFamiliarTag.IsFamiliarDead(self))
                 return "Your familiar is dead.";
             Creature? familiar = DeployableFamiliarTag.FindFamiliar(self);
             if (familiar is null)

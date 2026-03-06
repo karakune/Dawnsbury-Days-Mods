@@ -166,4 +166,39 @@ public static class FamiliarAbilities
 		familiarAbility.FeatGroup = featGroup;
 		return familiarAbility;
 	}
+
+	/// <summary>
+	/// Creates a familiar ability feat suited for Deployable Familiar functionality.
+	/// </summary>
+	/// <param name="featName">The <see cref="FeatName"/> of the familiar ability.</param>
+	/// <param name="featGroup">One of the modded <see cref="ModData.FeatGroups"/>.</param>
+	/// <param name="flavorText">The familiar ability's flavor text (if any).</param>
+	/// <param name="rulesText">The rules text of the familiar ability.</param>
+	/// <param name="modifyMasterInnate">The master also gets an innate QEffect from this ability, even if it's purely cosmetic. This is that QF to be modified. It always needs a description, but you can modify it further (such as to add <see cref="QEffectId.Swimming"/>).</param>
+	/// <param name="alternateIllustration">See: <see cref="Familiars.CreateFamiliarAbility"/>.</param>
+	/// <returns></returns>
+	public static Feat DeployableMasterAbility(
+		FeatName featName,
+		FeatGroup? featGroup,
+		string? flavorText,
+		string rulesText,
+		Action<QEffect> modifyMasterInnate,
+		Illustration? alternateIllustration = null)
+	{
+		Feat masterAbility = Familiars.CreateFamiliarAbility(featName, flavorText, rulesText, alternateIllustration)
+			.WithPrerequisite(
+				values => DeployableFamiliarTag.FindTag(values) is not null,
+				"You must have a deployable familiar feat.")
+			.WithOnCreature((sheet, master) =>
+			{
+				QEffect innate = new QEffect(
+					featName.HumanizeTitleCase2(),
+					"[INNATE DESCRIPTION NOT SET]");
+				modifyMasterInnate.Invoke(innate);
+				master.AddQEffect(innate);
+			});
+		masterAbility.Traits.Insert(1, ModData.Traits.ModName);
+		masterAbility.FeatGroup = featGroup;
+		return masterAbility;
+	}
 }
