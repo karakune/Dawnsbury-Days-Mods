@@ -2,9 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.Classes.Witch", "Dawnsbury-Days-Witch-Mod\Dawnsbury.Mods.Classes.Witch.csproj", "{6F18FB86-A933-4506-AF7B-975C6A50F260}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.Familiars", "Dawnsbury-Days-Familiars-Mod\Dawnsbury.Mods.Familiars.csproj", "{F99D5A23-CE0A-472A-89F3-758FF127A5AE}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.MagusTraditions", "Dawnsbury.Mods.MagusTraditions\Dawnsbury.Mods.MagusTraditions.csproj", "{DA6B8307-44CC-493B-A902-A44C713180D1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.DeployableFamiliars", "Dawnsbury-Days-Familiars-Mod\Dawnsbury.Mods.DeployableFamiliars.csproj", "{8A18C096-C192-43F0-9489-314DA0A402C0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.Weapons", "Dawnsbury.Mods.Weapons\Dawnsbury.Mods.Weapons.csproj", "{A6532829-4DEA-462E-B0B7-065AC0ABD628}"
 EndProject
@@ -18,14 +18,14 @@ Global
 		{6F18FB86-A933-4506-AF7B-975C6A50F260}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F18FB86-A933-4506-AF7B-975C6A50F260}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F18FB86-A933-4506-AF7B-975C6A50F260}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F99D5A23-CE0A-472A-89F3-758FF127A5AE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA6B8307-44CC-493B-A902-A44C713180D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA6B8307-44CC-493B-A902-A44C713180D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA6B8307-44CC-493B-A902-A44C713180D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA6B8307-44CC-493B-A902-A44C713180D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A18C096-C192-43F0-9489-314DA0A402C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A18C096-C192-43F0-9489-314DA0A402C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A18C096-C192-43F0-9489-314DA0A402C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A18C096-C192-43F0-9489-314DA0A402C0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Release|Any CPU.ActiveCfg = Release|Any CPU

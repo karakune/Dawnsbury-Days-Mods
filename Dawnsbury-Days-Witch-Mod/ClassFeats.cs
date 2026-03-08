@@ -28,7 +28,7 @@ public static class ClassFeats
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		HashSet<FeatName> addWitchTraitTo = [
-			Familiars.ClassFeats.FNEnhancedFamiliar,
+			FeatName.DawnsburyEnhancedFamiliar,
 			FeatName.Counterspell,
 			FeatName.ReachSpell,
 			FeatName.WidenSpell,
@@ -43,9 +43,10 @@ public static class ClassFeats
 			tf.WithAllowsForAdditionalClassTrait(WitchLoader.TWitch);
 		}
 
+		// TODO: incredible familiar not in base game?
 		// Incredible Familiar does not initially have a class prerequisite, so WithAllowsForAdditionalClassTrait wouldn't work
-		var incredibleFamiliar = AllFeats.All.Find(feat => feat.FeatName == Familiars.ClassFeats.FNIncredibleFamiliar);
-		incredibleFamiliar?.Prerequisites.Add(new ClassPrerequisite([WitchLoader.TWitch]));
+		// var incredibleFamiliar = AllFeats.All.Find(feat => feat.FeatName == Familiars.ClassFeats.FNIncredibleFamiliar);
+		// incredibleFamiliar?.Prerequisites.Add(new ClassPrerequisite([WitchLoader.TWitch]));
 
 		yield return new TrueFeat(ModManager.RegisterFeatName("Cackle"), 1,
 			"Your patron’s power fills you with confidence, letting you sustain a magical working even as a quick burst of laughter leaves your lips.",

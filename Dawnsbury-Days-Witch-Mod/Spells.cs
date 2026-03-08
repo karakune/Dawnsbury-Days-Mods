@@ -19,7 +19,7 @@ using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
-using Dawnsbury.Mods.Familiars;
+using Dawnsbury.Mods.DeployableFamiliars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
@@ -44,20 +44,14 @@ public static class WitchSpells
 					"You Command your familiar, allowing it to take its normal actions this turn.",
 					Target.Self()
 						.WithAdditionalRestriction(master =>
-							FamiliarFeats.GetFamiliarCommandRestriction(master, Familiar.GetFamiliar(master),
-								isDirectCommand: true))
+							ModData.CommonRequirements.WhyCannotCommand(master, isDirectCommand: true))
 					, spellLevel, null)
 				.WithActionCost(0)
 				.WithHexCasting()
+				.WithActionId(ModData.ActionIds.CommandFamiliar)
 				.WithEffectOnEachTarget(async (_, master, _, _) =>
 				{
-					master.AddQEffect(new QEffect
-					{
-						Traits = [FamiliarFeats.TFamiliarCommand], UsedThisTurn = true,
-						ExpiresAt = ExpirationCondition.ExpiresAtStartOfYourTurn
-					});
-
-					var familiar = Familiar.GetFamiliar(master);
+					var familiar = DeployableFamiliarTag.FindFamiliar(master);
 					if (familiar == null)
 						return;
 
@@ -83,7 +77,7 @@ public static class WitchSpells
                         cr => cr.FriendOfAndNotSelf(witch) && cr.DistanceTo(witch) <= 12,
                         qfTech =>
                         {
-	                        var familiar = Familiar.GetFamiliar(witch);
+	                        var familiar = DeployableFamiliarTag.FindFamiliar(witch);
                             var ally = qfTech.Owner;
                             if (familiar == null || ally != familiar)
 	                            return;
