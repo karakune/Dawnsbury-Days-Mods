@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.MagusTraditi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.DeployableFamiliars", "Dawnsbury-Days-Familiars-Mod\Dawnsbury.Mods.DeployableFamiliars.csproj", "{8A18C096-C192-43F0-9489-314DA0A402C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dawnsbury.Mods.Weapons", "Dawnsbury.Mods.Weapons\Dawnsbury.Mods.Weapons.csproj", "{A6532829-4DEA-462E-B0B7-065AC0ABD628}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{8A18C096-C192-43F0-9489-314DA0A402C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A18C096-C192-43F0-9489-314DA0A402C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A18C096-C192-43F0-9489-314DA0A402C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6532829-4DEA-462E-B0B7-065AC0ABD628}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
