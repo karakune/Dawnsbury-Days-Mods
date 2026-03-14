@@ -521,14 +521,14 @@ public static class WitchSpells
 					{
 						CannotExpireThisTurn = true,
 						CountsAsADebuff = true,
-						AfterYouTakeHostileAction = (qEffect, action) =>
+						AfterYouTakeHostileAction = async (qEffect, action) =>
 						{
 							if (!action.ChosenTargets.GetAllTargetCreatures().Contains(chosenAlly))
 								return;
 							
-							var willSaveResult = CommonSpellEffects.RollSavingThrow(qEffect.Owner, spell, Defense.Will, caster.ClassOrSpellDC());
+							var willSaveResult = await CommonSpellEffects.RollSavingThrowAsync(qEffect.Owner, spell, Defense.Will, caster.ClassOrSpellDC());
 							
-							CommonSpellEffects.DealBasicDamage(spell, caster, qEffect.Owner, willSaveResult, $"{damage}", DamageKind.Mental);
+							await CommonSpellEffects.DealBasicDamage(spell, caster, qEffect.Owner, willSaveResult, $"{damage}", DamageKind.Mental);
 						}
 					};
 					chosenVictim.AddQEffect(effect);
