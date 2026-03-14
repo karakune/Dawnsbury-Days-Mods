@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Dawnsbury.Auxiliary;
 using Dawnsbury.Core;
 using Dawnsbury.Core.CharacterBuilder.Feats;
@@ -63,7 +60,8 @@ public static class FamiliarAbilities
 						enemy.AddQEffect(QEffect.Frightened(1));
 					}
 				};
-			}
+			},
+			witchSubclassPrerequisite: WitchLoader.FNStarlessShadow
 			);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
@@ -100,7 +98,8 @@ public static class FamiliarAbilities
 					var tempHp = 2 + (master.Level / 2);
 					target.GainTemporaryHP(tempHp);
 				};
-			}
+			},
+			witchSubclassPrerequisite: WitchLoader.FNFaithsFlamekeeper
 		);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
@@ -143,7 +142,8 @@ public static class FamiliarAbilities
 							: null
 					});
 				};
-			}
+			},
+			witchSubclassPrerequisite: WitchLoader.FNSpinnerOfThreads
 		);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
@@ -199,7 +199,8 @@ public static class FamiliarAbilities
 						});
 					});
 				};
-			}
+			},
+			witchSubclassPrerequisite: WitchLoader.FNSilenceInSnow
 		);
 	}
 

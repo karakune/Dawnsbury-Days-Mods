@@ -154,7 +154,7 @@ public static class FamiliarAbilities
 				fTag.WithOnFamiliarSpawn(familiar =>
 				{
 					QEffect innate = new QEffect(
-						featName.HumanizeTitleCase2(),
+						Feat.ToDisplayName(featName),
 						"[INNATE DESCRIPTION NOT SET]");
 					modifyFamiliarInnate.Invoke(innate);
 					familiar.AddQEffect(innate);
@@ -175,6 +175,7 @@ public static class FamiliarAbilities
 	/// <param name="flavorText">The familiar ability's flavor text (if any).</param>
 	/// <param name="rulesText">The rules text of the familiar ability.</param>
 	/// <param name="modifyMasterInnate">The master also gets an innate QEffect from this ability, even if it's purely cosmetic. This is that QF to be modified. It always needs a description, but you can modify it further (such as to add <see cref="QEffectId.Swimming"/>).</param>
+	/// <param name="witchSubclassPrerequisite">Witch subclass prerequisite feat</param>
 	/// <param name="alternateIllustration">See: <see cref="Familiars.CreateFamiliarAbility"/>.</param>
 	/// <returns></returns>
 	public static Feat DeployableMasterAbility(
@@ -183,7 +184,8 @@ public static class FamiliarAbilities
 		string? flavorText,
 		string rulesText,
 		Action<QEffect> modifyMasterInnate,
-		Illustration? alternateIllustration = null)
+		Illustration? alternateIllustration = null,
+		FeatName? witchSubclassPrerequisite = null)
 	{
 		Feat masterAbility = Familiars.CreateFamiliarAbility(featName, flavorText, rulesText, alternateIllustration)
 			.WithPrerequisite(
@@ -192,11 +194,13 @@ public static class FamiliarAbilities
 			.WithOnCreature((sheet, master) =>
 			{
 				QEffect innate = new QEffect(
-					featName.HumanizeTitleCase2(),
-					"[INNATE DESCRIPTION NOT SET]");
+					Feat.ToDisplayName(featName),
+					rulesText);
 				modifyMasterInnate.Invoke(innate);
 				master.AddQEffect(innate);
 			});
+		if (witchSubclassPrerequisite != null)
+			masterAbility = masterAbility.WithPrerequisite(witchSubclassPrerequisite.Value, Feat.ToDisplayName(witchSubclassPrerequisite.Value));
 		masterAbility.Traits.Insert(1, ModData.Traits.ModName);
 		masterAbility.FeatGroup = featGroup;
 		return masterAbility;

@@ -23,10 +23,10 @@ public static class WitchLoader
 
 	public static Trait TFirstHex = ModManager.RegisterTrait("First Hex", new TraitProperties("", relevant: false));
 
-	private static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
-	private static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
-	private static FeatName FNSpinnerOfThreads = ModManager.RegisterFeatName("SpinnerOfThreads", "Spinner of Threads");
-	private static FeatName FNSilenceInSnow = ModManager.RegisterFeatName("SilenceInSnow", "Silence in Snow");
+	public static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
+	public static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
+	public static FeatName FNSpinnerOfThreads = ModManager.RegisterFeatName("SpinnerOfThreads", "Spinner of Threads");
+	public static FeatName FNSilenceInSnow = ModManager.RegisterFeatName("SilenceInSnow", "Silence in Snow");
 	
 	[DawnsburyDaysModMainMethod]
 	public static void LoadMod()
