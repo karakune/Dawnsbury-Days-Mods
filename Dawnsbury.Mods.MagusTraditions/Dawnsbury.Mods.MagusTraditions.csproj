@@ -1,17 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <ItemGroup>
-        <Reference Include="Common">
-            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\Data\Common.dll</HintPath>
-        </Reference>
-        <Reference Include="Dawnsbury Days">
-            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\Data\Dawnsbury Days.dll</HintPath>
-        </Reference>
-        <Reference Include="MonoGame.Framework">
-            <HintPath>..\..\..\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\Data\MonoGame.Framework.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-    <Import Project="./Dawnsbury.Mod.targets" />
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Command="copy /Y &quot;C:\CodingProjects\Dawnsbury-Days-Mods\Dawnsbury.Mods.MagusTraditions\bin\Debug\net9.0-windows\Dawnsbury.Mods.MagusTraditions.dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\CustomMods&quot; &amp; copy /Y &quot;C:\CodingProjects\Dawnsbury-Days-Mods\Dawnsbury.Mods.MagusTraditions\bin\Debug\net9.0-windows\Dawnsbury.Mods.MagusTraditions.pdb&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Dawnsbury Days\CustomMods&quot;" />
-    </Target>
+    <Import Project="../ProjectBase.targets"/>
+    <PropertyGroup>
+        <TargetFramework>net10.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Platform>x64</Platform>
+        <PlatformTarget>x64</PlatformTarget>
+        <NoWarn>1998;NETSDK1206;NU1901;NU1902;NU1903;NU1904</NoWarn>
+        <WarningsAsErrors>0618</WarningsAsErrors>
+    </PropertyGroup>
+    <PropertyGroup>
+        <PublishSingleFile>True</PublishSingleFile>
+    </PropertyGroup>
 </Project>
