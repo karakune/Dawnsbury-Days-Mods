@@ -21,6 +21,6 @@
         </ItemGroup>
         <Copy SourceFiles="Assets/ORC copyright notice.html;Assets/optional-dependencies.txt" DestinationFolder="WorkshopFiles"/>
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="WorkshopFiles/CustomMods"/>
-        <Copy SourceFiles="@(FamiliarIcons)" DestinationFolder="WorkshopFiles/CustomMods/FamiliarsAssets"/>
+        <Copy SourceFiles="@(FamiliarIcons)" DestinationFolder="WorkshopFiles/CustomPortraitsWithCustomRing"/>
     </Target>
 </Project>
