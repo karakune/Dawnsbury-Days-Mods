@@ -696,6 +696,7 @@ public static class WitchSpells
 				$"The target is immediately slain, and the explosion deals {S.HeightenedVariable(2 + (spellLevel * 2), 6)}d6 fire damage (basic Reflex save mitigates) to creatures within 20 feet of it. If the target has the cold or water trait, the spell deals cold damage and has the cold trait instead of the fire trait.",
 				Target.RangedFriend(24).WithAdditionalConditionOnTargetCreature((self, ally) =>
 				{
+					// TODO: check summonedby qeffect
 					if ((ally.HasTrait(Trait.Minion) || ally.HasTrait(Trait.Summoned))/* && ally.*/)
 						return Usability.Usable;
 					return Usability.NotUsableOnThisCreature("You must target a minion that you summoned or permanently control");
@@ -705,6 +706,7 @@ public static class WitchSpells
 				.WithSoundEffect(SfxName.Fireball)
 				.WithEffectOnEachTarget(async (spell, caster, minion, _) =>
 				{
+					// TODO: fix anim
 					await CommonAnimations.CreateConeAnimation(minion.Battle, spell.ChosenTargets.ChosenPointOfOrigin.ToVector2(), spell.ChosenTargets.ChosenTiles, spell.ProjectileCount, spell.ProjectileKind, spell.ProjectileIllustration);
 					
 					var damageKind = DamageKind.Fire;
