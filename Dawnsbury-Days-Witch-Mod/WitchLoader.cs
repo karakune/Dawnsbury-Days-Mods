@@ -207,6 +207,7 @@ public class WitchPatronFeat : Feat
 						ClassOfOrigin = WitchSpells.THex
 					}));
 				
+				// TODO: Handle the extra preparable spell options not being well-represented by not using spellbook mechanics in Dawnsbury Days
 				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Add(extraPreparableSpell);
 			});
 	}
