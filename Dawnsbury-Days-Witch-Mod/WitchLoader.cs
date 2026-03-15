@@ -4,11 +4,13 @@ using Dawnsbury.Auxiliary;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.AbilityScores;
 using Dawnsbury.Core.CharacterBuilder.Feats;
+using Dawnsbury.Core.CharacterBuilder.Feats.Features;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.Mechanics.Enumerations;
+using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
 using Dawnsbury.Mods.DeployableFamiliars;
 
@@ -118,6 +120,8 @@ public static class WitchLoader
 				if (DeployableFamiliarTag.FindTag(sheet) is { } familiar)
 					familiar.FamiliarAbilities += 1;
 			});
+		witchClass.RulesText = witchClass.RulesText.Replace("Key ability", "Key attribute");
+		witchClass.RulesText = witchClass.RulesText.Replace("skills of your choice", "skills of your choice, as well as 1 skill determined by your patron");
 		yield return witchClass;
 	}
 
