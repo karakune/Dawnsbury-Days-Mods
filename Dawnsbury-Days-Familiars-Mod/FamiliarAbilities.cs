@@ -2,9 +2,11 @@ using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.TrueFeatDb.Specific;
+using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Enumerations;
+using Dawnsbury.Core.Possibilities;
 using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Modding;
@@ -204,5 +206,60 @@ public static class FamiliarAbilities
 		masterAbility.Traits.Insert(1, ModData.Traits.ModName);
 		masterAbility.FeatGroup = featGroup;
 		return masterAbility;
+	}
+	
+	// Searches through your possibilities to find this action in your familiar actions menu.
+	public static bool IsFamiliarAction(CombatAction familiarAction)
+	{
+		SubmenuPossibility? familiarMenu = LookInPossibilities(
+		    familiarAction.Owner.Possibilities,
+		    poss =>
+		        poss is SubmenuPossibility submenu
+		        && submenu.Subsections.Any(sect => sect.Name.Contains("Familiar action")));
+
+		return familiarMenu?.Filter(ap => ap.CombatAction.Name == familiarAction.Name)?.ActionCount > 0;
+
+		SubmenuPossibility? LookInPossibilities(
+		    Possibilities posses,
+		    Func<Possibility, bool> keepOnlyWhat)
+		{
+		    foreach (PossibilitySection section in posses.Sections)
+		    {
+		        SubmenuPossibility? submenu = LookInSection(section, keepOnlyWhat);
+		        if (submenu != null)
+		            return submenu;
+		    }
+
+		    return null;
+		}
+
+		SubmenuPossibility? LookInSection(
+		    PossibilitySection section,
+		    Func<Possibility, bool> keepOnlyWhat)
+		{
+		    foreach (Possibility possibility in section.Possibilities)
+		    {
+		        if (possibility is not SubmenuPossibility submenu)
+		            continue;
+		        if (keepOnlyWhat(submenu) || LookInMenu(submenu, keepOnlyWhat) is not null)
+		            return submenu;
+		    }
+
+		    return null;
+		}
+
+		SubmenuPossibility? LookInMenu(
+		    SubmenuPossibility submenu,
+		    Func<Possibility, bool> keepOnlyWhat)
+		{
+		    foreach (PossibilitySection section in submenu.Subsections)
+		    {
+		        SubmenuPossibility? submenuInner = LookInSection(section, keepOnlyWhat);
+		        if (submenuInner != null)
+		            return submenuInner;
+		    }
+
+		    return null;
+		}
 	}
 }
