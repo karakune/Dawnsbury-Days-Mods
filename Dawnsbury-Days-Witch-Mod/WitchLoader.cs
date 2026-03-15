@@ -116,7 +116,7 @@ public class WitchPatronFeat : Feat
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip5"));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(1, "Witch:Spell1-1"));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(1, "Witch:Spell1-2"));
-				for (int i = 2; i <= 20; ++i)
+				for (int i = 2; i <= 18; ++i)
 				{
 					int thisLevel = i;
 					if (thisLevel % 2 == 1)
@@ -133,6 +133,7 @@ public class WitchPatronFeat : Feat
 							values.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-3"));
 						});
 				}
+				sheet.AddAtLevel(19, values => values.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(10, "Witch:Spell10-1")));
 
 				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchSpells.THex,
 					() => new SpellRepertoire(Ability.Intelligence, spellTradition));
