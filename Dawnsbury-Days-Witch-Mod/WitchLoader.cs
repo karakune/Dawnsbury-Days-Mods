@@ -53,7 +53,6 @@ public static class WitchLoader
 				"Your patron contacted you in a moment your willpower was close to sputtering out. Their reassuring presence was like breath and kindling bringing an ember back aflame, their magic giving you the strength to carry on and bring others to your cause. Your patron is likely a divine being like an angel or aeon acting covertly, though the possibility exists they might be a more sinister entity, using you to unknown ends.",
 				"Lesson of Fervor's Grasp"),
 			WitchPatronFeat.Create(FNSpinnerOfThreads, Trait.Occult, Skill.Occultism, WitchSpells.NudgeFate, SpellId.TrueStrike, FamiliarAbilities.FNBalancedLuck, 
-				"You met your patron in a memory of an encounter yet to come or a premonition of something long since passed, as they untangled and re-spun the tapestry of time and fate. Was your patron a norn? A herald of a deity like Pharasma, Alseta, or Grandmother Spider? Could it even be a single individual appearing at three or more points in its timeline—multiple versions of the same being, parallel threads converging on a single moment?",
 				"You met your patron in a memory of an encounter yet to come or a premonition of something long since passed, as they untangled and re-spun the tapestry of time and fate. Was your patron a norn? A herald of a deity like Pharasma, Alseta, or Grandmother Spider? Could it even be a single individual appearing at three or more points in its timeline — multiple versions of the same being, parallel threads converging on a single moment?",
 				"Lesson of Fate's Vicissitudes"),
 			WitchPatronFeat.Create(FNSilenceInSnow, Trait.Primal, Skill.Nature, WitchSpells.ClingingIce, WitchSpells.GustOfWind, FamiliarAbilities.FNFreezingRime, 
@@ -150,14 +149,23 @@ public class WitchPatronFeat : Feat
 
 	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, SpellId extraPreparableSpell, FeatName familiarAbility, string flavorText, string lessonName)
 	{
-		var featDescription = new StringBuilder();
+		/*var featDescription = new StringBuilder();
 		featDescription.Append($"\n{{b}}Spell List:{{/b}} {spellTradition}");
 		featDescription.Append($"\n{{b}}Patron Skill:{{/b}} {skill}");
 		featDescription.Append($"\n{{b}}{lessonName}:{{/b}} You gain the {AllSpells.CreateSpellLink(hexCantrip, WitchSpells.THex)} hex cantrip and {AllSpells.CreateSpellLink(extraPreparableSpell, WitchLoader.TWitch)} is added to your preparable spell list.");
 		var famFeat = AllFeats.GetFeatByFeatName(familiarAbility);
-		featDescription.Append($"\n{{b}}{famFeat.Name}:{{/b}} {famFeat.RulesText}");
+		featDescription.Append($"\n{{b}}{famFeat.Name}:{{/b}} {famFeat.RulesText}");*/
 		
-		return new WitchPatronFeat(patronName, flavorText, featDescription.ToString())
+		var famFeat = AllFeats.GetFeatByFeatName(familiarAbility);
+		return new WitchPatronFeat(
+				patronName,
+				flavorText,
+				$$"""
+				  {b}Spell List:{/b} {{spellTradition}}
+				  {b}Patron Skill:{/b} {{skill}}
+				  {b}{{lessonName}}:{/b} You gain the {{AllSpells.CreateSpellLink(hexCantrip, WitchSpells.THex)}} hex cantrip and {{AllSpells.CreateSpellLink(extraPreparableSpell, WitchLoader.TWitch)}} is added to your preparable spell list.
+				  {b}{{famFeat.Name}}:{/b} {{famFeat.RulesText}}
+				  """)
 			.WithOnSheet(sheet =>
 			{
 				sheet.GrantFeat(familiarAbility);
