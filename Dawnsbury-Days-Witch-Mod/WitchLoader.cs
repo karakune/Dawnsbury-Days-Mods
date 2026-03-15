@@ -149,13 +149,6 @@ public class WitchPatronFeat : Feat
 
 	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, SpellId extraPreparableSpell, FeatName familiarAbility, string flavorText, string lessonName)
 	{
-		/*var featDescription = new StringBuilder();
-		featDescription.Append($"\n{{b}}Spell List:{{/b}} {spellTradition}");
-		featDescription.Append($"\n{{b}}Patron Skill:{{/b}} {skill}");
-		featDescription.Append($"\n{{b}}{lessonName}:{{/b}} You gain the {AllSpells.CreateSpellLink(hexCantrip, WitchSpells.THex)} hex cantrip and {AllSpells.CreateSpellLink(extraPreparableSpell, WitchLoader.TWitch)} is added to your preparable spell list.");
-		var famFeat = AllFeats.GetFeatByFeatName(familiarAbility);
-		featDescription.Append($"\n{{b}}{famFeat.Name}:{{/b}} {famFeat.RulesText}");*/
-		
 		var famFeat = AllFeats.GetFeatByFeatName(familiarAbility);
 		return new WitchPatronFeat(
 				patronName,
@@ -207,7 +200,6 @@ public class WitchPatronFeat : Feat
 						ClassOfOrigin = WitchSpells.THex
 					}));
 				
-				// TODO: Handle the extra preparable spell options not being well-represented by not using spellbook mechanics in Dawnsbury Days
 				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Add(extraPreparableSpell);
 			});
 	}
