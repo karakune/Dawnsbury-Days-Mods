@@ -131,10 +131,6 @@ public static class ModData
     public static class FeatNames
     {
         /// <summary>
-        /// Witch Familiar class feature
-        /// </summary>
-        public static readonly FeatName WitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
-        /// <summary>
         /// Wizard Arcane Thesis class feature, Improved Familiar
         /// </summary>
         public static readonly FeatName ArcaneThesisImprovedFamiliar = ModManager.RegisterFeatName("ArcaneThesisImprovedFamiliar", "Improved Familiar Attunement");

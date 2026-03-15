@@ -266,9 +266,6 @@ public static class FamiliarFeats
 	
 	public static IEnumerable<Feat> CreateClassFeats()
 	{
-		yield return new Feat(
-			ModData.FeatNames.WitchFamiliarBoost,
-			null, "", [], null);
 		
 		yield return new Feat(ModData.FeatNames.ArcaneThesisImprovedFamiliar,
 				"Your thesis is 'Familiars: An extensive study of the benefits of pets'.",
