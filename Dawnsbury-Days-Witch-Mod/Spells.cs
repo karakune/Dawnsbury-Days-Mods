@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Dawnsbury.Audio;
 using Dawnsbury.Core;
+using Dawnsbury.Core.Animations;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
@@ -678,6 +679,51 @@ public static class WitchSpells
 					target.AddQEffect(QEffect.PersistentDamage(persistentDamage.ToString(), DamageKind.Bleed));
 				}).WithHeighteningNumerical(spellLevel, 1, inCombat, 1,
 					"The damage increases by 1d6 and the persistent bleed damage increases by 1.");
+		});
+
+	public static SpellId FinalSacrifice = ModManager.RegisterNewSpell("Final Sacrifice", 2,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.Fireball, "Final Sacrifice", [
+					Trait.Evocation,
+					Trait.Fire,
+					Trait.Arcane,
+					Trait.Primal,
+					Trait.Divine,
+					Trait.Occult
+				], 
+				"You channel disruptive energies through the bond between you and your minion, causing it to violently explode.", 
+				$"The target is immediately slain, and the explosion deals {S.HeightenedVariable(2 + (spellLevel * 2), 6)}d6 fire damage (basic Reflex save mitigates) to creatures within 20 feet of it. If the target has the cold or water trait, the spell deals cold damage and has the cold trait instead of the fire trait.",
+				Target.RangedFriend(24).WithAdditionalConditionOnTargetCreature((self, ally) =>
+				{
+					if ((ally.HasTrait(Trait.Minion) || ally.HasTrait(Trait.Summoned))/* && ally.*/)
+						return Usability.Usable;
+					return Usability.NotUsableOnThisCreature("You must target a minion that you summoned or permanently control");
+				}), 
+				spellLevel, 
+				null)
+				.WithSoundEffect(SfxName.Fireball)
+				.WithEffectOnEachTarget(async (spell, caster, minion, _) =>
+				{
+					await CommonAnimations.CreateConeAnimation(minion.Battle, spell.ChosenTargets.ChosenPointOfOrigin.ToVector2(), spell.ChosenTargets.ChosenTiles, spell.ProjectileCount, spell.ProjectileKind, spell.ProjectileIllustration);
+					
+					var damageKind = DamageKind.Fire;
+					if (minion.HasTrait(Trait.Cold) || minion.HasTrait(Trait.Water))
+						damageKind = DamageKind.Cold;
+					
+					var othersInRange =
+						minion.Battle.AllCreatures.Where(c => c != minion && c.DistanceTo(minion) < 4);
+					
+					foreach (var creatureInRange in othersInRange)
+					{
+						var result  = await CommonSpellEffects.RollSpellSavingThrowAsync(creatureInRange, spell, Defense.Reflex);
+						
+						await CommonSpellEffects.DealBasicDamage(spell, caster, creatureInRange, result, 2 + (2 * spellLevel) + "d6",
+							damageKind);
+					}
+
+					minion.DeathScheduledForNextStateCheck = true;
+				});
 		});
 	
 	// public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true, false);
