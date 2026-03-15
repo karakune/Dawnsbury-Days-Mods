@@ -6,6 +6,7 @@ using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
+using Dawnsbury.Core.Coroutines.Options;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
 using Dawnsbury.Core.Mechanics;
@@ -57,7 +58,34 @@ public static class WitchSpells
 
 					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 					familiar.Actions.ActionsLeft = 2;
+					
+					/*
 					await CommonSpellEffects.YourMinionActs(familiar);
+					*/
+					
+					Possibilities poss = Possibilities
+						.Create(master)
+						.Filter(ap =>
+						{
+							ap.CombatAction.ActionCost = 0;
+							if (!DeployableFamiliars.FamiliarAbilities.IsFamiliarAction(ap.CombatAction))
+								return false;
+							ap.RecalculateUsability();
+							return true;
+						});
+        
+					Creature? active = master.Battle.ActiveCreature;
+					master.Battle.ActiveCreature = master;
+					master.Possibilities = poss;
+        
+					List<Option> actions = await master.Battle.GameLoop.CreateActions(
+						master,
+						poss,
+						null);
+					master.Battle.GameLoopCallback.AfterActiveCreaturePossibilitiesRegenerated();
+					await master.Battle.GameLoop.OfferOptions(master, actions, true);
+        
+					master.Battle.ActiveCreature = active;
 				});
 		});
 	
