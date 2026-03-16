@@ -7,7 +7,9 @@ using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
 using Dawnsbury.Core.Mechanics;
+using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
+using Dawnsbury.Core.Tiles;
 using Microsoft.Xna.Framework;
 
 namespace Dawnsbury.Mods.DeployableFamiliars;
@@ -44,15 +46,20 @@ public class DeployableFamiliarTag : FamiliarTag
 		return this;
 	}
 
+	public void Spawn(Creature master, Tile? where)
+	{
+		Creature familiar = CreateCreature(master);
+		familiar.InitiativeControlledBy = master;
+		familiar.LongTermEffects = new LongTermEffects();
+		familiar.LongTermEffects.BeginningOfCombat(familiar);
+		familiar.LongTermEffects.Effects.Clear();
+		OnFamiliarSpawn.Invoke(familiar);
+		master.Battle.SpawnCreature(familiar, master.OwningFaction, where ?? master.Occupies);
+	}
+
 	public void Spawn(Creature master)
     {
-	    Creature familiar = CreateCreature(master);
-	    familiar.InitiativeControlledBy = master;
-	    familiar.LongTermEffects = new LongTermEffects();
-	    familiar.LongTermEffects.BeginningOfCombat(familiar);
-	    familiar.LongTermEffects.Effects.Clear();
-	    OnFamiliarSpawn.Invoke(familiar);
-	    master.Battle.SpawnCreature(familiar, master.OwningFaction, master.Occupies);
+	    Spawn(master, master.Occupies);
     }
     
     private Creature CreateCreature(Creature master)
@@ -65,13 +72,21 @@ public class DeployableFamiliarTag : FamiliarTag
 					  .Max(src => src.SpellcastingAbilityModifier) 
 				  ?? 0
 				: master.Abilities.Get((Ability)SpellcastingAbility));
+		
+		int ac = master.Defenses.GetBaseValue(Defense.AC)
+			+ master.Armor.DexterityBonus
+			+ master.Armor.ProficiencyBonus;
+		List<Bonus?> bonuses = master.Defenses.DetermineDefenseBonuses(null, null, Defense.AC, master);
+		bonuses.RemoveAll(b => b?.BonusType != BonusType.Item);
+		ac += Bonus.Sum(bonuses, false).BonusTotal;
+		
 		Creature familiar = new Creature(
 				IllustrationOrDefault,
 				FamiliarName ?? $"{master.Name}'s Familiar",
 				[Trait.Animal, Trait.Minion, Trait.Small, Trait.NoPhysicalUnarmedAttack],
 				level, level + specialBonus, 5,
 				new Defenses(
-					master.Defenses.GetBaseValue(Defense.AC), 
+					ac, 
 					master.Defenses.GetBaseValue(Defense.Fortitude), 
 					master.Defenses.GetBaseValue(Defense.Reflex), 
 					master.Defenses.GetBaseValue(Defense.Will)),
@@ -223,19 +238,20 @@ public class DeployableFamiliarTag : FamiliarTag
 			},
 			WhenMonsterDies = _ =>
 			{
-				master.AddQEffect(new QEffect("Dead Familiar",
-					"Your familiar has died. It will reappear upon your next long rest.")
-				{
-					Id = ModData.QEffectIds.YourFamiliarIsDead
-				});
-				master.LongTermEffects ??= new LongTermEffects();
-				if (master.LongTermEffects.Effects.FirstOrDefault(lt => lt.Id == ModData.LongTermEffects.LDeadFamiliar?.Id) == null)
-					master.LongTermEffects.Add(ModData.LongTermEffects.LDeadFamiliar!);
+				master.AddQEffect(ModData.LongTermEffects.YourFamiliarIsDead());
 			}
 		};
 	}
 
 	#region Static Methods
+
+	/// <summary>
+	/// Returns whether the master has commanded a familiar this turn.
+	/// </summary>
+	public static bool HasCommandedThisTurn(Creature master)
+	{
+		return master.FindQEffect(QEffectId.FamiliarAbility) is { UsedThisTurn: true }; // Returns false if the ID cannot be found
+	}
 
 	public static DeployableFamiliarTag? FindTag(Creature master)
 	{

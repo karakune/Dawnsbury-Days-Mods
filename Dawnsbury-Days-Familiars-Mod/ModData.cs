@@ -34,7 +34,6 @@ public static class ModData
     public static void LoadData()
     {
         ActionIds.Initialize();
-        BooleanOptions.Initialize();
         LongTermEffects.Initialize();
         QEffectIds.Initialize();
     }
@@ -55,48 +54,20 @@ public static class ModData
     public static class ActionIds
     {
         public static ActionId CommandFamiliar;
+        public static ActionId DeployFamiliar;
+        public static ActionId RetrieveFamiliar;
         
         public static void Initialize()
         {
             CommandFamiliar = SafelyRegister<ActionId>("CommandFamiliar");
-        }
-    }
-
-    // TODO: Use or remove BooleanOptions
-    /// <summary>
-    /// Keeps the options registered with <see cref="ModManager.RegisterBooleanSettingsOption"/>. To read the registered options, use <see cref="PlayerProfile.Instance.IsBooleanOptionEnabled(string)"/>.
-    /// </summary>
-    public static class BooleanOptions
-    {
-        //public static string UnrestrictedTrace = null!;
-        
-        public static void Initialize()
-        {
-            /*UnrestrictedTrace = RegisterBooleanOption(
-                IdPrepend+"UnrestrictedTrace",
-                "Runesmith: Less Restrictive Rune Tracing",
-                "Enabling this option removes protections against \"bad decisions\" with tracing certain runes on certain targets.\n\nThe Runesmith is a class on the more advanced end of tactics and creativity. For example, you might want to trace Esvadir onto an enemy because you're about to invoke it onto a different, adjacent enemy. Or you might trace Atryl on yourself as a 3rd action so that you can move it with Transpose Etching (just 1 action) on your next turn, because you're a ranged build.\n\nThis option is for those players.",
-                true);*/
-        }
-        
-        /// <summary>
-        /// Functions as <see cref="ModManager.RegisterBooleanSettingsOption"/>, but also returns the technicalName.
-        /// </summary>
-        /// <returns>(string) The technical name for the option.</returns>
-        public static string RegisterBooleanOption(
-            string technicalName,
-            string caption,
-            string longDescription,
-            bool defaultValue)
-        {
-            ModManager.RegisterBooleanSettingsOption(technicalName, caption, longDescription, defaultValue);
-            return technicalName;
+            DeployFamiliar = SafelyRegister<ActionId>("DeployFamiliar");
+            RetrieveFamiliar = SafelyRegister<ActionId>("RetrieveFamiliar");
         }
     }
 
     public static class CommonRequirements
     {
-        public static string? WhyCannotCommand(Creature self, bool isDirectCommand = false)
+        public static string? WhyCannotCommand(Creature self, bool isDirectCommand = false, bool mustBeAdjacentWhenDeployed = false)
         {
             if (DeployableFamiliarTag.FindTag(self) is not { } fTag)
                 return "You don't have a familiar.";
@@ -110,12 +81,14 @@ public static class ModData
             }
             else
             {
+                if (mustBeAdjacentWhenDeployed && familiar.DistanceTo(self) > 1)
+                    return "Your familiar must be adjacent or not deployed";
                 if (familiar.HasEffect(QEffectId.Paralyzed))
                     return "Your familiar is paralyzed.";
                 if (familiar.HasEffect(QEffectId.Dying) || familiar.HasEffect(QEffectId.Unconscious))
                     return "Your familiar is unconscious.";
             }
-            if (self.FindQEffect(QEffectId.FamiliarAbility) is { UsedThisTurn: true })
+            if (DeployableFamiliarTag.HasCommandedThisTurn(self))
                 return "You already commanded your familiar this turn.";
             return null;
         }
@@ -130,10 +103,6 @@ public static class ModData
 
     public static class FeatNames
     {
-        /// <summary>
-        /// Witch Familiar class feature
-        /// </summary>
-        public static readonly FeatName WitchFamiliarBoost = ModManager.RegisterFeatName("WitchFamiliarBoost");
         /// <summary>
         /// Wizard Arcane Thesis class feature, Improved Familiar
         /// </summary>
@@ -172,26 +141,30 @@ public static class ModData
             public const string DeadFamiliar = "DeadFamiliar";
         }
 
-        public static LongTermEffect? LDeadFamiliar;
-
         public static void Initialize()
         {
-            LDeadFamiliar = WellKnownLongTermEffects.CreateLongTermEffect(WellKnownIDs.DeadFamiliar);
-            
             Dawnsbury.Campaign.LongTerm.LongTermEffects.EasyRegister(
                 WellKnownIDs.DeadFamiliar,
                 LongTermEffectDuration.UntilLongRest,
-                () => new QEffect(
-                    "Dead Familiar",
-                    "Your familiar has died. It will reappear upon your next long rest.")
-                {
-                    Id = ModData.QEffectIds.YourFamiliarIsDead,
-                    StartOfCombat = async qfThis =>
-                        qfThis.Owner.Overhead(
-                            "no familiar",
-                            Color.Green,
-                            qfThis.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
-                });
+                YourFamiliarIsDead);
+        }
+
+        public static QEffect YourFamiliarIsDead()
+        {
+            return new QEffect(
+                "Dead Familiar",
+                "Your familiar has died. It will reappear upon your next long rest.")
+            {
+                Id = ModData.QEffectIds.YourFamiliarIsDead,
+                LongTermEffectDuration = LongTermEffectDuration.UntilLongRest,
+                StartOfCombat = async qfThis =>
+                    qfThis.Owner.Overhead(
+                        "no familiar",
+                        Color.Green,
+                        qfThis.Owner + "'s familiar is dead. It will reappear upon your next long rest."),
+                EndOfCombat = async (qfThis, b) =>
+                    qfThis.Owner.LongTermEffects?.Add(WellKnownLongTermEffects.CreateLongTermEffect(WellKnownIDs.DeadFamiliar)!)
+            };
         }
     }
 
@@ -202,7 +175,6 @@ public static class ModData
         /// </summary>
         public static QEffectId FamiliarCreature;
         public static QEffectId FamiliarDeployed;
-        public static QEffectId HasFamiliar;
         public static QEffectId YourFamiliarIsDead;
         public static QEffectId FamiliarCanManipulate;
         /// <summary>
@@ -216,7 +188,6 @@ public static class ModData
             
             FamiliarCreature = ModManager.RegisterEnumMember<QEffectId>("FamiliarCreature");
             FamiliarDeployed = ModManager.RegisterEnumMember<QEffectId>("FamiliarDeployed");
-            HasFamiliar = ModManager.RegisterEnumMember<QEffectId>("HasFamiliar"); // TODO: Doesn't do anything. Is an ID on the two deployment option feats, and nothing else.
             YourFamiliarIsDead = ModManager.RegisterEnumMember<QEffectId>("YourFamiliarIsDead");
             FamiliarCanManipulate =  ModManager.RegisterEnumMember<QEffectId>("FamiliarCanManipulate");
         }
@@ -227,14 +198,13 @@ public static class ModData
         /// <summary>
         /// The name of the mod, for the purposes of branding feats.
         /// </summary>
-        public static readonly Trait ModName = ModManager.RegisterTrait("DeployableFamiliars", new TraitProperties("Deployable Familiars", true));
+        public static readonly Trait ModName = ModManager.RegisterModNameTrait("DeployableFamiliars", "Deployable Familiars");
         
         /// <summary>
         /// If a modded feat grants a combat familiar, adding this trait will automatically convert that feat to grant a deployable familiar. Do not add this trait if the feat grants a familiar indirectly by granting the <see cref="FeatName.ClassFamiliar"/> or <see cref="FeatName.AnimalAccomplice"/> feats.
         /// </summary>
         public static readonly Trait DeployableFamiliarFeat = ModManager.RegisterTrait("DeployableFamiliarFeat", new TraitProperties("Deployable Familiar Feat", false));
         
-        // TODO: This is the trait added to the deployment toggles. Consider removing or renaming.
         public static readonly Trait FamiliarDeploy = ModManager.RegisterTrait("FamiliarDeploy", new TraitProperties("", relevant: false));
     }
 }

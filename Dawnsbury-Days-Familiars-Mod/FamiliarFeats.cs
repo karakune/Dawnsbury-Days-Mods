@@ -71,10 +71,10 @@ public static class FamiliarFeats
 		};
 
 		foreach (Feat feat in CreateFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModData.Traits.ModName);
 		
 		foreach (Feat feat in CreateClassFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModData.Traits.ModName);
 	}
 	
 	/// <summary>
@@ -149,24 +149,32 @@ public static class FamiliarFeats
 					ProvideMainAction = qfThis =>
 					{
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not { } fTag
-						    || DeployableFamiliarTag.IsFamiliarDead(self)
-						    || DeployableFamiliarTag.FindFamiliar(qfThis.Owner) is not { } familiar)
+						    || DeployableFamiliarTag.IsFamiliarDead(self))
 							return null;
-						if (qfThis.UsedThisTurn)
-							return null;
+						CombatAction deployment = DeployableFamiliarTag.FindFamiliar(qfThis.Owner) is not null
+							? CreateRetrieveFamiliarAction(qfThis.Owner, fTag)
+							: CreateDeployFamiliarAction(qfThis.Owner, fTag); 
 						return new SubmenuPossibility(
 								fTag.IllustrationOrDefault,
 								fTag.FamiliarName ?? "Familiar")
 							{
 								Subsections =
 								{
+									new PossibilitySection("Command Familiar")
+									{
+										Possibilities = [
+											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, DeployableFamiliarTag.FindFamiliar(qfThis.Owner), fTag)
+										]
+									},
 									new PossibilitySection("Familiar action")
 									{
 										PossibilitySectionId = PossibilitySectionId.FamiliarAbility,
-										Possibilities =
-										[
-											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, familiar,
-												fTag),
+										Possibilities = []
+									},
+									new PossibilitySection("Deployment")
+									{
+										Possibilities = [
+											(ActionPossibility)deployment
 										]
 									}
 								}
@@ -176,19 +184,25 @@ public static class FamiliarFeats
 					// Automates the consumption of your familiar command.
 					AfterYouTakeAction = async (qfThis, action) =>
 					{
-						if (action.ActionId != ModData.ActionIds.CommandFamiliar)
+						if (!FamiliarAbilities.IsFamiliarAction(action))
 							return;
 						qfThis.UsedThisTurn = true;
 					}
 				};
 				// Has to be done separate due to lacking a QEffect self-reference.
 				// Keeps you from using commands more than once.
+				// Applies other restrictions to familiar abilities.
 				commandGranter.PreventTakingAction = action =>
 				{
-					if (action.ActionId == ModData.ActionIds.CommandFamiliar
-					    && commandGranter.UsedThisTurn)
-						return "You already commanded your familiar this turn.";
-					return null;
+					// Don't care if we're not dealing with familiar actions
+					if (!FamiliarAbilities.IsFamiliarAction(action))
+						return null;
+
+					return ModData.CommonRequirements.WhyCannotCommand(
+						action.Owner,
+						action.ActionId == ModData.ActionIds.CommandFamiliar,
+						action.Name.ToLower() is
+							"item delivery" or "lab assistant" or "restorative familiar" or "valet");
 				};
 				self.AddQEffect(commandGranter);
 			});
@@ -200,51 +214,18 @@ public static class FamiliarFeats
 	{
 		yield return new Feat(
 				ModData.FeatNames.AutoDeployNo,
-				"", "",
+				"", "Your familiar won't be deployed until you take an action to do so.",
 				[ModData.Traits.FamiliarDeploy],
-				null)
-			.WithOnCreature(owner =>
-				owner.AddQEffect(new QEffect()
-				{
-					Id = ModData.QEffectIds.HasFamiliar, // TODO: Seems superfluous as an ID.
-					ProvideMainAction = qfThis =>
-					{
-						if (qfThis.Owner.HasEffect(ModData.QEffectIds.FamiliarDeployed))
-							return null;
-
-						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not {} fTag
-						    || DeployableFamiliarTag.IsFamiliarDead(qfThis.Owner))
-							return null;
-						
-						// TODO: rework into commanding the familiar with one fewer action. Increase cost from 0 to 1.
-						var combatAction = new CombatAction(
-								qfThis.Owner,
-								fTag.IllustrationOrDefault,
-								"Deploy Familiar",
-								[Trait.Concentrate],
-								"Deploy {Blue}" + (fTag.FamiliarName ?? "Familiar") + "{/Blue} onto the battlefield.",
-								Target.Self())
-							.WithActionCost(0)
-							.WithEffectOnEachTarget(async (_, _, _, _) =>
-							{
-								// TODO: Create an overload that lets you set a tile. Add selection routine for picking an adjacent tile.
-								fTag.Spawn(qfThis.Owner);
-								qfThis.Owner.AddQEffect(new QEffect { Id = ModData.QEffectIds.FamiliarDeployed });
-							});
-							
-						return new ActionPossibility(combatAction);
-					}
-				}));
+				null);
 		
 		yield return new Feat(
 				ModData.FeatNames.AutoDeployYes,
-				"", "",
+				"", "Your familiar will automatically be deployed at the start of combat in the nearest space to you.",
 				[ModData.Traits.FamiliarDeploy],
 				null)
 			.WithOnCreature(owner =>
 				owner.AddQEffect(new QEffect()
 				{
-					Id = ModData.QEffectIds.HasFamiliar, // TODO: Seems superfluous as an ID.
 					StartOfCombat = async qfThis =>
 					{
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not {} fTag
@@ -266,14 +247,10 @@ public static class FamiliarFeats
 	
 	public static IEnumerable<Feat> CreateClassFeats()
 	{
-		yield return new Feat(
-			ModData.FeatNames.WitchFamiliarBoost,
-			null, "", [], null);
-		
 		yield return new Feat(ModData.FeatNames.ArcaneThesisImprovedFamiliar,
 				"Your thesis is 'Familiars: An extensive study of the benefits of pets'.",
 				"You gain the Familiar wizard feat. Your familiar gains an extra ability, and it gains an additional extra ability when you reach 6th, 12th, and 18th levels.",
-				[ModData.Traits.ModName, Trait.ArcaneThesis], null)
+				[Trait.ArcaneThesis], null)
 			.WithOnSheet(values =>
 			{
 				values.GrantFeat(FeatName.ClassFamiliar);
@@ -293,22 +270,93 @@ public static class FamiliarFeats
 			});
 	}
 
+	public static CombatAction CreateRetrieveFamiliarAction(Creature owner, DeployableFamiliarTag fTag)
+	{
+		return new CombatAction(
+				owner,
+				fTag.IllustrationOrDefault,
+				"Retrieve Familiar",
+				[ModData.Traits.ModName, Trait.Basic, Trait.Concentrate],
+				$$"""
+				{b}Requirements{/b} Your familiar is adjacent to you.
+
+				Command {Blue}{{fTag.FamiliarName ?? "Familiar"}}{/Blue}. If it ends any action adjacent to you, you will retrieve it from the battlefield.
+				""",
+				Target.Self()
+					.WithAdditionalRestriction(self => DeployableFamiliarTag.FindFamiliar(self) is null
+						? "No familiar"
+						: null))
+			.WithActionCost(1)
+			.WithActionId(ModData.ActionIds.RetrieveFamiliar)
+			.WithEffectOnEachTarget(async (_, caster, _, _) =>
+			{
+				if (DeployableFamiliarTag.FindFamiliar(caster) is not { } familiar)
+					return;
+
+				familiar.AddQEffect(new QEffect(ExpirationCondition.ExpiresAtEndOfYourTurn)
+				{
+					AfterYouTakeAction = async (qfThis, anyAction) =>
+					{
+						if (qfThis.Owner.DistanceTo(caster) <= 1)
+							caster.Battle.RemoveCreatureFromGame(familiar);
+					}
+				});
+				familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+				familiar.Actions.ActionsLeft = 2;
+				await CommonSpellEffects.YourMinionActs(familiar);
+			});
+	}
+
+	public static CombatAction CreateDeployFamiliarAction(Creature owner, DeployableFamiliarTag fTag)
+	{
+		return new CombatAction(
+				owner,
+				fTag.IllustrationOrDefault,
+				"Deploy Familiar",
+				[ModData.Traits.ModName, Trait.Basic, Trait.Concentrate],
+				$"Command {{Blue}}{fTag.FamiliarName ?? "Familiar"}{{/Blue}} to deploy onto the battlefield. It will have 1 action remaining afterwards.",
+				Target.RangedEmptyTileForSummoning(1)
+					.WithAdditionalSelfRequirement(self =>
+					{
+						if (DeployableFamiliarTag.IsFamiliarDead(self))
+							return Usability.NotUsable("Familiar is dead");
+						if (DeployableFamiliarTag.FindFamiliar(self) is not null)
+							return Usability.NotUsable("Already deployed");
+						return Usability.Usable;
+					}))
+			.WithActionCost(1)
+			.WithActionId(ModData.ActionIds.DeployFamiliar)
+			.WithEffectOnEachTile(async (_, self, tiles) =>
+			{
+				fTag.Spawn(owner, tiles.FirstOrDefault());
+				owner.AddQEffect(new QEffect { Id = ModData.QEffectIds.FamiliarDeployed });
+				if (DeployableFamiliarTag.FindFamiliar(self) is { } familiar)
+				{
+					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+					familiar.Actions.AnimateActionUsedTo(1, ActionDisplayStyle.UsedUp);
+					familiar.Actions.AnimateActionUsedTo(2, ActionDisplayStyle.Available);
+					familiar.Actions.ActionsLeft = 1;
+					await CommonSpellEffects.YourMinionActs(familiar);
+				}
+			});
+	}
+
 	public static CombatAction CreateCommandFamiliarAction(
 		Creature owner,
-		Creature familiar,
+		Creature? familiar,
 		DeployableFamiliarTag fTag)
 	{
 		return new CombatAction(
 				owner,
 				fTag.IllustrationOrDefault,
 				"Command Familiar",
-				[Trait.Basic, Trait.Auditory, Trait.Concentrate],
-				"""
+				[ModData.Traits.ModName, Trait.Basic, Trait.Auditory, Trait.Concentrate],
+				$$"""
 				{i}You issue your familiar a command.{/i}
 
 				{b}Frequency{/b} once per turn
 
-				Take 2 actions as your familiar.
+				Take 2 actions as {{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}.
 				""",
 				Target.Self()
 					.WithAdditionalRestriction(self =>
@@ -317,6 +365,8 @@ public static class FamiliarFeats
 			.WithActionId(ModData.ActionIds.CommandFamiliar)
 			.WithEffectOnEachTarget(async (_, _, _, _) =>
 			{
+				if (familiar is null)
+					return;
 				familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 				familiar.Actions.ActionsLeft = 2;
 				await CommonSpellEffects.YourMinionActs(familiar);

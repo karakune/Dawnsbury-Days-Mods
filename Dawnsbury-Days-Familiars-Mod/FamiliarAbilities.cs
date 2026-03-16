@@ -2,9 +2,11 @@ using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.TrueFeatDb.Specific;
+using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Mechanics;
 using Dawnsbury.Core.Mechanics.Enumerations;
+using Dawnsbury.Core.Possibilities;
 using Dawnsbury.Display;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Modding;
@@ -16,7 +18,7 @@ public static class FamiliarAbilities
 	public static void Load()
 	{
 		foreach (Feat ft in CreateFeats())
-			ModManager.AddFeat(ft);
+			ModManager.AddFeat(ft, ModData.Traits.ModName);
 	}
 
 	public static IEnumerable<Feat> CreateFeats()
@@ -162,7 +164,6 @@ public static class FamiliarAbilities
 				});
 				onSheet?.Invoke(values);
 			});
-		familiarAbility.Traits.Insert(1, ModData.Traits.ModName);
 		familiarAbility.FeatGroup = featGroup;
 		return familiarAbility;
 	}
@@ -200,9 +201,79 @@ public static class FamiliarAbilities
 				master.AddQEffect(innate);
 			});
 		if (witchSubclassPrerequisite != null)
-			masterAbility = masterAbility.WithPrerequisite(witchSubclassPrerequisite.Value, Feat.ToDisplayName(witchSubclassPrerequisite.Value));
-		masterAbility.Traits.Insert(1, ModData.Traits.ModName);
+			masterAbility = masterAbility.WithPrerequisite(
+				values => values.HasFeat(witchSubclassPrerequisite.Value),
+				$"You must be a witch with the {Feat.ToDisplayName(witchSubclassPrerequisite.Value)} patron.");
 		masterAbility.FeatGroup = featGroup;
 		return masterAbility;
+	}
+	
+	/// <summary>
+	/// Determines if an action is a familiar action. Searches through your possibilities; is a familiar action if it's found in a SubmenuPossibility with a PossibilitySection named "Familiar action". Includes whitelist inclusion of the CommandFamiliar, DeployFamiliar, and RetrieveFamiliar actions.
+	/// </summary>
+	public static bool IsFamiliarAction(CombatAction familiarAction)
+	{
+		// If not whitelisted, would never be considered a familiar action.
+		if (familiarAction.ActionId == ModData.ActionIds.CommandFamiliar
+		    || familiarAction.ActionId == ModData.ActionIds.DeployFamiliar
+		    || familiarAction.ActionId == ModData.ActionIds.RetrieveFamiliar)
+			return true;
+		
+		// Avoid loading crashes
+		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+		if (familiarAction.Owner.Possibilities is null)
+			return false;
+		
+		SubmenuPossibility? familiarMenu = LookInPossibilities(
+		    familiarAction.Owner.Possibilities,
+		    poss =>
+		        poss is SubmenuPossibility submenu
+		        && submenu.Subsections.Any(sect =>
+			        sect.Name.Contains("Familiar action")));
+
+		return familiarMenu?.Filter(ap => ap.CombatAction.Name == familiarAction.Name)?.ActionCount > 0;
+
+		SubmenuPossibility? LookInPossibilities(
+		    Possibilities posses,
+		    Func<Possibility, bool> keepOnlyWhat)
+		{
+		    foreach (PossibilitySection section in posses.Sections)
+		    {
+		        SubmenuPossibility? submenu = LookInSection(section, keepOnlyWhat);
+		        if (submenu != null)
+		            return submenu;
+		    }
+
+		    return null;
+		}
+
+		SubmenuPossibility? LookInSection(
+		    PossibilitySection section,
+		    Func<Possibility, bool> keepOnlyWhat)
+		{
+		    foreach (Possibility possibility in section.Possibilities)
+		    {
+		        if (possibility is not SubmenuPossibility submenu)
+		            continue;
+		        if (keepOnlyWhat(submenu) || LookInMenu(submenu, keepOnlyWhat) is not null)
+		            return submenu;
+		    }
+
+		    return null;
+		}
+
+		SubmenuPossibility? LookInMenu(
+		    SubmenuPossibility submenu,
+		    Func<Possibility, bool> keepOnlyWhat)
+		{
+		    foreach (PossibilitySection section in submenu.Subsections)
+		    {
+		        SubmenuPossibility? submenuInner = LookInSection(section, keepOnlyWhat);
+		        if (submenuInner != null)
+		            return submenuInner;
+		    }
+
+		    return null;
+		}
 	}
 }
