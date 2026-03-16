@@ -96,7 +96,7 @@ public static class ModData
 
     public static class CommonRequirements
     {
-        public static string? WhyCannotCommand(Creature self, bool isDirectCommand = false)
+        public static string? WhyCannotCommand(Creature self, bool isDirectCommand = false, bool mustBeAdjacentWhenDeployed = false)
         {
             if (DeployableFamiliarTag.FindTag(self) is not { } fTag)
                 return "You don't have a familiar.";
@@ -110,12 +110,14 @@ public static class ModData
             }
             else
             {
+                if (mustBeAdjacentWhenDeployed && familiar.DistanceTo(self) > 1)
+                    return "Your familiar must be adjacent or not deployed";
                 if (familiar.HasEffect(QEffectId.Paralyzed))
                     return "Your familiar is paralyzed.";
                 if (familiar.HasEffect(QEffectId.Dying) || familiar.HasEffect(QEffectId.Unconscious))
                     return "Your familiar is unconscious.";
             }
-            if (self.FindQEffect(QEffectId.FamiliarAbility) is { UsedThisTurn: true })
+            if (DeployableFamiliarTag.HasCommandedThisTurn(self))
                 return "You already commanded your familiar this turn.";
             return null;
         }

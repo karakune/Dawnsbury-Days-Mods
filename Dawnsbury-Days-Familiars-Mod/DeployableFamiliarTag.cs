@@ -237,6 +237,14 @@ public class DeployableFamiliarTag : FamiliarTag
 
 	#region Static Methods
 
+	/// <summary>
+	/// Returns whether the master has commanded a familiar this turn.
+	/// </summary>
+	public static bool HasCommandedThisTurn(Creature master)
+	{
+		return master.FindQEffect(QEffectId.FamiliarAbility) is { UsedThisTurn: true }; // Returns false if the ID cannot be found
+	}
+
 	public static DeployableFamiliarTag? FindTag(Creature master)
 	{
 		return master.PersistentCharacterSheet is not null
