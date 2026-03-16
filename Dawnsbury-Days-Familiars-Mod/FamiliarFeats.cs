@@ -151,21 +151,30 @@ public static class FamiliarFeats
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not { } fTag
 						    || DeployableFamiliarTag.IsFamiliarDead(self))
 							return null;
-						if (qfThis.UsedThisTurn)
-							return null;
+						CombatAction deployment = DeployableFamiliarTag.FindFamiliar(qfThis.Owner) is not null
+							? CreateRetrieveFamiliarAction(qfThis.Owner, fTag)
+							: CreateDeployFamiliarAction(qfThis.Owner, fTag); 
 						return new SubmenuPossibility(
 								fTag.IllustrationOrDefault,
 								fTag.FamiliarName ?? "Familiar")
 							{
 								Subsections =
 								{
+									new PossibilitySection("Command Familiar")
+									{
+										Possibilities = [
+											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, DeployableFamiliarTag.FindFamiliar(qfThis.Owner), fTag)
+										]
+									},
 									new PossibilitySection("Familiar action")
 									{
 										PossibilitySectionId = PossibilitySectionId.FamiliarAbility,
-										Possibilities =
-										[
-											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, DeployableFamiliarTag.FindFamiliar(qfThis.Owner),
-												fTag),
+										Possibilities = []
+									},
+									new PossibilitySection("Deployment")
+									{
+										Possibilities = [
+											(ActionPossibility)deployment
 										]
 									}
 								}
@@ -207,38 +216,7 @@ public static class FamiliarFeats
 				ModData.FeatNames.AutoDeployNo,
 				"", "Your familiar won't be deployed until you take an action to do so.",
 				[ModData.Traits.FamiliarDeploy],
-				null)
-			.WithOnCreature(owner =>
-				owner.AddQEffect(new QEffect()
-				{
-					ProvideMainAction = qfThis =>
-					{
-						if (qfThis.Owner.HasEffect(ModData.QEffectIds.FamiliarDeployed))
-							return null;
-
-						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not {} fTag
-						    || DeployableFamiliarTag.IsFamiliarDead(qfThis.Owner))
-							return null;
-						
-						// TODO: rework into commanding the familiar with one fewer action. Increase cost from 0 to 1.
-						var combatAction = new CombatAction(
-								qfThis.Owner,
-								fTag.IllustrationOrDefault,
-								"Deploy Familiar",
-								[Trait.Concentrate],
-								"Deploy {Blue}" + (fTag.FamiliarName ?? "Familiar") + "{/Blue} onto the battlefield.",
-								Target.Self())
-							.WithActionCost(0)
-							.WithEffectOnEachTarget(async (_, _, _, _) =>
-							{
-								// TODO: Create an overload that lets you set a tile. Add selection routine for picking an adjacent tile.
-								fTag.Spawn(qfThis.Owner);
-								qfThis.Owner.AddQEffect(new QEffect { Id = ModData.QEffectIds.FamiliarDeployed });
-							});
-							
-						return new ActionPossibility(combatAction);
-					}
-				}));
+				null);
 		
 		yield return new Feat(
 				ModData.FeatNames.AutoDeployYes,
