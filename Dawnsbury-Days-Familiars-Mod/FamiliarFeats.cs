@@ -264,7 +264,6 @@ public static class FamiliarFeats
 	
 	public static IEnumerable<Feat> CreateClassFeats()
 	{
-		
 		yield return new Feat(ModData.FeatNames.ArcaneThesisImprovedFamiliar,
 				"Your thesis is 'Familiars: An extensive study of the benefits of pets'.",
 				"You gain the Familiar wizard feat. Your familiar gains an extra ability, and it gains an additional extra ability when you reach 6th, 12th, and 18th levels.",
@@ -290,7 +289,7 @@ public static class FamiliarFeats
 
 	public static CombatAction CreateCommandFamiliarAction(
 		Creature owner,
-		Creature familiar,
+		Creature? familiar,
 		DeployableFamiliarTag fTag)
 	{
 		return new CombatAction(
@@ -298,12 +297,12 @@ public static class FamiliarFeats
 				fTag.IllustrationOrDefault,
 				"Command Familiar",
 				[Trait.Basic, Trait.Auditory, Trait.Concentrate],
-				"""
+				$$"""
 				{i}You issue your familiar a command.{/i}
 
 				{b}Frequency{/b} once per turn
 
-				Take 2 actions as your familiar.
+				Take 2 actions as {{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}.
 				""",
 				Target.Self()
 					.WithAdditionalRestriction(self =>
@@ -312,6 +311,8 @@ public static class FamiliarFeats
 			.WithActionId(ModData.ActionIds.CommandFamiliar)
 			.WithEffectOnEachTarget(async (_, _, _, _) =>
 			{
+				if (familiar is null)
+					return;
 				familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 				familiar.Actions.ActionsLeft = 2;
 				await CommonSpellEffects.YourMinionActs(familiar);
