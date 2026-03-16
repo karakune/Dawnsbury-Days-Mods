@@ -206,7 +206,6 @@ public static class FamiliarFeats
 			.WithOnCreature(owner =>
 				owner.AddQEffect(new QEffect()
 				{
-					Id = ModData.QEffectIds.HasFamiliar, // TODO: Seems superfluous as an ID.
 					ProvideMainAction = qfThis =>
 					{
 						if (qfThis.Owner.HasEffect(ModData.QEffectIds.FamiliarDeployed))
@@ -244,7 +243,6 @@ public static class FamiliarFeats
 			.WithOnCreature(owner =>
 				owner.AddQEffect(new QEffect()
 				{
-					Id = ModData.QEffectIds.HasFamiliar, // TODO: Seems superfluous as an ID.
 					StartOfCombat = async qfThis =>
 					{
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not {} fTag

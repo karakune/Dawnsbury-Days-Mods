@@ -200,7 +200,6 @@ public static class ModData
         /// </summary>
         public static QEffectId FamiliarCreature;
         public static QEffectId FamiliarDeployed;
-        public static QEffectId HasFamiliar;
         public static QEffectId YourFamiliarIsDead;
         public static QEffectId FamiliarCanManipulate;
         /// <summary>
@@ -214,7 +213,6 @@ public static class ModData
             
             FamiliarCreature = ModManager.RegisterEnumMember<QEffectId>("FamiliarCreature");
             FamiliarDeployed = ModManager.RegisterEnumMember<QEffectId>("FamiliarDeployed");
-            HasFamiliar = ModManager.RegisterEnumMember<QEffectId>("HasFamiliar"); // TODO: Doesn't do anything. Is an ID on the two deployment option feats, and nothing else.
             YourFamiliarIsDead = ModManager.RegisterEnumMember<QEffectId>("YourFamiliarIsDead");
             FamiliarCanManipulate =  ModManager.RegisterEnumMember<QEffectId>("FamiliarCanManipulate");
         }
