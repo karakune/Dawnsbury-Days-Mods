@@ -211,6 +211,15 @@ public static class FamiliarAbilities
 	// Searches through your possibilities to find this action in your familiar actions menu.
 	public static bool IsFamiliarAction(CombatAction familiarAction)
 	{
+		// Shortcut for common use-case
+		if (familiarAction.ActionId == ModData.ActionIds.CommandFamiliar)
+			return true;
+		
+		// Avoid loading crashes
+		// ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+		if (familiarAction.Owner.Possibilities is null)
+			return false;
+		
 		SubmenuPossibility? familiarMenu = LookInPossibilities(
 		    familiarAction.Owner.Possibilities,
 		    poss =>
