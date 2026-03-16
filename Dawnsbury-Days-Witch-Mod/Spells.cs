@@ -690,7 +690,8 @@ public static class WitchSpells
 					Trait.Arcane,
 					Trait.Primal,
 					Trait.Divine,
-					Trait.Occult
+					Trait.Occult,
+					Trait.Mod
 				], 
 				"You channel disruptive energies through the bond between you and your minion, causing it to violently explode.", 
 				$"The target is immediately slain, and the explosion deals {S.HeightenedVariable(2 + (spellLevel * 2), 6)}d6 fire damage (basic Reflex save mitigates) to creatures within 20 feet of it. If the target has the cold or water trait, the spell deals cold damage and has the cold trait instead of the fire trait.",
