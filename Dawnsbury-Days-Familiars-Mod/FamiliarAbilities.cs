@@ -208,11 +208,15 @@ public static class FamiliarAbilities
 		return masterAbility;
 	}
 	
-	// Searches through your possibilities to find this action in your familiar actions menu.
+	/// <summary>
+	/// Determines if an action is a familiar action. Searches through your possibilities; is a familiar action if it's found in a SubmenuPossibility with a PossibilitySection named "Familiar action". Includes whitelist inclusion of the CommandFamiliar, DeployFamiliar, and RetrieveFamiliar actions.
+	/// </summary>
 	public static bool IsFamiliarAction(CombatAction familiarAction)
 	{
-		// Shortcut for common use-case
-		if (familiarAction.ActionId == ModData.ActionIds.CommandFamiliar)
+		// If not whitelisted, would never be considered a familiar action.
+		if (familiarAction.ActionId == ModData.ActionIds.CommandFamiliar
+		    || familiarAction.ActionId == ModData.ActionIds.DeployFamiliar
+		    || familiarAction.ActionId == ModData.ActionIds.RetrieveFamiliar)
 			return true;
 		
 		// Avoid loading crashes
@@ -224,7 +228,8 @@ public static class FamiliarAbilities
 		    familiarAction.Owner.Possibilities,
 		    poss =>
 		        poss is SubmenuPossibility submenu
-		        && submenu.Subsections.Any(sect => sect.Name.Contains("Familiar action")));
+		        && submenu.Subsections.Any(sect =>
+			        sect.Name.Contains("Familiar action")));
 
 		return familiarMenu?.Filter(ap => ap.CombatAction.Name == familiarAction.Name)?.ActionCount > 0;
 

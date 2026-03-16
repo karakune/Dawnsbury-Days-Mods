@@ -292,6 +292,77 @@ public static class FamiliarFeats
 			});
 	}
 
+	public static CombatAction CreateRetrieveFamiliarAction(Creature owner, DeployableFamiliarTag fTag)
+	{
+		return new CombatAction(
+				owner,
+				fTag.IllustrationOrDefault,
+				"Retrieve Familiar",
+				[ModData.Traits.ModName, Trait.Basic, Trait.Concentrate],
+				$$"""
+				{b}Requirements{/b} Your familiar is adjacent to you.
+
+				Command {Blue}{{fTag.FamiliarName ?? "Familiar"}}{/Blue}. If it ends any action adjacent to you, you will retrieve it from the battlefield.
+				""",
+				Target.Self()
+					.WithAdditionalRestriction(self => DeployableFamiliarTag.FindFamiliar(self) is null
+						? "No familiar"
+						: null))
+			.WithActionCost(1)
+			.WithActionId(ModData.ActionIds.RetrieveFamiliar)
+			.WithEffectOnEachTarget(async (_, caster, _, _) =>
+			{
+				if (DeployableFamiliarTag.FindFamiliar(caster) is not { } familiar)
+					return;
+
+				familiar.AddQEffect(new QEffect(ExpirationCondition.ExpiresAtEndOfYourTurn)
+				{
+					AfterYouTakeAction = async (qfThis, anyAction) =>
+					{
+						if (qfThis.Owner.DistanceTo(caster) <= 1)
+							caster.Battle.RemoveCreatureFromGame(familiar);
+					}
+				});
+				familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+				familiar.Actions.ActionsLeft = 2;
+				await CommonSpellEffects.YourMinionActs(familiar);
+			});
+	}
+
+	public static CombatAction CreateDeployFamiliarAction(Creature owner, DeployableFamiliarTag fTag)
+	{
+		return new CombatAction(
+				owner,
+				fTag.IllustrationOrDefault,
+				"Deploy Familiar",
+				[ModData.Traits.ModName, Trait.Basic, Trait.Concentrate],
+				$"Command {{Blue}}{fTag.FamiliarName ?? "Familiar"}{{/Blue}} to deploy onto the battlefield. It will have 1 action remaining afterwards.",
+				Target.RangedEmptyTileForSummoning(1)
+					.WithAdditionalSelfRequirement(self =>
+					{
+						if (DeployableFamiliarTag.IsFamiliarDead(self))
+							return Usability.NotUsable("Familiar is dead");
+						if (DeployableFamiliarTag.FindFamiliar(self) is not null)
+							return Usability.NotUsable("Already deployed");
+						return Usability.Usable;
+					}))
+			.WithActionCost(1)
+			.WithActionId(ModData.ActionIds.DeployFamiliar)
+			.WithEffectOnEachTile(async (_, self, tiles) =>
+			{
+				fTag.Spawn(owner, tiles.FirstOrDefault());
+				owner.AddQEffect(new QEffect { Id = ModData.QEffectIds.FamiliarDeployed });
+				if (DeployableFamiliarTag.FindFamiliar(self) is { } familiar)
+				{
+					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+					familiar.Actions.AnimateActionUsedTo(1, ActionDisplayStyle.UsedUp);
+					familiar.Actions.AnimateActionUsedTo(2, ActionDisplayStyle.Available);
+					familiar.Actions.ActionsLeft = 1;
+					await CommonSpellEffects.YourMinionActs(familiar);
+				}
+			});
+	}
+
 	public static CombatAction CreateCommandFamiliarAction(
 		Creature owner,
 		Creature? familiar,

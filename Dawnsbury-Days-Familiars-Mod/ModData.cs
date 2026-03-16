@@ -54,10 +54,14 @@ public static class ModData
     public static class ActionIds
     {
         public static ActionId CommandFamiliar;
+        public static ActionId DeployFamiliar;
+        public static ActionId RetrieveFamiliar;
         
         public static void Initialize()
         {
             CommandFamiliar = SafelyRegister<ActionId>("CommandFamiliar");
+            DeployFamiliar = SafelyRegister<ActionId>("DeployFamiliar");
+            RetrieveFamiliar = SafelyRegister<ActionId>("RetrieveFamiliar");
         }
     }
 
