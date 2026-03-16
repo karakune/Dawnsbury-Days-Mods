@@ -238,14 +238,7 @@ public class DeployableFamiliarTag : FamiliarTag
 			},
 			WhenMonsterDies = _ =>
 			{
-				master.AddQEffect(new QEffect("Dead Familiar",
-					"Your familiar has died. It will reappear upon your next long rest.")
-				{
-					Id = ModData.QEffectIds.YourFamiliarIsDead
-				});
-				master.LongTermEffects ??= new LongTermEffects();
-				if (master.LongTermEffects.Effects.FirstOrDefault(lt => lt.Id == ModData.LongTermEffects.LDeadFamiliar?.Id) == null)
-					master.LongTermEffects.Add(ModData.LongTermEffects.LDeadFamiliar!);
+				master.AddQEffect(ModData.LongTermEffects.YourFamiliarIsDead());
 			}
 		};
 	}

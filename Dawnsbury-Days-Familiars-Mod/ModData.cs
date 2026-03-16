@@ -170,26 +170,30 @@ public static class ModData
             public const string DeadFamiliar = "DeadFamiliar";
         }
 
-        public static LongTermEffect? LDeadFamiliar;
-
         public static void Initialize()
         {
-            LDeadFamiliar = WellKnownLongTermEffects.CreateLongTermEffect(WellKnownIDs.DeadFamiliar);
-            
             Dawnsbury.Campaign.LongTerm.LongTermEffects.EasyRegister(
                 WellKnownIDs.DeadFamiliar,
                 LongTermEffectDuration.UntilLongRest,
-                () => new QEffect(
-                    "Dead Familiar",
-                    "Your familiar has died. It will reappear upon your next long rest.")
-                {
-                    Id = ModData.QEffectIds.YourFamiliarIsDead,
-                    StartOfCombat = async qfThis =>
-                        qfThis.Owner.Overhead(
-                            "no familiar",
-                            Color.Green,
-                            qfThis.Owner + "'s familiar is dead. It will reappear upon your next long rest.")
-                });
+                YourFamiliarIsDead);
+        }
+
+        public static QEffect YourFamiliarIsDead()
+        {
+            return new QEffect(
+                "Dead Familiar",
+                "Your familiar has died. It will reappear upon your next long rest.")
+            {
+                Id = ModData.QEffectIds.YourFamiliarIsDead,
+                LongTermEffectDuration = LongTermEffectDuration.UntilLongRest,
+                StartOfCombat = async qfThis =>
+                    qfThis.Owner.Overhead(
+                        "no familiar",
+                        Color.Green,
+                        qfThis.Owner + "'s familiar is dead. It will reappear upon your next long rest."),
+                EndOfCombat = async (qfThis, b) =>
+                    qfThis.Owner.LongTermEffects?.Add(WellKnownLongTermEffects.CreateLongTermEffect(WellKnownIDs.DeadFamiliar)!)
+            };
         }
     }
 
