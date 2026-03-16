@@ -138,7 +138,7 @@ public static class WitchSpells
 			return Spells.CreateModern(IllustrationName.AshenWind, "Shroud of Night",
 					[Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
 					"Your patron blankets the target's eyes in darkness.",
-					$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)}",
+					$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)[3..]}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
 				.WithActionCost(1)
 				.WithSoundEffect(SfxName.DazzlingFlash)
