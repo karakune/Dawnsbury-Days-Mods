@@ -202,7 +202,9 @@ public static class FamiliarAbilities
 				master.AddQEffect(innate);
 			});
 		if (witchSubclassPrerequisite != null)
-			masterAbility = masterAbility.WithPrerequisite(witchSubclassPrerequisite.Value, Feat.ToDisplayName(witchSubclassPrerequisite.Value));
+			masterAbility = masterAbility.WithPrerequisite(
+				values => values.HasFeat(witchSubclassPrerequisite.Value),
+				$"You must be a witch with the {Feat.ToDisplayName(witchSubclassPrerequisite.Value)} patron.");
 		masterAbility.Traits.Insert(1, ModData.Traits.ModName);
 		masterAbility.FeatGroup = featGroup;
 		return masterAbility;
