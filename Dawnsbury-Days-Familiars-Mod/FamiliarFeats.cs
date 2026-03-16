@@ -205,7 +205,7 @@ public static class FamiliarFeats
 	{
 		yield return new Feat(
 				ModData.FeatNames.AutoDeployNo,
-				"", "",
+				"", "Your familiar won't be deployed until you take an action to do so.",
 				[ModData.Traits.FamiliarDeploy],
 				null)
 			.WithOnCreature(owner =>
@@ -242,7 +242,7 @@ public static class FamiliarFeats
 		
 		yield return new Feat(
 				ModData.FeatNames.AutoDeployYes,
-				"", "",
+				"", "Your familiar will automatically be deployed at the start of combat in the nearest space to you.",
 				[ModData.Traits.FamiliarDeploy],
 				null)
 			.WithOnCreature(owner =>
