@@ -7,7 +7,9 @@ using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
 using Dawnsbury.Core.Mechanics;
+using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Enumerations;
+using Dawnsbury.Core.Tiles;
 using Microsoft.Xna.Framework;
 
 namespace Dawnsbury.Mods.DeployableFamiliars;
@@ -44,15 +46,20 @@ public class DeployableFamiliarTag : FamiliarTag
 		return this;
 	}
 
+	public void Spawn(Creature master, Tile? where)
+	{
+		Creature familiar = CreateCreature(master);
+		familiar.InitiativeControlledBy = master;
+		familiar.LongTermEffects = new LongTermEffects();
+		familiar.LongTermEffects.BeginningOfCombat(familiar);
+		familiar.LongTermEffects.Effects.Clear();
+		OnFamiliarSpawn.Invoke(familiar);
+		master.Battle.SpawnCreature(familiar, master.OwningFaction, where ?? master.Occupies);
+	}
+
 	public void Spawn(Creature master)
     {
-	    Creature familiar = CreateCreature(master);
-	    familiar.InitiativeControlledBy = master;
-	    familiar.LongTermEffects = new LongTermEffects();
-	    familiar.LongTermEffects.BeginningOfCombat(familiar);
-	    familiar.LongTermEffects.Effects.Clear();
-	    OnFamiliarSpawn.Invoke(familiar);
-	    master.Battle.SpawnCreature(familiar, master.OwningFaction, master.Occupies);
+	    Spawn(master, master.Occupies);
     }
     
     private Creature CreateCreature(Creature master)
