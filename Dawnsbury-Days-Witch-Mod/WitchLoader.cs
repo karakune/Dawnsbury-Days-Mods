@@ -13,11 +13,14 @@ using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
 using Dawnsbury.Mods.DeployableFamiliars;
+using Microsoft.Xna.Framework;
 
 namespace Dawnsbury.Mods.Classes.Witch;
 
 public static class WitchLoader
 {
+	public static Trait ModName = ModManager.RegisterModNameTrait("RemasteredWitch", "Remastered Witch");
+	
 	public static Trait TWitch = ModManager.RegisterTrait("Witch", new TraitProperties("Witch", true)
 	{
 		IsClassTrait = true
@@ -34,13 +37,13 @@ public static class WitchLoader
 	public static void LoadMod()
 	{
 		foreach (var feat in FamiliarAbilities.CreateFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModName);
 		
 		foreach (var feat in CreateFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModName);
 		
 		foreach (var feat in ClassFeats.CreateFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModName);
 	}
 
 	private static IEnumerable<Feat> CreateFeats()
@@ -67,7 +70,7 @@ public static class WitchLoader
 				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PatronsPuppet));
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPhaseFamiliar", "Phase Familiar"),
-				null, "Gain the {i}{link:PhaseFamiliar}phase familiar{/i} hex and a focus point.", [TFirstHex], null)
+				null, "Gain the {i}{link:PhaseFamiliar}phase familiar{/}{/i} hex and a focus point.", [TFirstHex], null)
 			.WithRulesBlockForSpell(WitchSpells.PhaseFamiliar, TWitch, 1)
 			.WithOnSheet(sheet =>
 				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PhaseFamiliar));
@@ -137,6 +140,40 @@ public static class WitchLoader
 					familiar.FamiliarAbilities += 1;
 			}
 		};
+	}
+	
+	extension(ModManager)
+	{
+		/// <summary>
+		/// Creates a custom "Mod" trait which indicates which mod the traited content comes from. This trait is visible with a basic description that uses your humanized mod name.
+		/// </summary>
+		/// <param name="modTechnicalName">The technicalName of the mod such as "MoreDedications". The final technical name of this trait will be "Mod:MoreDedications".</param>
+		/// <param name="modName">The humanized name of the mod such as "More Dedications".</param>
+		public static Trait RegisterModNameTrait(string modTechnicalName, string modName)
+		{
+			return ModManager.RegisterTrait(
+				"Mod:" + modTechnicalName,
+				new TraitProperties(
+					"Mod",
+					true,
+					"This content comes from or is modified by {b}" + modName + "{/b}.",
+					false,
+					Color.LightSteelBlue,
+					false,
+					false));
+		}
+
+		/// <summary>
+		/// As <see cref="ModManager.AddFeat"/>, but it removes the Mod trait and adds your mod's specific trait.
+		/// </summary>
+		/// <param name="newFeat">The feat to register.</param>
+		/// <param name="modName">The mod-source trait to replace the "Mod" trait with.</param>
+		public static void AddFeat(Feat newFeat, Trait modName)
+		{
+			ModManager.AddFeat(newFeat);
+			newFeat.Traits.Remove(Trait.Mod);
+			newFeat.Traits.Insert(0, modName);
+		}
 	}
 }
 
