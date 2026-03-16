@@ -34,7 +34,6 @@ public static class ModData
     public static void LoadData()
     {
         ActionIds.Initialize();
-        BooleanOptions.Initialize();
         LongTermEffects.Initialize();
         QEffectIds.Initialize();
     }
@@ -59,38 +58,6 @@ public static class ModData
         public static void Initialize()
         {
             CommandFamiliar = SafelyRegister<ActionId>("CommandFamiliar");
-        }
-    }
-
-    // TODO: Use or remove BooleanOptions
-    /// <summary>
-    /// Keeps the options registered with <see cref="ModManager.RegisterBooleanSettingsOption"/>. To read the registered options, use <see cref="PlayerProfile.Instance.IsBooleanOptionEnabled(string)"/>.
-    /// </summary>
-    public static class BooleanOptions
-    {
-        //public static string UnrestrictedTrace = null!;
-        
-        public static void Initialize()
-        {
-            /*UnrestrictedTrace = RegisterBooleanOption(
-                IdPrepend+"UnrestrictedTrace",
-                "Runesmith: Less Restrictive Rune Tracing",
-                "Enabling this option removes protections against \"bad decisions\" with tracing certain runes on certain targets.\n\nThe Runesmith is a class on the more advanced end of tactics and creativity. For example, you might want to trace Esvadir onto an enemy because you're about to invoke it onto a different, adjacent enemy. Or you might trace Atryl on yourself as a 3rd action so that you can move it with Transpose Etching (just 1 action) on your next turn, because you're a ranged build.\n\nThis option is for those players.",
-                true);*/
-        }
-        
-        /// <summary>
-        /// Functions as <see cref="ModManager.RegisterBooleanSettingsOption"/>, but also returns the technicalName.
-        /// </summary>
-        /// <returns>(string) The technical name for the option.</returns>
-        public static string RegisterBooleanOption(
-            string technicalName,
-            string caption,
-            string longDescription,
-            bool defaultValue)
-        {
-            ModManager.RegisterBooleanSettingsOption(technicalName, caption, longDescription, defaultValue);
-            return technicalName;
         }
     }
 
@@ -234,7 +201,6 @@ public static class ModData
         /// </summary>
         public static readonly Trait DeployableFamiliarFeat = ModManager.RegisterTrait("DeployableFamiliarFeat", new TraitProperties("Deployable Familiar Feat", false));
         
-        // TODO: This is the trait added to the deployment toggles. Consider removing or renaming.
         public static readonly Trait FamiliarDeploy = ModManager.RegisterTrait("FamiliarDeploy", new TraitProperties("", relevant: false));
     }
 }
