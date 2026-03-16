@@ -65,13 +65,21 @@ public class DeployableFamiliarTag : FamiliarTag
 					  .Max(src => src.SpellcastingAbilityModifier) 
 				  ?? 0
 				: master.Abilities.Get((Ability)SpellcastingAbility));
+		
+		int ac = master.Defenses.GetBaseValue(Defense.AC)
+			+ master.Armor.DexterityBonus
+			+ master.Armor.ProficiencyBonus;
+		List<Bonus?> bonuses = master.Defenses.DetermineDefenseBonuses(null, null, Defense.AC, master);
+		bonuses.RemoveAll(b => b?.BonusType != BonusType.Item);
+		ac += Bonus.Sum(bonuses, false).BonusTotal;
+		
 		Creature familiar = new Creature(
 				IllustrationOrDefault,
 				FamiliarName ?? $"{master.Name}'s Familiar",
 				[Trait.Animal, Trait.Minion, Trait.Small, Trait.NoPhysicalUnarmedAttack],
 				level, level + specialBonus, 5,
 				new Defenses(
-					master.Defenses.GetBaseValue(Defense.AC), 
+					ac, 
 					master.Defenses.GetBaseValue(Defense.Fortitude), 
 					master.Defenses.GetBaseValue(Defense.Reflex), 
 					master.Defenses.GetBaseValue(Defense.Will)),
