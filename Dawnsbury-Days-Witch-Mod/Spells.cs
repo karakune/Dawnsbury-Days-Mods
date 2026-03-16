@@ -39,27 +39,30 @@ public static class WitchSpells
 	public static SpellId PatronsPuppet = ModManager.RegisterNewSpell("PatronsPuppet", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Patron's Puppet",
+			return Spells.CreateModern(
+					new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"),
+					"Patron's Puppet",
 					[Trait.Focus, THex, WitchLoader.TWitch, Trait.Uncommon],
 					"At your unspoken plea, your patron temporarily assumes control over your familiar.",
 					"You Command your familiar, allowing it to take its normal actions this turn.",
 					Target.Self()
 						.WithAdditionalRestriction(master =>
-							ModData.CommonRequirements.WhyCannotCommand(master, isDirectCommand: true))
-					, spellLevel, null)
+							ModData.CommonRequirements.WhyCannotCommand(master)),
+					spellLevel,
+					null)
 				.WithActionCost(0)
 				.WithHexCasting()
 				/*.WithActionId(ModData.ActionIds.CommandFamiliar)*/
 				.WithEffectOnEachTarget(async (spell, master, _, _) =>
 				{
+					/*
 					var familiar = DeployableFamiliarTag.FindFamiliar(master);
 					if (familiar == null)
 						return;
 
 					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 					familiar.Actions.ActionsLeft = 2;
-					
-					/*
+
 					await CommonSpellEffects.YourMinionActs(familiar);
 					*/
 					
@@ -73,6 +76,20 @@ public static class WitchSpells
 							ap.RecalculateUsability();
 							return true;
 						});
+					poss.CannotPass = false;
+                            
+					poss.Sections.Add(new PossibilitySection("Pass")
+					{
+						Possibilities = [new ActionPossibility(new CombatAction(
+								master,
+								IllustrationName.EndTurn,
+								"Pass",
+								[Trait.Basic, Trait.UsableEvenWhenUnconsciousOrParalyzed, Trait.DoesNotPreventDelay],
+								"Do nothing.",
+								Target.Self())
+							.WithTag("PassCommandingFamiliar")
+							.WithActionCost(0))]
+					});
         
 					Creature? active = master.Battle.ActiveCreature;
 					master.Battle.ActiveCreature = master;
@@ -86,6 +103,18 @@ public static class WitchSpells
 					await master.Battle.GameLoop.OfferOptions(master, actions, true);
         
 					master.Battle.ActiveCreature = active;
+
+					if (master.Actions.ActionHistoryThisTurn.LastOrDefault() is { Tag: "PassCommandingFamiliar" })
+						RefundSpell();
+					
+					return;
+					
+					void RefundSpell()
+					{
+						master.Actions.RevertExpendingOfResources(0, spell);
+						master.Spellcasting?.RevertExpendingOfResources(spell);
+						master.RemoveAllQEffects(qf => qf == QHexCasted);
+					}
 				});
 		});
 	
