@@ -49,8 +49,8 @@ public static class WitchSpells
 					, spellLevel, null)
 				.WithActionCost(0)
 				.WithHexCasting()
-				.WithActionId(ModData.ActionIds.CommandFamiliar)
-				.WithEffectOnEachTarget(async (_, master, _, _) =>
+				/*.WithActionId(ModData.ActionIds.CommandFamiliar)*/
+				.WithEffectOnEachTarget(async (spell, master, _, _) =>
 				{
 					var familiar = DeployableFamiliarTag.FindFamiliar(master);
 					if (familiar == null)

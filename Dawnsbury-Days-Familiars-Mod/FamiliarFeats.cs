@@ -149,8 +149,7 @@ public static class FamiliarFeats
 					ProvideMainAction = qfThis =>
 					{
 						if (DeployableFamiliarTag.FindTag(qfThis.Owner) is not { } fTag
-						    || DeployableFamiliarTag.IsFamiliarDead(self)
-						    || DeployableFamiliarTag.FindFamiliar(qfThis.Owner) is not { } familiar)
+						    || DeployableFamiliarTag.IsFamiliarDead(self))
 							return null;
 						if (qfThis.UsedThisTurn)
 							return null;
@@ -165,7 +164,7 @@ public static class FamiliarFeats
 										PossibilitySectionId = PossibilitySectionId.FamiliarAbility,
 										Possibilities =
 										[
-											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, familiar,
+											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, DeployableFamiliarTag.FindFamiliar(qfThis.Owner),
 												fTag),
 										]
 									}
@@ -176,19 +175,25 @@ public static class FamiliarFeats
 					// Automates the consumption of your familiar command.
 					AfterYouTakeAction = async (qfThis, action) =>
 					{
-						if (action.ActionId != ModData.ActionIds.CommandFamiliar)
+						if (!FamiliarAbilities.IsFamiliarAction(action))
 							return;
 						qfThis.UsedThisTurn = true;
 					}
 				};
 				// Has to be done separate due to lacking a QEffect self-reference.
 				// Keeps you from using commands more than once.
+				// Applies other restrictions to familiar abilities.
 				commandGranter.PreventTakingAction = action =>
 				{
-					if (action.ActionId == ModData.ActionIds.CommandFamiliar
-					    && commandGranter.UsedThisTurn)
-						return "You already commanded your familiar this turn.";
-					return null;
+					// Don't care if we're not dealing with familiar actions
+					if (!FamiliarAbilities.IsFamiliarAction(action))
+						return null;
+
+					return ModData.CommonRequirements.WhyCannotCommand(
+						action.Owner,
+						action.ActionId == ModData.ActionIds.CommandFamiliar,
+						action.Name.ToLower() is
+							"item delivery" or "lab assistant" or "restorative familiar" or "valet");
 				};
 				self.AddQEffect(commandGranter);
 			});
