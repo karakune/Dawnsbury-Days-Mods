@@ -71,10 +71,10 @@ public static class FamiliarFeats
 		};
 
 		foreach (Feat feat in CreateFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModData.Traits.ModName);
 		
 		foreach (Feat feat in CreateClassFeats())
-			ModManager.AddFeat(feat);
+			ModManager.AddFeat(feat, ModData.Traits.ModName);
 	}
 	
 	/// <summary>
@@ -272,7 +272,7 @@ public static class FamiliarFeats
 		yield return new Feat(ModData.FeatNames.ArcaneThesisImprovedFamiliar,
 				"Your thesis is 'Familiars: An extensive study of the benefits of pets'.",
 				"You gain the Familiar wizard feat. Your familiar gains an extra ability, and it gains an additional extra ability when you reach 6th, 12th, and 18th levels.",
-				[ModData.Traits.ModName, Trait.ArcaneThesis], null)
+				[Trait.ArcaneThesis], null)
 			.WithOnSheet(values =>
 			{
 				values.GrantFeat(FeatName.ClassFamiliar);
@@ -301,7 +301,7 @@ public static class FamiliarFeats
 				owner,
 				fTag.IllustrationOrDefault,
 				"Command Familiar",
-				[Trait.Basic, Trait.Auditory, Trait.Concentrate],
+				[ModData.Traits.ModName, Trait.Basic, Trait.Auditory, Trait.Concentrate],
 				$$"""
 				{i}You issue your familiar a command.{/i}
 

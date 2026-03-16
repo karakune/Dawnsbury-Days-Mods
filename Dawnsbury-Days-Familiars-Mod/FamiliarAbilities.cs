@@ -18,7 +18,7 @@ public static class FamiliarAbilities
 	public static void Load()
 	{
 		foreach (Feat ft in CreateFeats())
-			ModManager.AddFeat(ft);
+			ModManager.AddFeat(ft, ModData.Traits.ModName);
 	}
 
 	public static IEnumerable<Feat> CreateFeats()
@@ -164,7 +164,6 @@ public static class FamiliarAbilities
 				});
 				onSheet?.Invoke(values);
 			});
-		familiarAbility.Traits.Insert(1, ModData.Traits.ModName);
 		familiarAbility.FeatGroup = featGroup;
 		return familiarAbility;
 	}
@@ -205,7 +204,6 @@ public static class FamiliarAbilities
 			masterAbility = masterAbility.WithPrerequisite(
 				values => values.HasFeat(witchSubclassPrerequisite.Value),
 				$"You must be a witch with the {Feat.ToDisplayName(witchSubclassPrerequisite.Value)} patron.");
-		masterAbility.Traits.Insert(1, ModData.Traits.ModName);
 		masterAbility.FeatGroup = featGroup;
 		return masterAbility;
 	}

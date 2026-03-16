@@ -223,7 +223,7 @@ public static class ModData
         /// <summary>
         /// The name of the mod, for the purposes of branding feats.
         /// </summary>
-        public static readonly Trait ModName = ModManager.RegisterTrait("DeployableFamiliars", new TraitProperties("Deployable Familiars", true));
+        public static readonly Trait ModName = ModManager.RegisterModNameTrait("DeployableFamiliars", "Deployable Familiars");
         
         /// <summary>
         /// If a modded feat grants a combat familiar, adding this trait will automatically convert that feat to grant a deployable familiar. Do not add this trait if the feat grants a familiar indirectly by granting the <see cref="FeatName.ClassFamiliar"/> or <see cref="FeatName.AnimalAccomplice"/> feats.
