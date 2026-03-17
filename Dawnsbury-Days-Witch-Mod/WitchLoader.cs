@@ -28,6 +28,7 @@ public static class WitchLoader
 
 	public static Trait TFirstHex = ModManager.RegisterTrait("First Hex", new TraitProperties("", relevant: false));
 
+	public static FeatName FNWitch = ModManager.RegisterFeatName("FeatWitch", "Witch");
 	public static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
 	public static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
 	public static FeatName FNSpinnerOfThreads = ModManager.RegisterFeatName("SpinnerOfThreads", "Spinner of Threads");
@@ -43,6 +44,9 @@ public static class WitchLoader
 			ModManager.AddFeat(feat, ModName);
 		
 		foreach (var feat in ClassFeats.CreateFeats())
+			ModManager.AddFeat(feat, ModName);
+
+		foreach (var feat in ArchetypeFeats.CreateFeats())
 			ModManager.AddFeat(feat, ModName);
 	}
 
@@ -76,7 +80,7 @@ public static class WitchLoader
 				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PhaseFamiliar));
 		
 		Feat witchClass = new ClassSelectionFeat(
-				ModManager.RegisterFeatName("FeatWitch", "Witch"),
+				FNWitch,
 				"You command powerful magic, not through study or devotion to any ideal, but as a vessel or agent for a mysterious, otherworldly patron that even you don't entirely understand. This entity might be a covert divinity, a powerful fey, a manifestation of natural energies, an ancient spirit, or any other mighty supernatural being — but its nature is likely as much a mystery to you as it is to anyone else. Through a special familiar, your patron grants you versatile spells and powerful hexes to use as you see fit, though you're never certain if these gifts will end up serving your patron's larger plan.",
 				TWitch,
 				new EnforcedAbilityBoost(Ability.Intelligence),
@@ -179,6 +183,9 @@ public static class WitchLoader
 
 public class WitchPatronFeat : Feat
 {
+	public Trait Tradition { get; private set; }
+	public Skill Skill { get; private set; }
+	
 	private WitchPatronFeat(FeatName patronName, string flavorText, string rulesText) 
 		: base(patronName, flavorText, rulesText, new List<Trait>(), null)
 	{
@@ -187,7 +194,7 @@ public class WitchPatronFeat : Feat
 	public static Feat Create(FeatName patronName, Trait spellTradition, Skill skill, SpellId hexCantrip, SpellId extraPreparableSpell, FeatName familiarAbility, string flavorText, string lessonName)
 	{
 		var famFeat = AllFeats.GetFeatByFeatName(familiarAbility);
-		return new WitchPatronFeat(
+		var patronFeat = new WitchPatronFeat(
 				patronName,
 				flavorText,
 				$$"""
@@ -196,6 +203,10 @@ public class WitchPatronFeat : Feat
 				  {b}{{lessonName}}:{/b} You gain the {{AllSpells.CreateSpellLink(hexCantrip, WitchSpells.THex)}} hex cantrip and {{AllSpells.CreateSpellLink(extraPreparableSpell, WitchLoader.TWitch)}} is added to your preparable spell list.
 				  {b}{{famFeat.Name}}:{/b} {{famFeat.RulesText}}
 				  """)
+			{
+				Tradition = spellTradition,
+				Skill = skill
+			}
 			.WithOnSheet(sheet =>
 			{
 				sheet.GrantFeat(familiarAbility);
@@ -239,5 +250,6 @@ public class WitchPatronFeat : Feat
 				
 				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Add(extraPreparableSpell);
 			});
+		return patronFeat;
 	}
 }
