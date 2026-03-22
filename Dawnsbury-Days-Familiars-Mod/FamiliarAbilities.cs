@@ -1,3 +1,5 @@
+using Dawnsbury.Audio;
+using Dawnsbury.Auxiliary;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.Feats;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
@@ -65,6 +67,28 @@ public static class FamiliarAbilities
 			{
 				familiar.Traits.Remove(Trait.Animal);
 				familiar.WithExtraTrait(Trait.Dragon);
+			});
+		
+		// Echolocation
+		yield return DeployableFamiliarAbility(
+				ModData.FeatNames.Echolocation,
+				ModData.FeatGroups.FamiliarAbilities,
+				null,
+				"Your familiar gains a precise sense with a range of 20 feet, which means that creatures can't be hidden within the area while it is conscious, unless it is deafened.",
+				innate =>
+				{
+					innate.Description =
+						"You observe creatures within 20 feet using your precise sense, unless you are deafened.";
+				},
+				familiar =>
+				{
+					familiar.AddQEffect(PreciseEcholocation());
+					DeployableFamiliarTag.FindMaster(familiar)?.FindQEffect(ModData.QEffectIds.FamiliarEcholocation)
+						?.ExpiresAt = ExpirationCondition.Ephemeral;
+				})
+			.WithOnCreature(self =>
+			{
+				self.AddQEffect(PreciseEcholocation());
 			});
 
 		// Fast Movement
@@ -287,4 +311,35 @@ public static class FamiliarAbilities
 		    return null;
 		}
 	}
+    
+    /// <summary>
+    /// Creates an innate QEffect for echolocation precise sense.
+    /// </summary>
+    /// <returns></returns>
+    public static QEffect PreciseEcholocation()
+    {
+        return new QEffect("Echolocation", "You observe creatures within 20 feet using your precise sense, unless deafened.")
+        {
+	        Id = ModData.QEffectIds.FamiliarEcholocation,
+            Tag = 4,
+            StateCheck = qfThis =>
+            {
+                if (qfThis.Owner.HasEffect(QEffectId.Unconscious) || qfThis.Owner.HasEffect(QEffectId.Deafened))
+                    return;
+
+                if (qfThis.Owner.HasEffect(ModData.QEffectIds.YourFamiliarIsDead))
+	                return;
+                
+                int innerRange = (int)qfThis.Tag!;
+                qfThis.Owner.Battle.AllCreatures
+                    .Where(cr =>
+                        cr.EnemyOf(qfThis.Owner) && cr.DistanceTo(qfThis.Owner) <= innerRange)
+                    .ForEach(cr =>
+                    {
+	                    cr.DetectionStatus.Undetected = false;
+	                    cr.DetectionStatus.HiddenTo.Remove(qfThis.Owner);
+                    });
+            },
+        };
+    }
 }

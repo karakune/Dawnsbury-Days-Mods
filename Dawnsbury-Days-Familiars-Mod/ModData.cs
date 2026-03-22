@@ -116,6 +116,7 @@ public static class ModData
         public static readonly FeatName Amphibious = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityAmphibious", "Amphibious");
         public static readonly FeatName Construct = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityConstruct", "Construct");
         public static readonly FeatName Dragon = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityDragon", "Dragon");
+        public static readonly FeatName Echolocation = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityEcholocation", "Echolocation");
         public static readonly FeatName FastMovement = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityFastMovement", "Fast Movement");
         public static readonly FeatName Flier = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityFlier", "Flier");
         public static readonly FeatName Independent = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityIndependent", "Independent");
@@ -178,6 +179,7 @@ public static class ModData
         public static QEffectId FamiliarDeployed;
         public static QEffectId YourFamiliarIsDead;
         public static QEffectId FamiliarCanManipulate;
+        public static QEffectId FamiliarEcholocation;
         /// <summary>
         /// A familiar with this QEffectId can cast scrolls with any of the traits in <see cref="QEffect.Traits"/>. The traditions of spells it can cast should be put into this list.
         /// </summary>
@@ -191,6 +193,7 @@ public static class ModData
             FamiliarDeployed = ModManager.RegisterEnumMember<QEffectId>("FamiliarDeployed");
             YourFamiliarIsDead = ModManager.RegisterEnumMember<QEffectId>("YourFamiliarIsDead");
             FamiliarCanManipulate =  ModManager.RegisterEnumMember<QEffectId>("FamiliarCanManipulate");
+            FamiliarEcholocation =  ModManager.RegisterEnumMember<QEffectId>("FamiliarEcholocation");
         }
     }
 
