@@ -266,7 +266,11 @@ public static class FamiliarAbilities
 		        && submenu.Subsections.Any(sect =>
 			        sect.Name.Contains("Familiar action")));
 
-		return familiarMenu?.Filter(ap => ap.CombatAction.Name == familiarAction.Name)?.ActionCount > 0;
+		var familiarActions = familiarMenu?.Subsections
+			.FirstOrDefault(sect =>
+				sect.Name.Contains("Familiar action"));
+
+		return familiarActions?.Filter(ap => ap.CombatAction.Name == familiarAction.Name)?.ActionCount > 0;
 
 		SubmenuPossibility? LookInPossibilities(
 		    Possibilities posses,
