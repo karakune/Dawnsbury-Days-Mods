@@ -16,20 +16,6 @@ namespace Dawnsbury.Mods.DeployableFamiliars;
 
 public class DeployableFamiliarTag : FamiliarTag
 {
-	// TODO: Innate feats and specific familiars
-	// See Kholo Ancestry for a specific familiar
-	/*public class FamiliarFeat : Feat
-	{
-		public int InnateFeatsCount { get; }
-	
-		public FamiliarFeat(string familiarKind, int innateFeatsCount) 
-			: base(ModManager.RegisterFeatName($"Familiar{familiarKind}", familiarKind), $"{familiarKind} Familiar.", 
-				$"You gain a {familiarKind} familiar.", [ModData.Traits.TFamiliar], null)
-		{
-			InnateFeatsCount = innateFeatsCount;
-		}
-	}*/
-
 	/// <summary>
 	/// If this familiar should gain any specific changes when spawned, such as replacing its creature type trait due to a familiar ability, then this action applies those modifications after the familiar has been fully created and given all of its QEffects, but before being spawned.
 	/// </summary>

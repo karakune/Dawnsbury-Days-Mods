@@ -88,6 +88,17 @@ public static class FamiliarAbilities
 				innate.Id = QEffectId.Flying;
 			});
 		
+		// Independent
+		yield return DeployableFamiliarAbility(
+			ModData.FeatNames.Independent,
+			ModData.FeatGroups.FamiliarAbilities,
+			null,
+			"As a free action, you may command your familiar to take one action instead of commanding it normally.",
+			innate =>
+			{
+				innate.Description = "You can take one action during your master's turn if they haven't commanded you.";
+			});
+		
 		// Manual Dexterity
 		yield return DeployableFamiliarAbility(
 			ModData.FeatNames.ManualDexterity,

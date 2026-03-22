@@ -118,6 +118,7 @@ public static class ModData
         public static readonly FeatName Dragon = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityDragon", "Dragon");
         public static readonly FeatName FastMovement = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityFastMovement", "Fast Movement");
         public static readonly FeatName Flier = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityFlier", "Flier");
+        public static readonly FeatName Independent = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityIndependent", "Independent");
         public static readonly FeatName ManualDexterity = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityManualDexterity", "Manual Dexterity");
         public static readonly FeatName Plant = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityPlant", "Plant");
         public static readonly FeatName Tough = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityTough", "Tough");

@@ -153,7 +153,18 @@ public static class FamiliarFeats
 							return null;
 						CombatAction deployment = DeployableFamiliarTag.FindFamiliar(qfThis.Owner) is not null
 							? CreateRetrieveFamiliarAction(qfThis.Owner, fTag)
-							: CreateDeployFamiliarAction(qfThis.Owner, fTag); 
+							: CreateDeployFamiliarAction(qfThis.Owner, fTag);
+
+						List<Possibility> commandPossibilities =
+						[
+							(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner,
+								DeployableFamiliarTag.FindFamiliar(qfThis.Owner), fTag),
+						];
+						if (qfThis.Owner.HasFeat(ModData.FeatNames.Independent))
+							commandPossibilities.Add(
+								(ActionPossibility)CreateIndependentFamiliarAction(qfThis.Owner,
+									DeployableFamiliarTag.FindFamiliar(qfThis.Owner), fTag));
+						
 						return new SubmenuPossibility(
 								fTag.IllustrationOrDefault,
 								fTag.FamiliarName ?? "Familiar")
@@ -162,9 +173,7 @@ public static class FamiliarFeats
 								{
 									new PossibilitySection("Command Familiar")
 									{
-										Possibilities = [
-											(ActionPossibility)CreateCommandFamiliarAction(qfThis.Owner, DeployableFamiliarTag.FindFamiliar(qfThis.Owner), fTag)
-										]
+										Possibilities = commandPossibilities
 									},
 									new PossibilitySection("Familiar action")
 									{
@@ -369,6 +378,39 @@ public static class FamiliarFeats
 					return;
 				familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
 				familiar.Actions.ActionsLeft = 2;
+				await CommonSpellEffects.YourMinionActs(familiar);
+			});
+	}
+
+	public static CombatAction CreateIndependentFamiliarAction(
+		Creature owner,
+		Creature? familiar,
+		DeployableFamiliarTag fTag)
+	{
+		return new CombatAction(
+				owner,
+				fTag.IllustrationOrDefault,
+				"Independent Familiar",
+				[ModData.Traits.ModName, Trait.Basic, Trait.Auditory, Trait.Concentrate],
+				$$"""
+				  {i}Your familiar takes an action on its own.{/i}
+
+				  {b}Frequency{/b} once per turn
+
+				  Take 1 action as {{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}.
+				  """,
+				Target.Self()
+					.WithAdditionalRestriction(self =>
+						ModData.CommonRequirements.WhyCannotCommand(self, true)))
+			.WithActionCost(0)
+			.WithActionId(ModData.ActionIds.CommandFamiliar)
+			.WithEffectOnEachTarget(async (_, _, _, _) =>
+			{
+				if (familiar is null)
+					return;
+				familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
+				familiar.Actions.AnimateActionUsedTo(1, ActionDisplayStyle.Slowed);
+				familiar.Actions.ActionsLeft = 1;
 				await CommonSpellEffects.YourMinionActs(familiar);
 			});
 	}
