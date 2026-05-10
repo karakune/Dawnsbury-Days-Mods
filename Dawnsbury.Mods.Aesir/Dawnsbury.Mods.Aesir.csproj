@@ -17,5 +17,8 @@
     <PropertyGroup>
         <PublishSingleFile>True</PublishSingleFile>
     </PropertyGroup>
-
+    <Target Name="PrepareWorkshopFolder" AfterTargets="Build" Condition="'$(Configuration)'=='Release'">
+        <Copy SourceFiles="Assets/ORC copyright notice.html;Assets/optional-dependencies.txt" DestinationFolder="WorkshopFiles"/>
+        <Copy SourceFiles="$(TargetPath)" DestinationFolder="WorkshopFiles/CustomMods"/>
+    </Target>
 </Project>
