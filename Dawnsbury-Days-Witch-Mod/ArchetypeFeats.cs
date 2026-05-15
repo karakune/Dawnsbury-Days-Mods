@@ -15,7 +15,7 @@ public static class ArchetypeFeats
 	    List<Feat> patrons = (AllFeats.GetFeatByFeatName(WitchLoader.FNWitch).Subfeats ?? new List<Feat>()).OfType<WitchPatronFeat>().Select(patron =>
 	    {
 		    return new Feat(MulticlassArchetypeFeats.SubclassToArchetype(patron), patron.FlavorText, 
-				    "You gain the Cast a Spell activity. You can prepare one cantrip each day from your familiar. You're trained in the spell attack modifier and spell DC statistics. Your key spellcasting attribute for witch archetype spells is Intelligence, and they are witch spells of your patron's tradition. You become trained in the skill associated with the patron's tradition; if you were already trained in it, you instead become trained in a skill of your choice.", 
+				    $"Your spellcasting tradition is {patron.Tradition} and you become trained in {patron.Skill}.", 
 				    new List<Trait>(), null)
 			    .WithIllustration(patron.Illustration)
 			    .WithOnSheet(sheet =>
@@ -34,7 +34,8 @@ public static class ArchetypeFeats
 	    }).ToList();
 	    
 	    var dedicationFeat = Core.CharacterBuilder.FeatsDb.TrueFeatDb.Archetypes.ArchetypeFeats.CreateMulticlassDedication(WitchLoader.TWitch, "You have heard the whispers of a distant patron, who sent an emissary to teach you powerful magic.", 
-			    "You cast spells like a witch. Choose a patron; you gain a familiar, but aside from from your chosen patron's tradition, you don't gain any other effects the patron would usually grant. Your familiar gains the normal number of abilities for a familiar instead of those a witch normally gets.",
+			    "You cast spells like a witch.\nChoose a patron; you gain a familiar, but aside from from your chosen patron's tradition, you don't gain any other effects the patron would usually grant. Your familiar gains the normal number of abilities for a familiar instead of those a witch normally gets.\n"
+			    + "\nYou gain the Cast a Spell activity.\nYou can prepare one cantrip each day from your familiar.\nYou're trained in the spell attack modifier and spell DC statistics.\nYour key spellcasting attribute for witch archetype spells is Intelligence, and they are witch spells of your patron's tradition.\nYou become trained in the skill associated with the patron's tradition; if you were already trained in it, you instead become trained in a skill of your choice.",
 			    patrons)
 			.WithDemandsAbility14(Ability.Intelligence)
 			.WithOnSheet(sheet =>
