@@ -633,7 +633,9 @@ public static class WitchSpells
 						CountsAsADebuff = true,
 						StateCheck = qEffect => 
 						{
-							target.WeaknessAndResistance.Weaknesses.Add(new SpecialResistance(element.ToString(), (action, kind) => action?.HasTrait(element) ?? false, (spellLevel + 1) / 2, null));
+							target.WeaknessAndResistance.Weaknesses.Add(new SpecialResistance(element.ToString(), (action, kind) => 
+								(action != null && action.HasTrait(element)) || (kind == DamageKind.Fire && element == Trait.Fire), 
+								(spellLevel + 1) / 2, null));
 						}
 					};
 					

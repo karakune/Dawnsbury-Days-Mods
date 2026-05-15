@@ -213,7 +213,7 @@ public class WitchPatronFeat : Feat
 				sheet.SpellTraditionsKnown.Add(spellTradition);
 				sheet.SetProficiency(Trait.Spell, Proficiency.Trained);
 				sheet.TrainInThisOrSubstitute(skill);
-				sheet.PreparedSpells.Add(WitchLoader.TWitch, new PreparedSpellSlots(Ability.Intelligence, spellTradition));
+				sheet.PreparedSpells.Add(WitchLoader.TWitch, new PreparedSpellSlots(Ability.Intelligence, spellTradition, WitchLoader.TWitch));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip1"));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip2"));
 				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip3"));

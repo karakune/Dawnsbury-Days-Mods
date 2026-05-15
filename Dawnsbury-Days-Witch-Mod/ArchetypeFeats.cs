@@ -25,14 +25,15 @@ public static class ArchetypeFeats
 				    // We don't use MulticlassArchetypeFeats.SetupPreparedSpellcasting because we only get one cantrip slot
 				    sheet.SpellTraditionsKnown.Add(patron.Tradition);
 				    sheet.SetProficiency(Trait.Spell, Proficiency.Trained);
-				    var preparedSpellSlots = new PreparedSpellSlots(Ability.Intelligence, patron.Tradition);
+				    var preparedSpellSlots = new PreparedSpellSlots(Ability.Intelligence, patron.Tradition, WitchLoader.TWitch);
 				    if (!sheet.PreparedSpells.TryAdd(WitchLoader.TWitch, preparedSpellSlots))
 					    return;
 				    
 				    preparedSpellSlots.Slots.Add(new FreePreparedSpellSlot(0, WitchLoader.TWitch.ToStringOrTechnical() + "ArchetypeCantrip1"));
 			    });
 	    }).ToList();
-	    yield return Core.CharacterBuilder.FeatsDb.TrueFeatDb.Archetypes.ArchetypeFeats.CreateMulticlassDedication(WitchLoader.TWitch, "You have heard the whispers of a distant patron, who sent an emissary to teach you powerful magic.", 
+	    
+	    var dedicationFeat = Core.CharacterBuilder.FeatsDb.TrueFeatDb.Archetypes.ArchetypeFeats.CreateMulticlassDedication(WitchLoader.TWitch, "You have heard the whispers of a distant patron, who sent an emissary to teach you powerful magic.", 
 			    "You cast spells like a witch. Choose a patron; you gain a familiar, but aside from from your chosen patron's tradition, you don't gain any other effects the patron would usually grant. Your familiar gains the normal number of abilities for a familiar instead of those a witch normally gets.",
 			    patrons)
 			.WithDemandsAbility14(Ability.Intelligence)
@@ -40,8 +41,10 @@ public static class ArchetypeFeats
 		    {
 			    sheet.GrantFeat(FeatName.ClassFamiliar);
 		    });
+
+	    yield return dedicationFeat;
 	    
-	    foreach (Feat spellcastingFeat in MulticlassArchetypeFeats.CreateSpellcastingFeats(WitchLoader.TWitch, Trait.Prepared, "Patron's"))
+	    foreach (Feat spellcastingFeat in MulticlassArchetypeFeats.CreateSpellcastingFeats(WitchLoader.TWitch, Trait.Prepared, "Patron's", dedicationFeat.FeatName))
 	      yield return spellcastingFeat;
 	    foreach (Feat grantingArchetypeFeat in Core.CharacterBuilder.FeatsDb.TrueFeatDb.Archetypes.ArchetypeFeats.CreateBasicAndAdvancedMulticlassFeatGrantingArchetypeFeats(WitchLoader.TWitch, "Witchcraft"))
 		    yield return grantingArchetypeFeat;
