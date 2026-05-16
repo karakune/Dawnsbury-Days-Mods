@@ -33,6 +33,7 @@ public static class ClassFeats
 	};
 
 	public static FeatName FNCeremonialKnife = ModManager.RegisterFeatName("CeremonialKnife", "Ceremonial Knife");
+	public static FeatName FNCauldron = ModManager.RegisterFeatName("Cauldron");
 	
 	public static IEnumerable<Feat> CreateFeats()
 	{
@@ -74,13 +75,90 @@ public static class ClassFeats
 				.Add(new FreePreparedSpellSlot(0, "CantripExpansion2"));
 		});
 
-		// var cauldron = ModManager.RegisterFeatName("Cauldron");
-		// yield return new TrueFeat(cauldron, 1,
-		// 	"",
-		// 	"",
-		// 	[WitchLoader.TWitch]).WithOnSheet(values =>
-		// {
-		// });
+		yield return new TrueFeat(FNCauldron, 1,
+			"You can brew magic in your cauldron, creating useful magical concoctions.",
+			"During your daily preparations, you can create one 1st-level temporary oil or potion. At 4th level and every 2 levels after that, the maximum level of the oil or potion becomes equal to your level. A temporary oil or potion has no value, and you can only have one at a time.",
+			[WitchLoader.TWitch]);
+		
+		ItemModifications.RegisterItemModification("cauldron-crafted",
+			modification => "cauldron-crafted",
+			(deserialization, kind) =>
+			{
+				if (!deserialization.StartsWith("cauldron-crafted"))
+					return null;
+
+				return new ItemModification(kind)
+				{
+					ModifyItem = crafted =>
+					{
+						crafted.ProsaicName += " (Temporary)";
+						crafted.Price = 0;
+					}
+				};
+			});
+		
+		var cauldronFormulas = Items.ShopItems
+			.Where(item => item.HasTrait(Trait.Potion) || item.HasTrait(Trait.Oil));
+
+		foreach (var formula in cauldronFormulas)
+		{
+			InventoryContextMenu.Options.Add(new InventoryContextMenuOption(
+				(Func<InventoryItemSlot, Item, Inventory, ContextMenuItem[]>)
+				((itemSlot, _, inventory) =>
+				{
+					if (CampaignState.Instance != null && CampaignState.Instance.CurrentStop is not LongRestCampaignStop)
+						return null;
+
+					if (itemSlot.Item != null)
+						return null;
+
+					if (itemSlot.InventoryItemSlotKind == InventoryItemSlotKind.Armor)
+						return null;
+				
+					CharacterSheet characterSheet = itemSlot.CharacterSheet;
+					if (characterSheet == null || !characterSheet.Calculated.HasFeat(FNCauldron))
+						return null;
+
+					int charLevel = characterSheet.EditingInventoryAtLevel;
+					
+					if (charLevel < 4 && formula.Level > 1)
+						return null;
+
+					if (charLevel >= 4)
+					{
+						int levelToCheck = charLevel;
+						if (levelToCheck % 2 != 0)
+							levelToCheck -= 1;
+
+						if (formula.Level > levelToCheck)
+							return null;
+					}
+
+					return
+					[
+						new ContextMenuItem(formula.Illustration, $"Craft temporary {formula.ProsaicName}",
+							$"Creates a {formula.ProsaicName} that lasts until the next long rest or until used.",
+							() =>
+							{
+								if (ModManager.TryParse("cauldron-crafted", out ItemModificationKind kind))
+								{
+									Item? previouslyCrafted;
+									do
+									{
+										previouslyCrafted =
+											inventory.RemoveFirstInventoryItem(item => 
+												item.ItemModifications.Any(mod => mod.Kind == kind));
+									} while (previouslyCrafted != null);
+								}
+								
+								var crafted = Items.CreateNew(formula.ItemName);
+								crafted.WithModification(ItemModification.Create("cauldron-crafted"));
+								
+								itemSlot.ReplaceSelf(crafted);
+							})
+					];
+				})));
+		}
 
 		var nails = new Item(IllustrationName.DragonClaws, "Eldritch Claws", WitchLoader.ModName, Trait.Brawling, Trait.Agile,
 				Trait.Unarmed, TSympStrike)
