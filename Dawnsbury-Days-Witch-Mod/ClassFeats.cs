@@ -177,7 +177,7 @@ public static class ClassFeats
 			[
 				CreateLesson(TBasicLesson, "Dreams", "Dreams can be a window to greater insights.", WitchSpells.VeilOfDreams, SpellId.Sleep),
 				CreateLesson(TBasicLesson, "Life", "Life can be shared.", WitchSpells.LifeBoost, WitchSpells.SpiritLink),
-				// CreateLesson(TBasicLesson, "Protection", "An ounce of protection is worth a pound of cure.", WitchSpells.BloodWard, SpellId.MageArmor),
+				CreateLesson(TBasicLesson, "Protection", "An ounce of protection is worth a pound of cure.", WitchSpells.BloodWard, SpellId.MageArmor),
 				CreateLessonElements(TBasicLesson, "Elements", "Natural disasters and inclement weather hold more power than the mightiest creature.", WitchSpells.ElementalBetrayal, [SpellId.BurningHands, WitchSpells.GustOfWind, SpellId.HydraulicPush, SpellId.PummelingRubble]),
 				CreateLesson(TBasicLesson, "Vengeance", "Suffer not even the smallest slights.", WitchSpells.NeedleOfVengeance, SpellId.PhantomPain)
 			]);

@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Dawnsbury.Audio;
 using Dawnsbury.Core;
 using Dawnsbury.Core.Animations;
@@ -15,9 +13,10 @@ using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Damage;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
+using Dawnsbury.Core.Mechanics.Zoning;
 using Dawnsbury.Core.Possibilities;
 using Dawnsbury.Core.Roller;
-using Dawnsbury.Display;
+using Dawnsbury.Core.Tiles;
 using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
@@ -645,6 +644,56 @@ public static class WitchSpells
 				.WithHeighteningNumerical(spellLevel, 1, inCombat, 2, $"Increase the weakness by 1.")
 				.WithHexCasting();
 		});
+	
+	public static SpellId BloodWard = ModManager.RegisterNewSpell("Blood Ward", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.BloodVendetta, "Blood Ward",
+					[WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+					"Your patron's aegis descends to shield a target from harm.",
+					$"Choose one creature trait from the following:  aberration, animal, beast, celestial, construct, dragon, elemental, fey, fiend, fungus, monitor, ooze, plant, or undead. The target gains a +1 (or +2 when cast at 5th level) status bonus to its saving throws and AC against creatures with that trait.",
+					Target.RangedFriend(6), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.ArmorDon)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var prompt = await caster.AskForChoiceAmongButtons(IllustrationName.BloodVendetta,
+						$"Which creature trait should {target.Name} be defended against?",
+						[ "aberration", "animal", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "fungus", "monitor", "ooze", "plant", "undead"]);
+
+					var trait = prompt.Index switch
+					{
+						0 => Trait.Aberration,
+						1 => Trait.Animal,
+						2 => Trait.Beast,
+						3 => Trait.Celestial,
+						4 => Trait.Construct,
+						5 => Trait.Dragon,
+						6 => Trait.Elemental,
+						7 => Trait.Fey,
+						8 => Trait.Fiend,
+						9 => Trait.Fungus,
+						10 => Trait.Monitor,
+						11 => Trait.Ooze,
+						12 => Trait.Plant,
+						13 => Trait.Undead,
+						_ => Trait.Uncommon
+					};
+
+					var value = spellLevel >= 5 ? 2 : 1;
+
+					var effect = new QEffect("Blood ward", $"You have +1 to defenses against {trait}s", ExpirationCondition.ExpiresAtStartOfSourcesTurn, source: caster, illustration: IllustrationName.BloodVendetta)
+					{
+						CannotExpireThisTurn = true,
+						BonusToDefenses = (effect, action, defense) => action != null && action.Owner.HasTrait(trait) ? new Bonus(value, BonusType.Status, "Blood Ward") : null
+					};
+					
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHeightenedAtSpecificLevel(spellLevel, 5, inCombat, "The status bonus increases to +2")
+				.WithHexCasting();
+		});
 
 	public static SpellId GougingClaw = ModManager.RegisterNewSpell("Gouging Claw", 0,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
@@ -733,8 +782,89 @@ public static class WitchSpells
 				});
 		});
 	
-	// public static SpellId BloodWard = RegisterNotImplementedSpell("BloodWard", true, false);
-	public static SpellId GustOfWind = RegisterNotImplementedSpell("GustOfWind", false, false);
+	public static SpellId GustOfWind = ModManager.RegisterNewSpell("Gust Of Wind", 1,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.ElementalBlastAir, "Gust of Wind", [
+					Trait.Evocation,
+					Trait.Air,
+					Trait.Concentrate,
+					Trait.Manipulate,
+					Trait.Arcane,
+					Trait.Primal,
+					Trait.Mod
+				], 
+				"A violent wind issues forth from your palm, blowing from the point where you are when you Cast the Spell to the line's opposite end.", 
+				"{b}Duration:{/b} Until the start of your next turn.\nLarge or smaller creatures in the area must attempt a Fortitude save. Large or smaller creatures that later move into the gust must attempt the save on entering.\n"
+				+ $"{S.FourDegreesOfSuccess("The target is unaffected.", "The creature can't move against the wind.", "The creature is knocked prone. If it was flying, it takes the effects of critical failure instead.", "The creature is pushed 30 feet in the wind's direction, knocked prone, and takes 2d6 bludgeoning damage.")}",
+				Target.Line(12), 
+				spellLevel, 
+				null)
+				.WithSoundEffect(SfxName.AirSpell)
+				.WithEffectOnChosenTargets(async (spell, caster, chosenTargets) =>
+				{
+					QEffect effect = new QEffect(ExpirationCondition.ExpiresAtStartOfSourcesTurn)
+					{
+						Source = caster
+					};
+					var spawnedZone = Zone.SpawnStaticAndApply(effect, chosenTargets.ChosenTiles.Where(tl => !tl.AlwaysBlocksMovement).ToList(), async zone =>
+					{	
+						zone.TileEffectCreator = (Func<Tile, TileQEffect>) (tile => new TileQEffect(tile)
+						{
+							Illustration = IllustrationName.WhirlwindStrike,
+							VisibleDescription = $"{{b}}Gust of Wind.{{/b}} A creature that enters must make a Fortitude save. {S.FourDegreesOfSuccess("The target is unaffected.", "The creature can't move against the wind.", "The creature is knocked prone. If it was flying, it takes the effects of critical failure instead.", "The creature is pushed 30 feet in the wind's direction, knocked prone, and takes 2d6 bludgeoning damage.")}"
+						});
+
+						zone.AfterCreatureEnters = creature => MakeSavingThrow(creature, zone);
+					});
+					
+					foreach (var affectedTile in spawnedZone.AffectedTiles)
+					{
+						affectedTile.FoggyTerrain = false;
+					}
+					
+					foreach (var creature in spawnedZone.CreaturesInZone)
+					{
+						await MakeSavingThrow(creature, spawnedZone);
+					}
+
+					async Task MakeSavingThrow(Creature entrant, Zone zone)
+					{
+						if (entrant.Space.SizeCategory > 2) return;
+
+						var saveResult = await CommonSpellEffects.RollSavingThrowAsync(entrant, spell, Defense.Fortitude, caster.ClassOrSpellDC());
+
+						if (saveResult == CheckResult.CriticalSuccess) return;
+
+						if (saveResult == CheckResult.Success)
+						{
+							var immobilized = QEffect.Immobilized();
+							immobilized.ExpiresAt = ExpirationCondition.EphemeralAtEndOfImmediateAction;
+							entrant.AddQEffect(immobilized);
+
+							var hazardousEffect = new TileQEffect { TransformsTileIntoHazardousTerrain = true, ExpiresAt = ExpirationCondition.Never };
+
+							foreach (var affectedTile in zone.AffectedTiles)
+							{
+								affectedTile.AddQEffect(hazardousEffect);
+							}
+
+							entrant.AddQEffect(new QEffect(ExpirationCondition.ExpiresAtEndOfYourTurn) { WhenExpires = _ => hazardousEffect.ExpiresAt = ExpirationCondition.Immediately });
+
+							return;
+						}
+
+						await entrant.FallProne();
+						if (saveResult == CheckResult.Failure && !entrant.HasEffect(QEffectId.Flying)) return;
+
+						await caster.PushCreature(entrant, 6);
+						await CommonSpellEffects.DealDirectDamage(spell, new SimpleDiceFormula(2, Dice.D6, spell.Name), entrant, CheckResult.CriticalFailure, DamageKind.Bludgeoning);
+					}
+					
+					caster.AddQEffect(effect);
+				});
+		});
+	
 	// public static SpellId DeceiverCloak = RegisterNotImplementedSpell("DeceiverCloak", true, false);
 	// public static SpellId MadMonkeys = RegisterNotImplementedSpell("MadMonkeys", false, false);
 	// public static SpellId MaliciousShadow = RegisterNotImplementedSpell("MaliciousShadow", true, false);
