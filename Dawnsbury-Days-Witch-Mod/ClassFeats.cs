@@ -106,7 +106,9 @@ public static class ClassFeats
 				(Func<InventoryItemSlot, Item, Inventory, ContextMenuItem[]>)
 				((itemSlot, _, inventory) =>
 				{
-					if (CampaignState.Instance != null && CampaignState.Instance.CurrentStop is not LongRestCampaignStop)
+					if (CampaignState.Instance != null && CampaignState.Instance.CurrentStop is not LongRestCampaignStop 
+					                                   && CampaignState.Instance.CurrentStop is not NarratorStop 
+					                                   && CampaignState.Instance.CurrentStop is not LevelUpStop)
 						return null;
 
 					if (itemSlot.Item != null)
@@ -379,7 +381,9 @@ public static class ClassFeats
 			(Func<InventoryItemSlot, Item, Inventory, ContextMenuItem[]>)
 			((itemSlot, knife, inventory) =>
 			{
-				if (CampaignState.Instance != null && CampaignState.Instance.CurrentStop is not LongRestCampaignStop)
+				if (CampaignState.Instance != null && CampaignState.Instance.CurrentStop is not LongRestCampaignStop 
+				                                   && CampaignState.Instance.CurrentStop is not NarratorStop 
+				                                   && CampaignState.Instance.CurrentStop is not LevelUpStop)
 					return null;
 				
 				CharacterSheet characterSheet = itemSlot.CharacterSheet;
