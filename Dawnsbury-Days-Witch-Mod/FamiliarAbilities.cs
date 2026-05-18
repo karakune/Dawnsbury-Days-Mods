@@ -37,14 +37,14 @@ public static class FamiliarAbilities
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
 					
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 
-				async void ApplyEffect(QEffect effect, CombatAction action)
+				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -88,14 +88,14 @@ public static class FamiliarAbilities
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
 					
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 
-				async void ApplyEffect(QEffect effect, CombatAction action)
+				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -138,14 +138,14 @@ public static class FamiliarAbilities
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
 					
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 
-				async void ApplyEffect(QEffect effect, CombatAction action)
+				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -194,14 +194,14 @@ public static class FamiliarAbilities
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
 					
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 
-				async void ApplyEffect(QEffect effect, CombatAction action)
+				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -263,14 +263,14 @@ public static class FamiliarAbilities
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
 					
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					ApplyEffect(effect, action);
+					await ApplyEffect(effect, action);
 				};
 
-				async void ApplyEffect(QEffect effect, CombatAction action)
+				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
