@@ -421,10 +421,37 @@ public static class WitchSpells
 				.WithHexCasting()
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
-					// TODO: If no sustainable effect found, refund spell
-					// TODO: If more than one sustainable effect found, offer a choice
-					if (caster.FindQEffect(QEffectId.Sustaining)?.Tag is QEffect sustainedEffect)
-						sustainedEffect.CannotExpireThisTurn = true;
+					List<QEffect> sustainableEffects = caster.QEffects.Where(effect => effect is 
+					{ 
+						Id: QEffectId.Sustaining, 
+						Tag: QEffect
+						{
+							CannotExpireThisTurn: false
+						}
+					}).Select(e => e.Tag as QEffect).ToList()!;
+
+					QEffect effectToSustain;
+					switch (sustainableEffects.Count)
+					{
+						case 0:
+							caster.Actions.RevertExpendingOfResources(0, spell);
+							caster.Spellcasting?.RevertExpendingOfResources(spell);
+							caster.RemoveAllQEffects(qf => qf == QHexCasted);
+							return;
+						case 1:
+							effectToSustain = sustainableEffects[0];
+							break;
+						default:
+							var optionNames = sustainableEffects.Select(effect => $"{effect.Name} (target: {effect.Owner.Name})");
+							
+							var choiceResult = await caster.AskForChoiceAmongButtons(IllustrationName.HideousLaughter,
+								"Which spell should be sustained?", [.. optionNames]);
+							
+							effectToSustain = sustainableEffects[choiceResult.Index];
+							break;
+					}
+
+					effectToSustain.CannotExpireThisTurn = true;
 				});
 		});
 	
