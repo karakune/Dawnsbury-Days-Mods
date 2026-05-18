@@ -747,7 +747,7 @@ public static class WitchSpells
 
 					var value = spellLevel >= 5 ? 2 : 1;
 
-					var effect = new QEffect("Blood ward", $"You have +1 to defenses against {trait}s", ExpirationCondition.ExpiresAtStartOfSourcesTurn, source: caster, illustration: IllustrationName.BloodVendetta)
+					var effect = new QEffect("Blood ward", $"You have +1 to defenses against {trait}s", ExpirationCondition.ExpiresAtEndOfSourcesTurn, source: caster, illustration: IllustrationName.BloodVendetta)
 					{
 						CannotExpireThisTurn = true,
 						BonusToDefenses = (effect, action, defense) => action != null && action.Owner.HasTrait(trait) ? new Bonus(value, BonusType.Status, "Blood Ward") : null
