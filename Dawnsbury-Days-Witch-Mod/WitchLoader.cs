@@ -20,44 +20,28 @@ namespace Dawnsbury.Mods.Classes.Witch;
 
 public static class WitchLoader
 {
-	public static Trait ModName = ModManager.RegisterModNameTrait("RemasteredWitch", "Remastered Witch");
-	
-	public static Trait TWitch = ModManager.RegisterTrait("Witch", new TraitProperties("Witch", true)
-	{
-		IsClassTrait = true
-	});
-
-	public static Trait TFirstHex = ModManager.RegisterTrait("First Hex", new TraitProperties("", relevant: false));
-
-	public static FeatName FNWitch = ModManager.RegisterFeatName("FeatWitch", "Witch");
-	public static FeatName FNStarlessShadow = ModManager.RegisterFeatName("StarlessShadow", "Starless Shadow");
-	public static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
-	public static FeatName FNSpinnerOfThreads = ModManager.RegisterFeatName("SpinnerOfThreads", "Spinner of Threads");
-	public static FeatName FNSilenceInSnow = ModManager.RegisterFeatName("SilenceInSnow", "Silence in Snow");
-	public static FeatName FNInscribedOne = ModManager.RegisterFeatName("InscribedOne", "The Inscribed One");
-	
 	[DawnsburyDaysModMainMethod]
 	public static void LoadMod()
 	{
 		foreach (var feat in FamiliarAbilities.CreateFeats())
-			ModManager.AddFeat(feat, ModName);
+			ModManager.AddFeat(feat, WitchModData.Traits.ModName);
 		
 		foreach (var feat in CreateFeats())
-			ModManager.AddFeat(feat, ModName);
+			ModManager.AddFeat(feat, WitchModData.Traits.ModName);
 		
 		foreach (var feat in ClassFeats.CreateFeats())
-			ModManager.AddFeat(feat, ModName);
+			ModManager.AddFeat(feat, WitchModData.Traits.ModName);
 
 		foreach (var feat in ArchetypeFeats.CreateFeats())
-			ModManager.AddFeat(feat, ModName);
+			ModManager.AddFeat(feat, WitchModData.Traits.ModName);
 		
 		// Makes Discern Secrets effect reduce action costs
 		ModManager.RegisterActionOnEachActionPossibility(thisAction =>
 		{
-			if (!thisAction.Owner.HasEffect(WitchSpells.DiscernSecretsId))
+			if (!thisAction.Owner.HasEffect(WitchModData.QEffectIds.DiscernSecretsId))
 				return;
 			
-			if (thisAction.Owner.HasEffect(WitchSpells.DiscernSecretsUsedThisTurnId))
+			if (thisAction.Owner.HasEffect(WitchModData.QEffectIds.DiscernSecretsUsedThisTurnId))
 				return;
             
 			if (thisAction.ActionId == ActionId.Seek)
@@ -66,44 +50,55 @@ public static class WitchLoader
 			if (thisAction.Name.Contains("Recall Weakness"))
 				thisAction.ActionCost = 0;
 		});
+		
+		// Makes Patron's Puppet effect reduce action costs
+		ModManager.RegisterActionOnEachActionPossibility(thisAction =>
+		{
+			if (!thisAction.Owner.HasEffect(WitchModData.QEffectIds.PatronsPuppetId))
+				return;
+			
+			if (thisAction.Owner.HasEffect(WitchModData.QEffectIds.PatronsPuppetUsedThisTurnId))
+				return;
+			
+			if (DeployableFamiliars.FamiliarAbilities.IsFamiliarAction(thisAction))
+				thisAction.ActionCost = 0;
+		});
 	}
 
 	private static IEnumerable<Feat> CreateFeats()
 	{
 		List<Feat> subclasses = [
-			WitchPatronFeat.Create(FNStarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, SpellId.Fear, FamiliarAbilities.FNStalkingNight, 
+			WitchPatronFeat.Create(WitchModData.FeatNames.StarlessShadow, Trait.Occult, Skill.Occultism, WitchSpells.ShroudOfNight, SpellId.Fear, WitchModData.FeatNames.StalkingNight, 
 				"Your patron first contacted you at the witching hour, as your body lay paralyzed by sleep while your mind had yet to escape the waking world. Your patron might be a creature of the Netherworld or a long-forgotten spirit of twilight — all you remember of them are haunting eyes of moonlight, offering you power from the darkness.", 
 				"Lesson of Night's Terrors"),
-			WitchPatronFeat.Create(FNFaithsFlamekeeper, Trait.Divine, Skill.Religion, WitchSpells.StokeTheHeart, SpellId.Command, FamiliarAbilities.FNRestoredSpirit, 
+			WitchPatronFeat.Create(WitchModData.FeatNames.FaithsFlamekeeper, Trait.Divine, Skill.Religion, WitchSpells.StokeTheHeart, SpellId.Command, WitchModData.FeatNames.RestoredSpirit, 
 				"Your patron contacted you in a moment your willpower was close to sputtering out. Their reassuring presence was like breath and kindling bringing an ember back aflame, their magic giving you the strength to carry on and bring others to your cause. Your patron is likely a divine being like an angel or aeon acting covertly, though the possibility exists they might be a more sinister entity, using you to unknown ends.",
 				"Lesson of Fervor's Grasp"),
-			WitchPatronFeat.Create(FNSpinnerOfThreads, Trait.Occult, Skill.Occultism, WitchSpells.NudgeFate, SpellId.TrueStrike, FamiliarAbilities.FNBalancedLuck, 
+			WitchPatronFeat.Create(WitchModData.FeatNames.SpinnerOfThreads, Trait.Occult, Skill.Occultism, WitchSpells.NudgeFate, SpellId.TrueStrike, WitchModData.FeatNames.BalancedLuck, 
 				"You met your patron in a memory of an encounter yet to come or a premonition of something long since passed, as they untangled and re-spun the tapestry of time and fate. Was your patron a norn? A herald of a deity of fate and destiny? Could it even be a single individual appearing at three or more points in its timeline — multiple versions of the same being, parallel threads converging on a single moment?",
 				"Lesson of Fate's Vicissitudes"),
-			WitchPatronFeat.Create(FNSilenceInSnow, Trait.Primal, Skill.Nature, WitchSpells.ClingingIce, WitchSpells.GustOfWind, FamiliarAbilities.FNFreezingRime, 
+			WitchPatronFeat.Create(WitchModData.FeatNames.SilenceInSnow, Trait.Primal, Skill.Nature, WitchSpells.ClingingIce, WitchSpells.GustOfWind, WitchModData.FeatNames.FreezingRime, 
 				"Bitter cold heralded your patron's appearance, in the depths of the winter solstice or on a frozen peak at the end of the world. Your patron might be a winter hag, ice yai, or other spirit of the cold, but one thing is clear as ice — their power is not to be underestimated.",
 				"Lesson of Winter's Chill"),
-			WitchPatronFeat.Create(FNInscribedOne, Trait.Arcane, Skill.Arcana, WitchSpells.DiscernSecrets, SpellId.MagicWeapon, FamiliarAbilities.FNFlowingScript, 
+			WitchPatronFeat.Create(WitchModData.FeatNames.InscribedOne, Trait.Arcane, Skill.Arcana, WitchSpells.DiscernSecrets, SpellId.MagicWeapon, WitchModData.FeatNames.FlowingScript, 
 				"No words passed your patron's lips in the moment you met; instead, words and glyphs danced across their skin while symbols and numbers swam in the depths of their eyes, spelling out their will in a torrent of words and wisdom. Your patron might be a powerful archmage, or even one of their abandoned artifacts, searching for a successor.",
 				"Lesson of Glyph's Supremacy"),
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),
-				null, "Gain the {i}{link:PatronsPuppet}patron's puppet{/}{/i} hex and a focus point.", [TFirstHex], null)
-			.WithRulesBlockForSpell(WitchSpells.PatronsPuppet, TWitch, 1)
+				null, "Gain the {i}{link:PatronsPuppet}patron's puppet{/}{/i} hex and a focus point.", [WitchModData.Traits.FirstHex], null)
+			.WithRulesBlockForSpell(WitchSpells.PatronsPuppet, WitchModData.Traits.Witch, 1)
 			.WithOnSheet(sheet =>
-				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PatronsPuppet));
+				sheet.AddFocusSpellAndFocusPoint(WitchModData.Traits.Hex, Ability.Intelligence, WitchSpells.PatronsPuppet));
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPhaseFamiliar", "Phase Familiar"),
-				null, "Gain the {i}{link:PhaseFamiliar}phase familiar{/}{/i} hex and a focus point.", [TFirstHex], null)
-			.WithRulesBlockForSpell(WitchSpells.PhaseFamiliar, TWitch, 1)
+				null, "Gain the {i}{link:PhaseFamiliar}phase familiar{/}{/i} hex and a focus point.", [WitchModData.Traits.FirstHex], null)
+			.WithRulesBlockForSpell(WitchSpells.PhaseFamiliar, WitchModData.Traits.Witch, 1)
 			.WithOnSheet(sheet =>
-				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.PhaseFamiliar));
+				sheet.AddFocusSpellAndFocusPoint(WitchModData.Traits.Hex, Ability.Intelligence, WitchSpells.PhaseFamiliar));
 		
-		Feat witchClass = new ClassSelectionFeat(
-				FNWitch,
-				"You command powerful magic, not through study or devotion to any ideal, but as a vessel or agent for a mysterious, otherworldly patron that even you don't entirely understand. This entity might be a covert divinity, a powerful fey, a manifestation of natural energies, an ancient spirit, or any other mighty supernatural being — but its nature is likely as much a mystery to you as it is to anyone else. Through a special familiar, your patron grants you versatile spells and powerful hexes to use as you see fit, though you're never certain if these gifts will end up serving your patron's larger plan.",
-				TWitch,
+		Feat witchClass = new ClassSelectionFeat(WitchModData.FeatNames.Witch,
+				"You command powerful magic, not through study or devotion to any ideal, but as a vessel or agent for a mysterious, otherworldly patron that even you don't entirely understand. This entity might be a covert divinity, a powerful fey, a manifestation of natural energies, an ancient spirit, or any other mighty supernatural being — but its nature is likely as much a mystery to you as it is to anyone else. Through a special familiar, your patron grants you versatile spells and powerful hexes to use as you see fit, though you're never certain if these gifts will end up serving your patron's larger plan.", WitchModData.Traits.Witch,
 				new EnforcedAbilityBoost(Ability.Intelligence),
 				6,
 				[Trait.Perception, Trait.Fortitude, Trait.Reflex, Trait.Simple, Trait.Unarmed, Trait.UnarmoredDefense],
@@ -145,7 +140,7 @@ public static class WitchLoader
 				.AddFeature(19, WellKnownClassFeature.LegendaryInSpellcasting))
 			.WithOnSheet(sheet =>
 			{
-				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(TFirstHex)));
+				sheet.AddSelectionOption(new SingleFeatSelectionOption("FirstHex", "First Hex", -1, feat => feat.HasTrait(WitchModData.Traits.FirstHex)));
 				sheet.GrantFeat(FeatName.ClassFamiliar);
 				if (DeployableFamiliarTag.FindTag(sheet) is { } familiar)
 					familiar.FamiliarAbilities += 1;
@@ -221,7 +216,7 @@ public class WitchPatronFeat : Feat
 				$$"""
 				  {b}Spell List:{/b} {{spellTradition}}
 				  {b}Patron Skill:{/b} {{skill}}
-				  {b}{{lessonName}}:{/b} You gain the {{AllSpells.CreateSpellLink(hexCantrip, WitchSpells.THex)}} hex cantrip and {{AllSpells.CreateSpellLink(extraPreparableSpell, WitchLoader.TWitch)}} is added to your preparable spell list.
+				  {b}{{lessonName}}:{/b} You gain the {{AllSpells.CreateSpellLink(hexCantrip, WitchModData.Traits.Hex)}} hex cantrip and {{AllSpells.CreateSpellLink(extraPreparableSpell, WitchModData.Traits.Witch)}} is added to your preparable spell list.
 				  {b}{{famFeat.Name}}:{/b} {{famFeat.RulesText}}
 				  """)
 			{
@@ -234,14 +229,14 @@ public class WitchPatronFeat : Feat
 				sheet.SpellTraditionsKnown.Add(spellTradition);
 				sheet.SetProficiency(Trait.Spell, Proficiency.Trained);
 				sheet.TrainInThisOrSubstitute(skill);
-				sheet.PreparedSpells.Add(WitchLoader.TWitch, new PreparedSpellSlots(Ability.Intelligence, spellTradition, WitchLoader.TWitch));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip1"));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip2"));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip3"));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip4"));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip5"));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(1, "Witch:Spell1-1"));
-				sheet.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(1, "Witch:Spell1-2"));
+				sheet.PreparedSpells.Add(WitchModData.Traits.Witch, new PreparedSpellSlots(Ability.Intelligence, spellTradition, WitchModData.Traits.Witch));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip1"));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip2"));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip3"));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip4"));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(0, "Witch:Cantrip5"));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(1, "Witch:Spell1-1"));
+				sheet.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(1, "Witch:Spell1-2"));
 				for (int i = 2; i <= 18; ++i)
 				{
 					int thisLevel = i;
@@ -249,27 +244,27 @@ public class WitchPatronFeat : Feat
 						sheet.AddAtLevel(thisLevel, values =>
 						{
 							int level = (thisLevel + 1) / 2;
-							values.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-1"));
-							values.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-2"));
+							values.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-1"));
+							values.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-2"));
 						});
 					else
 						sheet.AddAtLevel(thisLevel, values =>
 						{
 							int level = thisLevel / 2;
-							values.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-3"));
+							values.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(level, $"Witch:Spell{level}-3"));
 						});
 				}
-				sheet.AddAtLevel(19, values => values.PreparedSpells[WitchLoader.TWitch].Slots.Add(new FreePreparedSpellSlot(10, "Witch:Spell10-1")));
+				sheet.AddAtLevel(19, values => values.PreparedSpells[WitchModData.Traits.Witch].Slots.Add(new FreePreparedSpellSlot(10, "Witch:Spell10-1")));
 
-				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchSpells.THex,
+				var repertoire = sheet.SpellRepertoires.GetOrCreate(WitchModData.Traits.Hex,
 					() => new SpellRepertoire(Ability.Intelligence, spellTradition));
 				repertoire.SpellsKnown.Add(AllSpells.CreateModernSpell(hexCantrip, null, sheet.MaximumSpellLevel,
 					false, new SpellInformation
 					{
-						ClassOfOrigin = WitchSpells.THex
+						ClassOfOrigin = WitchModData.Traits.Hex
 					}));
 				
-				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Add(extraPreparableSpell);
+				sheet.PreparedSpells[WitchModData.Traits.Witch].AdditionalPreparableSpells.Add(extraPreparableSpell);
 			});
 		return patronFeat;
 	}

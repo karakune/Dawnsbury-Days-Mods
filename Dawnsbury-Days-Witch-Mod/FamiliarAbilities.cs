@@ -16,17 +16,10 @@ namespace Dawnsbury.Mods.Classes.Witch;
 
 public static class FamiliarAbilities
 {
-	public static FeatName FNStalkingNight = ModManager.RegisterFeatName("WiFamStalkingNight", "Familiar of Stalking Night");
-	public static FeatName FNRestoredSpirit = ModManager.RegisterFeatName("WiFamRestoredSpirit", "Familiar of Restored Spirit");
-	public static FeatName FNFreezingRime = ModManager.RegisterFeatName("WiFamFreezingRime", "Familiar of Freezing Rime");
-	public static FeatName FNBalancedLuck = ModManager.RegisterFeatName("WiFamBalancedLuck", "Familiar of Balanced Luck");
-	public static FeatName FNFlowingScript = ModManager.RegisterFeatName("WiFamFlowingScript", "Familiar of Flowing Script");
-	public static FeatName FNOngoingMisery = ModManager.RegisterFeatName("WiFamOngoingMisery", "Familiar of Ongoing Misery");
-	public static FeatName FNKeenSenses = ModManager.RegisterFeatName("WiFamKeenSenses", "Familiar of Keen Senses");
 	public static IEnumerable<Feat> CreateFeats()
 	{
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
-			FNStalkingNight,
+			WitchModData.FeatNames.StalkingNight,
 			ModData.FeatGroups.FamiliarAbilities,
 			null,
 			"When you Cast or Sustain a hex, and your familiar is adjacent to an enemy to which it's concealed, hidden, or undetected, the enemy becomes frightened 1.",
@@ -73,11 +66,11 @@ public static class FamiliarAbilities
 					}
 				}
 			},
-			witchSubclassPrerequisite: WitchLoader.FNStarlessShadow
+			witchSubclassPrerequisite: WitchModData.FeatNames.StarlessShadow
 			);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
-			FNRestoredSpirit,
+			WitchModData.FeatNames.RestoredSpirit,
 			ModData.FeatGroups.FamiliarAbilities,
 			null,
 			"When you Cast or Sustain a hex, one willing creature within 15 feet of your familiar gains temporary Hit Points equal to 2 + half your level, which last until the start of your next turn.",
@@ -123,11 +116,11 @@ public static class FamiliarAbilities
 					target.GainTemporaryHP(tempHp);
 				}
 			},
-			witchSubclassPrerequisite: WitchLoader.FNFaithsFlamekeeper
+			witchSubclassPrerequisite: WitchModData.FeatNames.FaithsFlamekeeper
 		);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
-			FNBalancedLuck,
+			WitchModData.FeatNames.BalancedLuck,
 			ModData.FeatGroups.FamiliarAbilities,
 			null,
 			"When you Cast or Sustain a hex, one creature within 15 feet of your familiar gets either a +1 status bonus (if allied) or a –1 status penalty (if enemy) to its AC until the start of your next turn.",
@@ -179,11 +172,11 @@ public static class FamiliarAbilities
 					});
 				}
 			},
-			witchSubclassPrerequisite: WitchLoader.FNSpinnerOfThreads
+			witchSubclassPrerequisite: WitchModData.FeatNames.SpinnerOfThreads
 		);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
-			FNFreezingRime,
+			WitchModData.FeatNames.FreezingRime,
 			ModData.FeatGroups.FamiliarAbilities,
 			null,
 			"When you Cast or Sustain a hex, you can cause ice to form in a 5-foot burst centered on a square of your familiar's space. Those squares are difficult terrain until the start of your next turn.",
@@ -248,11 +241,11 @@ public static class FamiliarAbilities
 					});
 				}
 			},
-			witchSubclassPrerequisite: WitchLoader.FNSilenceInSnow
+			witchSubclassPrerequisite: WitchModData.FeatNames.SilenceInSnow
 		);
 		
 		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
-			FNFlowingScript,
+			WitchModData.FeatNames.FlowingScript,
 			ModData.FeatGroups.FamiliarAbilities,
 			null,
 			"When you Cast or Sustain a hex, until the start of your next turn, your familiar can provide flanking for you and your allies as though it were able to attack and had a reach of 5 feet.",
@@ -308,15 +301,15 @@ public static class FamiliarAbilities
 					});
 				}
 			},
-			witchSubclassPrerequisite: WitchLoader.FNInscribedOne
+			witchSubclassPrerequisite: WitchModData.FeatNames.InscribedOne
 		);
 	}
 
 	private static bool IsCastingOrSustainingHex(CombatAction action)
 	{
-		return action.HasTrait(WitchSpells.THex) ||
+		return action.HasTrait(WitchModData.Traits.Hex) ||
 		       action.HasTrait(Trait.SustainASpell) &&
 		       action.ReferencedQEffect?.ReferencedSpell != null &&
-		       action.ReferencedQEffect.ReferencedSpell.HasTrait(WitchSpells.THex);
+		       action.ReferencedQEffect.ReferencedSpell.HasTrait(WitchModData.Traits.Hex);
 	}
 }

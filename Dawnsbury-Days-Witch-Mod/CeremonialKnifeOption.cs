@@ -33,7 +33,7 @@ public class CeremonialKnifeOption : AbstractSpellSelectionOption
 		if (values.AllFeats.FirstOrDefault(f => f is WitchPatronFeat) is not WitchPatronFeat witchPatronFeat)
 			return false;
 
-		if (!spell.HasTrait(witchPatronFeat.Tradition) && !values.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Contains(spell.SpellId))
+		if (!spell.HasTrait(witchPatronFeat.Tradition) && !values.PreparedSpells[WitchModData.Traits.Witch].AdditionalPreparableSpells.Contains(spell.SpellId))
 			return false;
 		
 		return MaximumSpellLevel >= 1 && spell.MinimumSpellLevel <= MaximumSpellLevel;

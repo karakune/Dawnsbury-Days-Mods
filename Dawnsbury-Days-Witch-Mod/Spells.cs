@@ -5,7 +5,6 @@ using Dawnsbury.Core.CharacterBuilder.FeatsDb.Common;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
 using Dawnsbury.Core.CombatActions;
-using Dawnsbury.Core.Coroutines.Options;
 using Dawnsbury.Core.Creatures;
 using Dawnsbury.Core.Creatures.Parts;
 using Dawnsbury.Core.Mechanics;
@@ -18,7 +17,6 @@ using Dawnsbury.Core.Mechanics.Zoning;
 using Dawnsbury.Core.Possibilities;
 using Dawnsbury.Core.Roller;
 using Dawnsbury.Core.Tiles;
-using Dawnsbury.Display.Illustrations;
 using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
 using Dawnsbury.Mods.DeployableFamiliars;
@@ -27,26 +25,20 @@ namespace Dawnsbury.Mods.Classes.Witch;
 
 public static class WitchSpells
 {
-	public static Trait THex = ModManager.RegisterTrait("Hex");
-	private static QEffectId NudgeFateId = ModManager.RegisterEnumMember<QEffectId>("NudgeFate");
-	public static QEffectId DiscernSecretsId = ModManager.RegisterEnumMember<QEffectId>("DiscernSecrets");
-	public static QEffectId DiscernSecretsUsedThisTurnId = ModManager.RegisterEnumMember<QEffectId>("DiscernSecretsUsedThisTurn");
-	private static QEffectId DiscernSecretsImmunityId = ModManager.RegisterEnumMember<QEffectId>("DiscernSecretsImmunity");
-
 	public static QEffect QHexCasted = new ("Hex casted",
 		"You casted a hex this round and must wait for the next round to cast another one.",
 		ExpirationCondition.ExpiresAtStartOfYourTurn, null)
 	{
-		PreventTakingAction = ca => ca.HasTrait(THex) ? "You already casted a Hex this round." : null,
+		PreventTakingAction = ca => ca.HasTrait(WitchModData.Traits.Hex) ? "You already casted a Hex this round." : null,
 	}; 
 
 	public static SpellId PatronsPuppet = ModManager.RegisterNewSpell("PatronsPuppet", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(
-					new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"),
+					IllustrationName.Command,
 					"Patron's Puppet",
-					[WitchLoader.ModName, Trait.Focus, THex, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Focus, WitchModData.Traits.Hex, WitchModData.Traits.Witch, Trait.Uncommon],
 					"At your unspoken plea, your patron temporarily assumes control over your familiar.",
 					"You Command your familiar, allowing it to take its normal actions this turn.",
 					Target.Self()
@@ -56,64 +48,37 @@ public static class WitchSpells
 					null)
 				.WithActionCost(0)
 				.WithHexCasting()
-				.WithEffectOnEachTarget(async (spell, master, _, _) =>
+				.WithEffectOnEachTarget(async (spell, master, target, _) =>
 				{	
-					Possibilities poss = Possibilities
-						.Create(master)
-						.Filter(ap =>
-						{
-							ap.CombatAction.ActionCost = 0;
-							if (!DeployableFamiliars.FamiliarAbilities.IsFamiliarAction(ap.CombatAction))
-								return false;
-							ap.RecalculateUsability();
-							return true;
-						});
-					poss.CannotPass = false;
-                            
-					poss.Sections.Add(new PossibilitySection("Pass")
-					{
-						Possibilities = [new ActionPossibility(new CombatAction(
-								master,
-								IllustrationName.EndTurn,
-								"Pass",
-								[Trait.Basic, Trait.UsableEvenWhenUnconsciousOrParalyzed, Trait.DoesNotPreventDelay],
-								"Do nothing.",
-								Target.Self())
-							.WithTag("PassCommandingFamiliar")
-							.WithActionCost(0))]
-					});
-        
-					Creature? active = master.Battle.ActiveCreature;
-					master.Battle.ActiveCreature = master;
-					master.Possibilities = poss;
-        
-					List<Option> actions = await master.Battle.GameLoop.CreateActions(
+					var effect = new QEffect(
+						"Patron's Puppet",
+						"Your next Familiar Command action is a free action",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn,
 						master,
-						poss,
-						null);
-					master.Battle.GameLoopCallback.AfterActiveCreaturePossibilitiesRegenerated();
-					await master.Battle.GameLoop.OfferOptions(master, actions, true);
-        
-					master.Battle.ActiveCreature = active;
-
-					if (master.Actions.ActionHistoryThisTurn.LastOrDefault() is { Tag: "PassCommandingFamiliar" })
-						RefundSpell();
-					
-					return;
-					
-					void RefundSpell()
+						IllustrationName.Command)
 					{
-						master.Actions.RevertExpendingOfResources(0, spell);
-						master.Spellcasting?.RevertExpendingOfResources(spell);
-						master.RemoveAllQEffects(qf => qf == QHexCasted);
-					}
+						Id = WitchModData.QEffectIds.PatronsPuppetId,
+						AfterYouTakeAction = async (effect, action) =>
+						{
+							if (!DeployableFamiliars.FamiliarAbilities.IsFamiliarAction(action))
+								return;
+							
+							effect.Owner.AddQEffect(new QEffect()
+							{
+								Id = WitchModData.QEffectIds.PatronsPuppetUsedThisTurnId,
+								ExpiresAt = ExpirationCondition.ExpiresAtEndOfYourTurn
+							});
+						}
+					};
+					
+					target.AddQEffect(effect);
 				});
 		});
 	
 	public static SpellId PhaseFamiliar = ModManager.RegisterNewSpell("PhaseFamiliar", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(IllustrationName.Invisibility, "Phase Familiar", [WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+			return Spells.CreateModern(IllustrationName.Invisibility, "Phase Familiar", [WitchModData.Traits.ModName, Trait.Focus, WitchModData.Traits.Hex, Trait.Manipulate, WitchModData.Traits.Witch, Trait.Uncommon],
 				"Your patron momentarily recalls your familiar to the ether, shifting it from its solid, physical form into a ghostly version of itself.",
 				$"Against the triggering damage, your familiar gains resistance {S.HeightenedVariable(3 + (spellLevel * 2), 5)} to all damage and is immune to precision damage.",
 				Target.Uncastable(), spellLevel, null)
@@ -157,7 +122,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.AshenWind, "Shroud of Night",
-					[WitchLoader.ModName, Trait.Cantrip, Trait.Darkness, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Cantrip, Trait.Darkness, WitchModData.Traits.Hex, Trait.Manipulate, WitchModData.Traits.Witch, Trait.Uncommon],
 					"Your patron blankets the target's eyes in darkness.",
 					$"{S.FourDegreesOfSuccessReverse(null, "All creatures are concealed to it.", "The target is unaffected.", null)[3..]}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
@@ -189,7 +154,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
 		{
 			return Spells.CreateModern(IllustrationName.FlashForge, "Stoke the Heart",
-					[WitchLoader.ModName, Trait.Cantrip, Trait.Concentrate, Trait.Emotion, THex, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Cantrip, Trait.Concentrate, Trait.Emotion, WitchModData.Traits.Hex, WitchModData.Traits.Witch, Trait.Uncommon],
 					"Your patron fills a creature with fervor, empowering their blows.",
 					$"The target gains a +{S.HeightenedVariable(2 + (spellLevel / 2), 2)} status bonus to damage rolls.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -216,7 +181,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInfo) =>
 		{
 			return Spells.CreateModern(IllustrationName.Chaos, "Nudge Fate",
-					[WitchLoader.ModName, Trait.Cantrip, Trait.Concentrate, THex, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Cantrip, Trait.Concentrate, WitchModData.Traits.Hex, WitchModData.Traits.Witch, Trait.Uncommon],
 					"The barest spin of your patron's spool is enough to alter fate.",
 					"When the target fails an attack roll, skill check, or saving throw and a +1 status bonus would turn a critical failure into a failure, or failure into a success, you grant the target a +1 status bonus to the check retroactively, changing the outcome appropriately. The spell then ends.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -228,7 +193,7 @@ public static class WitchSpells
 						ExpirationCondition.Never, source: caster,
 						illustration: IllustrationName.Chaos)
 					{
-						Id = NudgeFateId,
+						Id = WitchModData.QEffectIds.NudgeFateId,
 						RerollSavingThrow = async (self, breakdownResult, action) =>
 						{
 							var breakdown = CombatActionExecution.BreakdownSavingThrowForTooltip(action, self.Owner, action.SavingThrow!);
@@ -271,7 +236,7 @@ public static class WitchSpells
 
 					foreach (var creature in target.Battle.AllCreatures)
 					{
-						var instance = creature.FindQEffect(NudgeFateId);
+						var instance = creature.FindQEffect(WitchModData.QEffectIds.NudgeFateId);
 						if (instance != null && instance.Source == caster)
 							instance.ExpiresAt = ExpirationCondition.Immediately;
 					}
@@ -285,7 +250,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.WintersClutch, "Clinging Ice",
-					[WitchLoader.ModName, Trait.Cantrip, Trait.Cold, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Cantrip, Trait.Cold, WitchModData.Traits.Hex, Trait.Manipulate, WitchModData.Traits.Witch, Trait.Uncommon],
 					$"Freezing sleet and heavy snowfall collect on the target's feet and legs.",
 					$"Deal {S.HeightenedVariable(spellLevel, 1)}d4 cold damage and other effects depending on the target's Reflex save.{S.FourDegreesOfSuccessReverse("The target takes double damage and a –10-foot circumstance penalty to its Speeds until the spell ends.", "The target takes full damage and a –5-foot circumstance penalty to its Speeds until the spell ends.", "The target takes half damage.", "The target is unaffected.")}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Reflex))
@@ -340,8 +305,8 @@ public static class WitchSpells
 	public static SpellId DiscernSecrets = ModManager.RegisterNewSpell("DiscernSecrets", 0,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(IllustrationName.EyeOfFortune, "Discern Secrets",
-					[Trait.Cantrip, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+			return Spells.CreateModern(IllustrationName.Command, "Discern Secrets",
+					[Trait.Cantrip, WitchModData.Traits.Hex, Trait.Manipulate, WitchModData.Traits.Witch, Trait.Uncommon],
 					$"Your patron deigns to whisper a few secrets.",
 					$"As long as you sustain the spell, the target can Seek or Recall Weakness once per turn as a {{icon:FreeAction}} free action, with a +1 status bonus. Once the spell ends, the target is immune to Discern Secrets for the rest of the encounter.",
 					new DiscernSecretsTarget(), spellLevel, null)
@@ -354,9 +319,9 @@ public static class WitchSpells
 						"Your next Seek or Recall Weakness is a free action, with a +1 status bonus.",
 						ExpirationCondition.ExpiresAtEndOfSourcesTurn,
 						caster,
-						IllustrationName.EyeOfFortune)
+						IllustrationName.Command)
 					{
-						Id = DiscernSecretsId,
+						Id = WitchModData.QEffectIds.DiscernSecretsId,
 						CannotExpireThisTurn = true,
 						BonusToSkillChecks = (_, action, _) =>
 							action.ActionId == ActionId.Seek || action.Name.Contains("Recall Weakness")
@@ -369,7 +334,7 @@ public static class WitchSpells
 							{
 								effect.Owner.AddQEffect(new QEffect()
 								{
-									Id = DiscernSecretsUsedThisTurnId,
+									Id = WitchModData.QEffectIds.DiscernSecretsUsedThisTurnId,
 									ExpiresAt = ExpirationCondition.ExpiresAtEndOfYourTurn
 								});
 							}
@@ -377,7 +342,7 @@ public static class WitchSpells
 						WhenYouAcquireThis = _ =>
 						{
 							target.AddQEffect(new QEffect()
-								{ Id = DiscernSecretsImmunityId, ExpiresAt = ExpirationCondition.Never });
+								{ Id = WitchModData.QEffectIds.DiscernSecretsImmunityId, ExpiresAt = ExpirationCondition.Never });
 						}
 					};
 					
@@ -399,7 +364,7 @@ public static class WitchSpells
 				return null;
 			}
 			return new GeneratedTargetInSequence(RangedFriend(6)
-					.WithAdditionalConditionOnTargetCreature((_, target) => target.HasEffect(DiscernSecretsImmunityId) ? Usability.NotUsableOnThisCreature("Immune") : Usability.Usable),
+					.WithAdditionalConditionOnTargetCreature((_, target) => target.HasEffect(WitchModData.QEffectIds.DiscernSecretsImmunityId) ? Usability.NotUsableOnThisCreature("Immune") : Usability.Usable),
 				$" ({count + 1}/{maxTargets})")
 			{
 				DisableConfirmNoMoreTargets = (count == 0),
@@ -412,7 +377,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.HideousLaughter, "Cackle",
-					[WitchLoader.ModName, Trait.Concentrate, Trait.Focus, THex, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Concentrate, Trait.Focus, WitchModData.Traits.Hex, WitchModData.Traits.Witch, Trait.Uncommon],
 					"With a quick burst of laughter, you prolong a magical effect you created.",
 					"You Sustain a spell.",
 					Target.Self().WithAdditionalRestriction(caster => caster.HasEffect(QEffectId.Sustaining) ? null : "You must be able to sustain a spell."), 
@@ -459,7 +424,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.VeilOfConfidence, "Veil of Dreams",
-					[WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Focus, WitchModData.Traits.Hex, Trait.Manipulate, Trait.Mental, WitchModData.Traits.Witch, Trait.Uncommon],
 					"Your patron draws the target into a drowsy state, causing daydreams and sluggishness.",
 					$"{S.FourDegreesOfSuccessReverse(null, "As success, and any time the target uses a concentrate action, it must succeed at a DC 5 flat check or the action is disrupted.", "The target takes a –1 status penalty to Perception, attack rolls, and Will saves. This penalty increases to –2 for Will saves against sleep effects.", "The target is unaffected.")}",
 					Target.Ranged(6), spellLevel, SpellSavingThrow.Standard(Defense.Will))
@@ -514,7 +479,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.Heal, "Life Boost",
-					[WitchLoader.ModName, Trait.Focus, Trait.Healing, THex, Trait.Manipulate, Trait.Necromancy, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Focus, Trait.Healing, WitchModData.Traits.Hex, Trait.Manipulate, Trait.Necromancy, WitchModData.Traits.Witch, Trait.Uncommon],
 					"Life force from your patron floods into the target, ensuring they can continue doing your patron's will for just a little longer.",
 					$"The target gains fast healing {S.HeightenedVariable(2 * spellLevel, 2)}.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -532,7 +497,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.HealingWell, "Spirit Link",
-					[WitchLoader.ModName, Trait.Divine, Trait.Occult, Trait.Healing, Trait.Manipulate],
+					[WitchModData.Traits.ModName, Trait.Divine, Trait.Occult, Trait.Healing, Trait.Manipulate],
 					"You form a spiritual link with another creature, taking in its pain.",
 					$"When you Cast this Spell and at the start of each of your turns for the rest of the encounter, if the target is below maximum Hit Points, it regains {S.HeightenedVariable(2 * spellLevel, 2)} Hit Points (or the difference between its current and maximum Hit Points, if that's lower). You lose as many Hit Points as the target regained.\nThis is a spiritual transfer, so no effects apply that would increase the Hit Points the target regains or decrease the Hit Points you lose. This transfer also ignores any temporary Hit Points you or the target have.\nWhile the duration persists, you gain no benefit from regeneration or fast healing.",
 					Target.RangedFriend(6).WithAdditionalConditionOnTargetCreature((self, ally) => self == ally ? Usability.NotUsableOnThisCreature("Cannot target yourself") : Usability.Usable), spellLevel, null)
@@ -640,7 +605,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.MagneticPinions, "Needle of Vengeance",
-					[WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Focus, WitchModData.Traits.Hex, Trait.Manipulate, Trait.Mental, WitchModData.Traits.Witch, Trait.Uncommon],
 					"A long, jagged needle jabs into the target foe's psyche whenever it tries to attack a creature your patron holds in special regard.",
 					$"Choose yourself or one of your allies. The target takes {S.HeightenedVariable(2*spellLevel, 2)} mental damage any time it uses a hostile action against the named creature, with a basic Will save.",
 					Target.MultipleCreatureTargets(Target.RangedFriend(6), Target.Ranged(6)).WithMinimumTargets(2), spellLevel, null)
@@ -692,7 +657,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.ElementalBlast, "Elemental Betrayal",
-					[WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, Trait.Mental, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Focus, WitchModData.Traits.Hex, Trait.Manipulate, Trait.Mental, WitchModData.Traits.Witch, Trait.Uncommon],
 					"Your patron uses its superior command of the elements, empowering them to undermine your foe.",
 					$"Choose air, earth, metal, fire, water, or wood. The target gains weakness {S.HeightenedVariable((spellLevel + 1) / 2, 2)} to that trait.",
 					Target.Ranged(6), spellLevel, null)
@@ -741,7 +706,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			return Spells.CreateModern(IllustrationName.BloodVendetta, "Blood Ward",
-					[WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+					[WitchModData.Traits.ModName, Trait.Focus, WitchModData.Traits.Hex, Trait.Manipulate, WitchModData.Traits.Witch, Trait.Uncommon],
 					"Your patron's aegis descends to shield a target from harm.",
 					$"Choose one creature trait from the following:  aberration, animal, beast, celestial, construct, dragon, elemental, fey, fiend, fungus, monitor, ooze, plant, or undead. The target gains a +1 (or +2 when cast at 5th level) status bonus to its saving throws and AC against creatures with that trait.",
 					Target.RangedFriend(6), spellLevel, null)
@@ -792,7 +757,7 @@ public static class WitchSpells
 		{
 			return Spells.CreateModern(IllustrationName.MagicFang, "Gouging Claw",
 					[
-						WitchLoader.ModName, 
+						WitchModData.Traits.ModName, 
 						Trait.Attack,
 						Trait.Cantrip,
 						Trait.Manipulate,
@@ -977,7 +942,7 @@ public static class WitchSpells
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
 			var spell = Spells.CreateModern(IllustrationName.DawnsburyDaysPureLogo, title + " (Not Implemented)",
-					[WitchLoader.ModName, Trait.Concentrate],
+					[WitchModData.Traits.ModName, Trait.Concentrate],
 					"",
 					"This spell has not been implemented.",
 					Target.Self(),
@@ -991,8 +956,8 @@ public static class WitchSpells
 			if (isHex)
 			{
 				spell.Traits.Add(Trait.Focus);
-				spell.Traits.Add(THex);
-				spell.Traits.Add(WitchLoader.TWitch);
+				spell.Traits.Add(WitchModData.Traits.Hex);
+				spell.Traits.Add(WitchModData.Traits.Witch);
 				spell.Traits.Add(Trait.Uncommon);
 				spell = spell.WithHexCasting();
 			}

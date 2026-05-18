@@ -50,7 +50,7 @@ public static class ClassFeats
 			if (feat is not TrueFeat tf)
 				continue;
 
-			tf.WithAllowsForAdditionalClassTrait(WitchLoader.TWitch);
+			tf.WithAllowsForAdditionalClassTrait(WitchModData.Traits.Witch);
 		}
 
 		// TODO: incredible familiar not in base game?
@@ -60,25 +60,25 @@ public static class ClassFeats
 
 		yield return new TrueFeat(ModManager.RegisterFeatName("Cackle"), 1,
 			"Your patron’s power fills you with confidence, letting you sustain a magical working even as a quick burst of laughter leaves your lips.",
-			"You learn the cackle hex.", [WitchLoader.TWitch])
-			.WithOnSheet(sheet => sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, WitchSpells.Cackle)
+			"You learn the cackle hex.", [WitchModData.Traits.Witch])
+			.WithOnSheet(sheet => sheet.AddFocusSpellAndFocusPoint(WitchModData.Traits.Hex, Ability.Intelligence, WitchSpells.Cackle)
 		);
 
 		yield return new TrueFeat(ModManager.RegisterFeatName("CantripExpansionWitch", "Cantrip Expansion"), 1,
 			"A greater understanding of your magic broadens your range of simple spells.",
 			"You can prepare two additional cantrips each day.",
-			[WitchLoader.TWitch]).WithOnSheet(values =>
+			[WitchModData.Traits.Witch]).WithOnSheet(values =>
 		{
-			values.PreparedSpells.GetValueOrDefault(WitchLoader.TWitch)?.Slots
+			values.PreparedSpells.GetValueOrDefault(WitchModData.Traits.Witch)?.Slots
 				.Add(new FreePreparedSpellSlot(0, "CantripExpansion1"));
-			values.PreparedSpells.GetValueOrDefault(WitchLoader.TWitch)?.Slots
+			values.PreparedSpells.GetValueOrDefault(WitchModData.Traits.Witch)?.Slots
 				.Add(new FreePreparedSpellSlot(0, "CantripExpansion2"));
 		});
 
 		yield return new TrueFeat(FNCauldron, 1,
 			"You can brew magic in your cauldron, creating useful magical concoctions.",
 			"During your daily preparations, you can create one 1st-level temporary oil or potion. At 4th level and every 2 levels after that, the maximum level of the oil or potion becomes equal to your level. A temporary oil or potion has no value, and you can only have one at a time.",
-			[WitchLoader.TWitch]);
+			[WitchModData.Traits.Witch]);
 		
 		ItemModifications.RegisterItemModification("cauldron-crafted",
 			modification => "cauldron-crafted",
@@ -162,44 +162,44 @@ public static class ClassFeats
 				})));
 		}
 
-		var nails = new Item(IllustrationName.DragonClaws, "Eldritch Claws", WitchLoader.ModName, Trait.Brawling, Trait.Agile,
+		var nails = new Item(IllustrationName.DragonClaws, "Eldritch Claws", WitchModData.Traits.ModName, Trait.Brawling, Trait.Agile,
 				Trait.Unarmed, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d6", DamageKind.Slashing))
 			.WithSoundEffect(SfxName.ScratchFlesh);
 		var nailsFeat = new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsNails", "Witch's Armaments (Eldritch Nails)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
 				"Your nails are supernaturally long and sharp. You gain a nails unarmed attack that deals 1d6 slashing damage, is in the brawling group, and has the agile and unarmed traits.",
-				[WitchLoader.TWitch])
+				[WitchModData.Traits.Witch])
 			.WithOnCreature(creature => creature.WithAdditionalUnarmedStrike(nails));
 		yield return nailsFeat;
 
-		var teeth = new Item(IllustrationName.Jaws, "Iron Teeth", WitchLoader.ModName, Trait.Brawling, TSympStrike)
+		var teeth = new Item(IllustrationName.Jaws, "Iron Teeth", WitchModData.Traits.ModName, Trait.Brawling, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d8", DamageKind.Piercing)).WithSoundEffect(SfxName.BiteApple);
 		var teethFeat = new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsTeeth", "Witch's Armaments (Iron Teeth)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
 				"With a click of your jaw, your teeth transform into long metallic points. You gain a jaws unarmed attack that deals 1d8 piercing damage and is in the brawling group.",
-				[WitchLoader.TWitch])
+				[WitchModData.Traits.Witch])
 			.WithOnCreature(creature =>
 			{
 				creature.WithAdditionalUnarmedStrike(teeth);
 			});
 		yield return teethFeat;
 
-		var hair = new Item(IllustrationName.BlackTentacles, "Living Hair", WitchLoader.ModName, Trait.Brawling, Trait.Agile,
+		var hair = new Item(IllustrationName.BlackTentacles, "Living Hair", WitchModData.Traits.ModName, Trait.Brawling, Trait.Agile,
 				Trait.Disarm, Trait.Finesse, Trait.Trip, Trait.Unarmed, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d4", DamageKind.Bludgeoning))
 			.WithSoundEffect(SfxName.BiteApple); // TODO: sound effect
 		var hairFeat =  new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsHair", "Witch's Armaments (Living Hair)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
 				"You can instantly grow or shrink your hair, eyebrows, beard, or mustache by up to several feet and manipulate your hair for use as a weapon, though your control isn’t fine enough for more dexterous tasks. You gain a hair unarmed attack that deals 1d4 bludgeoning damage; is in the brawling group; and has the agile, disarm, finesse, trip, and unarmed traits.",
-				[WitchLoader.TWitch])
+				[WitchModData.Traits.Witch])
 			.WithOnCreature(creature => creature.WithAdditionalUnarmedStrike(hair));
 		yield return hairFeat;
 
 		yield return new TrueFeat(ModManager.RegisterFeatName("Sympathetic Strike"), 4,
 				"You collect your patron’s magic into one of your witch armaments, causing them to shine with runes, light, or another signifier of your patron.",
 				"Once per round, you can make an unarmed Strike with one with your witch’s armaments. If you hit, you establish a sympathetic link with the target, making it easier for your patron to affect them. Until the beginning of your next turn, the target takes a –1 circumstance penalty to its saves against your hexes, or a –2 penalty if the triggering Strike was a critical hit.",
-				[WitchLoader.TWitch])
+				[WitchModData.Traits.Witch])
 			.WithPrerequisite(new Prerequisite(sheet => sheet.HasFeat(nailsFeat) || sheet.HasFeat(teethFeat) || sheet.HasFeat(hairFeat), "You must have the feat Witch's Armaments."))
 			.WithOnCreature(witch =>
 			{
@@ -229,13 +229,13 @@ public static class ClassFeats
 									case CheckResult.Success:
 										target.AddQEffect(new QEffect("Sympathetic Link", "You take a –1 circumstance penalty to saves against hexes", ExpirationCondition.ExpiresAtStartOfSourcesTurn, caster)
 										{
-											BonusToDefenses = (effect, action, defense) => action != null && action.HasTrait(WitchSpells.THex) ? new Bonus(-1, BonusType.Circumstance, "Sympathetic Link") : null
+											BonusToDefenses = (effect, action, defense) => action != null && action.HasTrait(WitchModData.Traits.Hex) ? new Bonus(-1, BonusType.Circumstance, "Sympathetic Link") : null
 										});
 										break;
 									case CheckResult.CriticalSuccess:
 										target.AddQEffect(new QEffect("Sympathetic Link", "You take a –2 circumstance penalty to saves against hexes", ExpirationCondition.ExpiresAtStartOfSourcesTurn, caster)
 										{
-											BonusToDefenses = (effect, action, defense) => action != null && action.HasTrait(WitchSpells.THex) ? new Bonus(-2, BonusType.Circumstance, "Sympathetic Link") : null
+											BonusToDefenses = (effect, action, defense) => action != null && action.HasTrait(WitchModData.Traits.Hex) ? new Bonus(-2, BonusType.Circumstance, "Sympathetic Link") : null
 										});
 										break;
 								}
@@ -244,7 +244,7 @@ public static class ClassFeats
 							
 						var strike = witch.CreateStrike(item, strikeModifiers: strikeModifiers);
 						strike.Name = item.Name + " (Sympathetic Strike)";
-						strike.Traits = new Traits([WitchLoader.ModName, ..strike.Traits], strike);
+						strike.Traits = new Traits([WitchModData.Traits.ModName, ..strike.Traits], strike);
 						return strike;
 					}
 				});
@@ -253,7 +253,7 @@ public static class ClassFeats
 		yield return new TrueFeat(ModManager.RegisterFeatName("Basic Lesson"), 2,
 			"",
 			"",
-			[WitchLoader.TWitch],
+			[WitchModData.Traits.Witch],
 			[
 				CreateLesson(TBasicLesson, "Dreams", "Dreams can be a window to greater insights.", WitchSpells.VeilOfDreams, SpellId.Sleep),
 				CreateLesson(TBasicLesson, "Life", "Life can be shared.", WitchSpells.LifeBoost, WitchSpells.SpiritLink),
@@ -275,7 +275,7 @@ public static class ClassFeats
 		yield return new TrueFeat(FNCeremonialKnife, 6,
 				"You have prepared a special knife to direct energies when spellcasting.",
 				"In your daily preparations, you can mark a weapon that you own and is from the knife group. This causes the knife to function as a magic wand, containing any one 1st-rank spell your familiar knows. {i}(To mark it, right-click a knife in your inventory and choose ‘Mark as ceremonial knife.’){/i} You, and only you, can Activate the knife to Cast the Spell within it, as normal for a wand. You can attempt to overcharge the knife, and this can break or destroy the knife as normal. You can have only one ceremonial knife at a time.\n\nAt 8th level, and every 2 levels thereafter, the maximum rank of spell your ceremonial knife can hold increases by 1.",
-				[WitchLoader.TWitch])
+				[WitchModData.Traits.Witch])
 			.WithOnSheet(values =>
 			{
 				int maxSpellLevel = values.CurrentLevel <= 6 ? 1 : 1 + ((values.CurrentLevel - 6) / 2);
@@ -308,7 +308,7 @@ public static class ClassFeats
 						knife.ProvidesItemAction = (self, wand) =>
 						{
 							if (self.Spellcasting?.Sources.FirstOrDefault(src =>
-								    src.ClassOfOrigin == WitchLoader.TWitch) == null)
+								    src.ClassOfOrigin == WitchModData.Traits.Witch) == null)
 								return null;
 							
 							Spell? spell = AllSpells.All.FirstOrDefault(s => s.SpellId == trueSpellId);
@@ -434,24 +434,24 @@ public static class ClassFeats
 	private static Feat CreateLesson(Trait rank, string name, string flavorText, SpellId hex, SpellId spell)
 	{
 		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
-			$"You gain the {AllSpells.CreateSpellLink(hex, WitchSpells.THex)} hex, and you add {AllSpells.CreateSpellLink(spell, WitchLoader.TWitch)} to your spell list.",
+			$"You gain the {AllSpells.CreateSpellLink(hex, WitchModData.Traits.Hex)} hex, and you add {AllSpells.CreateSpellLink(spell, WitchModData.Traits.Witch)} to your spell list.",
 			[rank], null)
 			.WithOnSheet(sheet =>
 			{
-				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, hex);
-				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.Add(spell);
+				sheet.AddFocusSpellAndFocusPoint(WitchModData.Traits.Hex, Ability.Intelligence, hex);
+				sheet.PreparedSpells[WitchModData.Traits.Witch].AdditionalPreparableSpells.Add(spell);
 			});
 	}
 
 	private static Feat CreateLessonElements(Trait rank, string name, string flavorText, SpellId hex, SpellId[] spells)
 	{
 		return new Feat(ModManager.RegisterFeatName($"Lesson{name}", $"Lesson of {name}"), flavorText,
-				$"You gain the {AllSpells.CreateSpellLink(hex, WitchSpells.THex)} hex, and you add {AllSpells.CreateSpellLink(spells[0], WitchLoader.TWitch)}, {AllSpells.CreateSpellLink(spells[1], WitchLoader.TWitch)}, {AllSpells.CreateSpellLink(spells[2], WitchLoader.TWitch)} and {AllSpells.CreateSpellLink(spells[3], WitchLoader.TWitch)} to your spell list.",
+				$"You gain the {AllSpells.CreateSpellLink(hex, WitchModData.Traits.Hex)} hex, and you add {AllSpells.CreateSpellLink(spells[0], WitchModData.Traits.Witch)}, {AllSpells.CreateSpellLink(spells[1], WitchModData.Traits.Witch)}, {AllSpells.CreateSpellLink(spells[2], WitchModData.Traits.Witch)} and {AllSpells.CreateSpellLink(spells[3], WitchModData.Traits.Witch)} to your spell list.",
 				[rank], null)
 			.WithOnSheet(sheet =>
 			{
-				sheet.AddFocusSpellAndFocusPoint(WitchSpells.THex, Ability.Intelligence, hex);
-				sheet.PreparedSpells[WitchLoader.TWitch].AdditionalPreparableSpells.AddRange(spells);
+				sheet.AddFocusSpellAndFocusPoint(WitchModData.Traits.Hex, Ability.Intelligence, hex);
+				sheet.PreparedSpells[WitchModData.Traits.Witch].AdditionalPreparableSpells.AddRange(spells);
 			});
 	}
 }
