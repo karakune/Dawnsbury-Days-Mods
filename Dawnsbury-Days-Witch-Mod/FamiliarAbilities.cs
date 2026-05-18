@@ -32,7 +32,19 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, and your familiar is adjacent to an enemy to which it's concealed, hidden, or undetected, the enemy becomes frightened 1.",
 			innate =>
 			{
+				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				{
+					if (action.ActionCost != Constants.ACTION_COST_REACTION)
+						return;
+					
+					ApplyEffect(effect, action);
+				};
 				innate.AfterYouTakeAction = async (effect, action) =>
+				{
+					ApplyEffect(effect, action);
+				};
+
+				async void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -59,7 +71,7 @@ public static class FamiliarAbilities
 
 						enemy.AddQEffect(QEffect.Frightened(1));
 					}
-				};
+				}
 			},
 			witchSubclassPrerequisite: WitchLoader.FNStarlessShadow
 			);
@@ -71,7 +83,19 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, one willing creature within 15 feet of your familiar gains temporary Hit Points equal to 2 + half your level, which last until the start of your next turn.",
 			innate =>
 			{
+				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				{
+					if (action.ActionCost != Constants.ACTION_COST_REACTION)
+						return;
+					
+					ApplyEffect(effect, action);
+				};
 				innate.AfterYouTakeAction = async (effect, action) =>
+				{
+					ApplyEffect(effect, action);
+				};
+
+				async void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -97,7 +121,7 @@ public static class FamiliarAbilities
 
 					var tempHp = 2 + (master.Level / 2);
 					target.GainTemporaryHP(tempHp);
-				};
+				}
 			},
 			witchSubclassPrerequisite: WitchLoader.FNFaithsFlamekeeper
 		);
@@ -109,7 +133,19 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, one creature within 15 feet of your familiar gets either a +1 status bonus (if allied) or a –1 status penalty (if enemy) to its AC until the start of your next turn.",
 			innate =>
 			{
+				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				{
+					if (action.ActionCost != Constants.ACTION_COST_REACTION)
+						return;
+					
+					ApplyEffect(effect, action);
+				};
 				innate.AfterYouTakeAction = async (effect, action) =>
+				{
+					ApplyEffect(effect, action);
+				};
+
+				async void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -141,7 +177,7 @@ public static class FamiliarAbilities
 							? new Bonus(modifier, BonusType.Circumstance, "Balanced Luck")
 							: null
 					});
-				};
+				}
 			},
 			witchSubclassPrerequisite: WitchLoader.FNSpinnerOfThreads
 		);
@@ -153,7 +189,19 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, you can cause ice to form in a 5-foot burst centered on a square of your familiar's space. Those squares are difficult terrain until the start of your next turn.",
 			innate =>
 			{
+				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				{
+					if (action.ActionCost != Constants.ACTION_COST_REACTION)
+						return;
+					
+					ApplyEffect(effect, action);
+				};
 				innate.AfterYouTakeAction = async (effect, action) =>
+				{
+					ApplyEffect(effect, action);
+				};
+
+				async void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -198,7 +246,7 @@ public static class FamiliarAbilities
 							TransformsTileIntoDifficultTerrain = true,
 						});
 					});
-				};
+				}
 			},
 			witchSubclassPrerequisite: WitchLoader.FNSilenceInSnow
 		);
@@ -210,7 +258,19 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, until the start of your next turn, your familiar can provide flanking for you and your allies as though it were able to attack and had a reach of 5 feet.",
 			innate =>
 			{
+				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				{
+					if (action.ActionCost != Constants.ACTION_COST_REACTION)
+						return;
+					
+					ApplyEffect(effect, action);
+				};
 				innate.AfterYouTakeAction = async (effect, action) =>
+				{
+					ApplyEffect(effect, action);
+				};
+
+				async void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -246,7 +306,7 @@ public static class FamiliarAbilities
 							});
 						}
 					});
-				};
+				}
 			},
 			witchSubclassPrerequisite: WitchLoader.FNInscribedOne
 		);

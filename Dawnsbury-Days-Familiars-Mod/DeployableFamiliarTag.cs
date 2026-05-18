@@ -110,15 +110,6 @@ public class DeployableFamiliarTag : FamiliarTag
 				Id = QEffectId.CannotFlank,
 				ExpiresAt = ExpirationCondition.Never
 			});
-
-		// Add familiar abilities to the familiar.
-		// TODO: This will result in some amount of wonky behavior until each individual familiar ability is gone through.
-		// BUG: Crashes. Because some feats assume a sheet, causing errors.
-		/*if (master.PersistentCharacterSheet is {} sheet)
-			foreach (Feat ft in sheet.Calculated.AllFeats
-				         .Where(ft => ft.HasTrait(Trait.CombatFamiliarAbility)))
-				familiar.WithFeat(ft.FeatName);*/
-
 		return familiar;
 	}
 
