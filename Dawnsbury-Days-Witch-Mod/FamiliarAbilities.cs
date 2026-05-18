@@ -202,6 +202,54 @@ public static class FamiliarAbilities
 			},
 			witchSubclassPrerequisite: WitchLoader.FNSilenceInSnow
 		);
+		
+		yield return DeployableFamiliars.FamiliarAbilities.DeployableMasterAbility(
+			FNFlowingScript,
+			ModData.FeatGroups.FamiliarAbilities,
+			null,
+			"When you Cast or Sustain a hex, until the start of your next turn, your familiar can provide flanking for you and your allies as though it were able to attack and had a reach of 5 feet.",
+			innate =>
+			{
+				innate.AfterYouTakeAction = async (effect, action) =>
+				{
+					if (!IsCastingOrSustainingHex(action))
+						return;
+
+					var master = effect.Owner;
+
+					if (DeployableFamiliarTag.IsFamiliarDead(master))
+						return;
+
+					// Source is master if familiar is not deployed
+					var familiar = DeployableFamiliarTag.FindFamiliar(master);
+					var source = familiar ?? master;
+					
+					// If familiar is not deployed, not need to proceed
+					if (source == master)
+						return;
+
+					familiar!.AddQEffect(new QEffect("Flowing Script", 
+						$"You provide flanking until the start of {master.Name}'s next turn.", 
+						ExpirationCondition.ExpiresAtStartOfSourcesTurn, master, IllustrationName.Book)
+					{
+						WhenYouAcquireThis = acquireEffect =>
+						{
+							acquireEffect.Owner.FindQEffect(QEffectId.CannotFlank)?.ExpiresAt =
+								ExpirationCondition.Immediately;
+						},
+						WhenExpires = expireEffect =>
+						{
+							expireEffect.Owner.AddQEffect(new QEffect()
+							{
+								Id = QEffectId.CannotFlank,
+								ExpiresAt = ExpirationCondition.Never
+							});
+						}
+					});
+				};
+			},
+			witchSubclassPrerequisite: WitchLoader.FNInscribedOne
+		);
 	}
 
 	private static bool IsCastingOrSustainingHex(CombatAction action)

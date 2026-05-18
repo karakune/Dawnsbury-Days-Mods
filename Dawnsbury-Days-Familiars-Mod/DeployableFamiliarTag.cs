@@ -104,7 +104,12 @@ public class DeployableFamiliarTag : FamiliarTag
 					level))
 			.WithCharacteristics(false, true)
 			.WithEntersInitiativeOrder(false)
-			.AddQEffect(MakeFamiliar(master));
+			.AddQEffect(MakeFamiliar(master))
+			.AddQEffect(new QEffect()
+			{
+				Id = QEffectId.CannotFlank,
+				ExpiresAt = ExpirationCondition.Never
+			});
 
 		// Add familiar abilities to the familiar.
 		// TODO: This will result in some amount of wonky behavior until each individual familiar ability is gone through.
@@ -133,7 +138,7 @@ public class DeployableFamiliarTag : FamiliarTag
 		
 		return new QEffect(
 			"Familiar",
-			$$"""You can't act except when Commanded by {{master.Illustration.IllustrationAsIconString}} {Blue}{{master}}{/Blue} to take 2 actions, and you can't take reactions. Due to your size, checks aren't needed to move through your space or others' spaces. You still qualify for flanking.""")
+			$$"""You can't act except when Commanded by {{master.Illustration.IllustrationAsIconString}} {Blue}{{master}}{/Blue} to take 2 actions, and you can't take reactions. Due to your size, checks aren't needed to move through your space or others' spaces. You do not provide flanking.""")
 		{
 			Id = ModData.QEffectIds.FamiliarCreature, // Indicates a familiar creature.
 			Source = master,

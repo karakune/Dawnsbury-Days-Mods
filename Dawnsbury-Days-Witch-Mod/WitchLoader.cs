@@ -9,6 +9,7 @@ using Dawnsbury.Core.CharacterBuilder.FeatsDb;
 using Dawnsbury.Core.CharacterBuilder.FeatsDb.Spellbook;
 using Dawnsbury.Core.CharacterBuilder.Selections.Options;
 using Dawnsbury.Core.CharacterBuilder.Spellcasting;
+using Dawnsbury.Core.CombatActions;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Display.Text;
 using Dawnsbury.Modding;
@@ -33,6 +34,7 @@ public static class WitchLoader
 	public static FeatName FNFaithsFlamekeeper = ModManager.RegisterFeatName("FaithsFlamekeeper", "Faith's Flamekeeper");
 	public static FeatName FNSpinnerOfThreads = ModManager.RegisterFeatName("SpinnerOfThreads", "Spinner of Threads");
 	public static FeatName FNSilenceInSnow = ModManager.RegisterFeatName("SilenceInSnow", "Silence in Snow");
+	public static FeatName FNInscribedOne = ModManager.RegisterFeatName("InscribedOne", "The Inscribed One");
 	
 	[DawnsburyDaysModMainMethod]
 	public static void LoadMod()
@@ -48,6 +50,22 @@ public static class WitchLoader
 
 		foreach (var feat in ArchetypeFeats.CreateFeats())
 			ModManager.AddFeat(feat, ModName);
+		
+		// Makes Discern Secrets effect reduce action costs
+		ModManager.RegisterActionOnEachActionPossibility(thisAction =>
+		{
+			if (!thisAction.Owner.HasEffect(WitchSpells.DiscernSecretsId))
+				return;
+			
+			if (thisAction.Owner.HasEffect(WitchSpells.DiscernSecretsUsedThisTurnId))
+				return;
+            
+			if (thisAction.ActionId == ActionId.Seek)
+				thisAction.ActionCost = 0;
+            
+			if (thisAction.Name.Contains("Recall Weakness"))
+				thisAction.ActionCost = 0;
+		});
 	}
 
 	private static IEnumerable<Feat> CreateFeats()
@@ -65,6 +83,9 @@ public static class WitchLoader
 			WitchPatronFeat.Create(FNSilenceInSnow, Trait.Primal, Skill.Nature, WitchSpells.ClingingIce, WitchSpells.GustOfWind, FamiliarAbilities.FNFreezingRime, 
 				"Bitter cold heralded your patron's appearance, in the depths of the winter solstice or on a frozen peak at the end of the world. Your patron might be a winter hag, ice yai, or other spirit of the cold, but one thing is clear as ice — their power is not to be underestimated.",
 				"Lesson of Winter's Chill"),
+			WitchPatronFeat.Create(FNInscribedOne, Trait.Arcane, Skill.Arcana, WitchSpells.DiscernSecrets, SpellId.MagicWeapon, FamiliarAbilities.FNFlowingScript, 
+				"No words passed your patron's lips in the moment you met; instead, words and glyphs danced across their skin while symbols and numbers swam in the depths of their eyes, spelling out their will in a torrent of words and wisdom. Your patron might be a powerful archmage, or even one of their abandoned artifacts, searching for a successor.",
+				"Lesson of Glyph's Supremacy"),
 		];
 
 		yield return new Feat(ModManager.RegisterFeatName("FirstHexPatronsPuppet", "Patron's Puppet"),

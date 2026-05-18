@@ -13,6 +13,7 @@ using Dawnsbury.Core.Mechanics.Core;
 using Dawnsbury.Core.Mechanics.Damage;
 using Dawnsbury.Core.Mechanics.Enumerations;
 using Dawnsbury.Core.Mechanics.Targeting;
+using Dawnsbury.Core.Mechanics.Targeting.Targets;
 using Dawnsbury.Core.Mechanics.Zoning;
 using Dawnsbury.Core.Possibilities;
 using Dawnsbury.Core.Roller;
@@ -27,7 +28,10 @@ namespace Dawnsbury.Mods.Classes.Witch;
 public static class WitchSpells
 {
 	public static Trait THex = ModManager.RegisterTrait("Hex");
-	private static QEffectId NudgeFateId = ModManager.RegisterEnumMember<QEffectId>("");
+	private static QEffectId NudgeFateId = ModManager.RegisterEnumMember<QEffectId>("NudgeFate");
+	public static QEffectId DiscernSecretsId = ModManager.RegisterEnumMember<QEffectId>("DiscernSecrets");
+	public static QEffectId DiscernSecretsUsedThisTurnId = ModManager.RegisterEnumMember<QEffectId>("DiscernSecretsUsedThisTurn");
+	private static QEffectId DiscernSecretsImmunityId = ModManager.RegisterEnumMember<QEffectId>("DiscernSecretsImmunity");
 
 	public static QEffect QHexCasted = new ("Hex casted",
 		"You casted a hex this round and must wait for the next round to cast another one.",
@@ -52,20 +56,8 @@ public static class WitchSpells
 					null)
 				.WithActionCost(0)
 				.WithHexCasting()
-				/*.WithActionId(ModData.ActionIds.CommandFamiliar)*/
 				.WithEffectOnEachTarget(async (spell, master, _, _) =>
-				{
-					/*
-					var familiar = DeployableFamiliarTag.FindFamiliar(master);
-					if (familiar == null)
-						return;
-
-					familiar.Actions.AnimateActionUsedTo(0, ActionDisplayStyle.Slowed);
-					familiar.Actions.ActionsLeft = 2;
-
-					await CommonSpellEffects.YourMinionActs(familiar);
-					*/
-					
+				{	
 					Possibilities poss = Possibilities
 						.Create(master)
 						.Filter(ap =>
@@ -121,7 +113,7 @@ public static class WitchSpells
 	public static SpellId PhaseFamiliar = ModManager.RegisterNewSpell("PhaseFamiliar", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
-			return Spells.CreateModern(new ModdedIllustration("AcidicBurstAssets/AcidicBurst.png"), "Phase Familiar", [WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+			return Spells.CreateModern(IllustrationName.Invisibility, "Phase Familiar", [WitchLoader.ModName, Trait.Focus, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
 				"Your patron momentarily recalls your familiar to the ether, shifting it from its solid, physical form into a ghostly version of itself.",
 				$"Against the triggering damage, your familiar gains resistance {S.HeightenedVariable(3 + (spellLevel * 2), 5)} to all damage and is immune to precision damage.",
 				Target.Uncastable(), spellLevel, null)
@@ -345,6 +337,77 @@ public static class WitchSpells
 				.WithHexCasting();
 		});
 
+	public static SpellId DiscernSecrets = ModManager.RegisterNewSpell("DiscernSecrets", 0,
+		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
+		{
+			return Spells.CreateModern(IllustrationName.EyeOfFortune, "Discern Secrets",
+					[Trait.Cantrip, THex, Trait.Manipulate, WitchLoader.TWitch, Trait.Uncommon],
+					$"Your patron deigns to whisper a few secrets.",
+					$"As long as you sustain the spell, the target can Seek or Recall Weakness once per turn as a {{icon:FreeAction}} free action, with a +1 status bonus. Once the spell ends, the target is immune to Discern Secrets for the rest of the encounter.",
+					new DiscernSecretsTarget(), spellLevel, null)
+				.WithActionCost(1)
+				.WithSoundEffect(SfxName.BookOpen)
+				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
+				{
+					var effect = new QEffect(
+						"Discern Secrets",
+						"Your next Seek or Recall Weakness is a free action, with a +1 status bonus.",
+						ExpirationCondition.ExpiresAtEndOfSourcesTurn,
+						caster,
+						IllustrationName.EyeOfFortune)
+					{
+						Id = DiscernSecretsId,
+						CannotExpireThisTurn = true,
+						BonusToSkillChecks = (_, action, _) =>
+							action.ActionId == ActionId.Seek || action.Name.Contains("Recall Weakness")
+								? new Bonus(1, BonusType.Status, "Discern Secrets")
+								: null,
+						AfterYouTakeAction = async (effect, action) =>
+						{
+							if (action.ActionId == ActionId.Seek
+							    || action.Name.Contains("Recall Weakness"))
+							{
+								effect.Owner.AddQEffect(new QEffect()
+								{
+									Id = DiscernSecretsUsedThisTurnId,
+									ExpiresAt = ExpirationCondition.ExpiresAtEndOfYourTurn
+								});
+							}
+						},
+						WhenYouAcquireThis = _ =>
+						{
+							target.AddQEffect(new QEffect()
+								{ Id = DiscernSecretsImmunityId, ExpiresAt = ExpirationCondition.Never });
+						}
+					};
+					
+					target.AddQEffect(effect);
+					caster.AddQEffect(QEffect.Sustaining(spell, effect));
+				})
+				.WithHeightenedAtSpecificLevel(spellLevel, 5, inCombat, "You can target two creatures instead of one.")
+				.WithHexCasting();
+		});
+	
+	public class DiscernSecretsTarget : GeneratorTarget
+	{
+		public override GeneratedTargetInSequence? GenerateNextTarget()
+		{
+			int count = OwnerAction.ChosenTargets.ChosenCreatures.Count;
+			int maxTargets = OwnerAction.SpellLevel >= 5 ? 2 : 1;
+			if (count == maxTargets)
+			{
+				return null;
+			}
+			return new GeneratedTargetInSequence(RangedFriend(6)
+					.WithAdditionalConditionOnTargetCreature((_, target) => target.HasEffect(DiscernSecretsImmunityId) ? Usability.NotUsableOnThisCreature("Immune") : Usability.Usable),
+				$" ({count + 1}/{maxTargets})")
+			{
+				DisableConfirmNoMoreTargets = (count == 0),
+			};
+		}
+	}
+
+
 	public static SpellId Cackle = ModManager.RegisterNewSpell("Cackle", 1,
 		(spellId, spellcaster, spellLevel, inCombat, spellInformation) =>
 		{
@@ -358,6 +421,8 @@ public static class WitchSpells
 				.WithHexCasting()
 				.WithEffectOnEachTarget(async (spell, caster, target, result) =>
 				{
+					// TODO: If no sustainable effect found, refund spell
+					// TODO: If more than one sustainable effect found, offer a choice
 					if (caster.FindQEffect(QEffectId.Sustaining)?.Tag is QEffect sustainedEffect)
 						sustainedEffect.CannotExpireThisTurn = true;
 				});
