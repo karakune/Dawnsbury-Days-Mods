@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Dawnsbury.Auxiliary;
+﻿using Dawnsbury.Auxiliary;
 using Dawnsbury.Core.CharacterBuilder;
 using Dawnsbury.Core.CharacterBuilder.AbilityScores;
 using Dawnsbury.Core.CharacterBuilder.Feats;

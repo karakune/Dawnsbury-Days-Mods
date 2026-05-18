@@ -9,7 +9,6 @@ using Dawnsbury.Core.Mechanics.Rules;
 using Dawnsbury.Core.Mechanics.Zoning;
 using Dawnsbury.Core.Tiles;
 using Dawnsbury.Display.Illustrations;
-using Dawnsbury.Modding;
 using Dawnsbury.Mods.DeployableFamiliars;
 
 namespace Dawnsbury.Mods.Classes.Witch;
@@ -25,19 +24,21 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, and your familiar is adjacent to an enemy to which it's concealed, hidden, or undetected, the enemy becomes frightened 1.",
 			innate =>
 			{
-				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				innate.AfterYouExpendSpellcastingResources = (effect, action) =>
 				{
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
-					
-					await ApplyEffect(effect, action);
+
+					ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					await ApplyEffect(effect, action);
+					ApplyEffect(effect, action);
 				};
+				
+				return;
 
-				async Task ApplyEffect(QEffect effect, CombatAction action)
+				void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
@@ -76,17 +77,26 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, one willing creature within 15 feet of your familiar gains temporary Hit Points equal to 2 + half your level, which last until the start of your next turn.",
 			innate =>
 			{
-				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				innate.AfterYouExpendSpellcastingResources = (effect, action) =>
 				{
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
-					
-					await ApplyEffect(effect, action);
+
+					action.Owner.AddQEffect(new QEffect()
+					{
+						StateCheckWithVisibleChanges = async qEffect =>
+						{
+							await ApplyEffect(effect, action);
+							qEffect.ExpiresAt = ExpirationCondition.Immediately;
+						}
+					});
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
 					await ApplyEffect(effect, action);
 				};
+
+				return;
 
 				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
@@ -126,17 +136,26 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, one creature within 15 feet of your familiar gets either a +1 status bonus (if allied) or a –1 status penalty (if enemy) to its AC until the start of your next turn.",
 			innate =>
 			{
-				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				innate.AfterYouExpendSpellcastingResources = (effect, action) =>
 				{
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
-					
-					await ApplyEffect(effect, action);
+
+					action.Owner.AddQEffect(new QEffect()
+					{
+						StateCheckWithVisibleChanges = async qEffect =>
+						{
+							await ApplyEffect(effect, action);
+							qEffect.ExpiresAt = ExpirationCondition.Immediately;
+						}
+					});
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
 					await ApplyEffect(effect, action);
 				};
+
+				return;
 
 				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
@@ -182,17 +201,26 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, you can cause ice to form in a 5-foot burst centered on a square of your familiar's space. Those squares are difficult terrain until the start of your next turn.",
 			innate =>
 			{
-				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				innate.AfterYouExpendSpellcastingResources = (effect, action) =>
 				{
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
-					
-					await ApplyEffect(effect, action);
+
+					action.Owner.AddQEffect(new QEffect()
+					{
+						StateCheckWithVisibleChanges = async qEffect =>
+						{
+							await ApplyEffect(effect, action);
+							qEffect.ExpiresAt = ExpirationCondition.Immediately;
+						}
+					});
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
 					await ApplyEffect(effect, action);
 				};
+
+				return;
 
 				async Task ApplyEffect(QEffect effect, CombatAction action)
 				{
@@ -251,19 +279,21 @@ public static class FamiliarAbilities
 			"When you Cast or Sustain a hex, until the start of your next turn, your familiar can provide flanking for you and your allies as though it were able to attack and had a reach of 5 feet.",
 			innate =>
 			{
-				innate.AfterYouExpendSpellcastingResources = async (effect, action) =>
+				innate.AfterYouExpendSpellcastingResources = (effect, action) =>
 				{
 					if (action.ActionCost != Constants.ACTION_COST_REACTION)
 						return;
 					
-					await ApplyEffect(effect, action);
+					ApplyEffect(effect, action);
 				};
 				innate.AfterYouTakeAction = async (effect, action) =>
 				{
-					await ApplyEffect(effect, action);
+					ApplyEffect(effect, action);
 				};
 
-				async Task ApplyEffect(QEffect effect, CombatAction action)
+				return;
+
+				void ApplyEffect(QEffect effect, CombatAction action)
 				{
 					if (!IsCastingOrSustainingHex(action))
 						return;
