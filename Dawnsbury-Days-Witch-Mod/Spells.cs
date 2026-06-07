@@ -417,6 +417,21 @@ public static class WitchSpells
 					}
 
 					effectToSustain.CannotExpireThisTurn = true;
+					if (effectToSustain.Id == QEffectId.SummonMonster)
+					{
+						var monster = caster.Battle.AllCreatures.FirstOrDefault(c =>
+							c.FindQEffect(QEffectId.SummonedBy)?.Source == caster);
+
+						if (monster == null)
+						{
+							caster.Actions.RevertExpendingOfResources(0, spell);
+							caster.Spellcasting?.RevertExpendingOfResources(spell);
+							caster.RemoveAllQEffects(qf => qf == QHexCasted);
+							return;
+						}
+						
+						await CommonSpellEffects.YourMinionActs(monster);
+					}
 				});
 		});
 	

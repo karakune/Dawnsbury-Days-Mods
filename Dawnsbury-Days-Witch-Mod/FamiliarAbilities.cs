@@ -186,7 +186,7 @@ public static class FamiliarAbilities
 						ExpirationCondition.ExpiresAtStartOfSourcesTurn, source, IllustrationName.ChromaticArmor)
 					{
 						BonusToDefenses = (_, _, defense) => defense == Defense.AC
-							? new Bonus(modifier, BonusType.Circumstance, "Balanced Luck")
+							? new Bonus(modifier, BonusType.Status, "Balanced Luck")
 							: null
 					});
 				}
