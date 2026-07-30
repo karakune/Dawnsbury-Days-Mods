@@ -319,7 +319,7 @@ public static class FamiliarAbilities
     /// <summary>
     /// Creates an innate QEffect for echolocation precise sense.
     /// </summary>
-    /// <returns></returns>
+    /// <remarks>The range of this echolocation is stored in <see cref="QEffect.Tag"/> as an <see cref="int"/>. Modifying this changes the range. By default, the value is 4, for 20 feet.</remarks>
     public static QEffect PreciseEcholocation()
     {
         return new QEffect("Echolocation", "You observe creatures within 20 feet using your precise sense, unless deafened.")
