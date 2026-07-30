@@ -285,7 +285,7 @@ public static class FamiliarFeats
 				owner,
 				fTag.IllustrationOrDefault,
 				"Retrieve Familiar",
-				[ModData.Traits.ModName, Trait.Basic, Trait.Concentrate],
+				[ModData.ModTrait, Trait.Basic, Trait.Concentrate],
 				$$"""
 				{b}Requirements{/b} Your familiar is adjacent to you.
 
