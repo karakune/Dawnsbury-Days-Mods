@@ -287,7 +287,7 @@ public static class FamiliarFeats
 				"Retrieve Familiar",
 				[ModData.ModTrait, Trait.Basic, Trait.Concentrate],
 				$$"""
-				{b}Requirements{/b} Your familiar is adjacent to you.
+				{b}Frequency{/b} once per turn
 
 				Command {Blue}{{fTag.FamiliarName ?? "Familiar"}}{/Blue}. If it ends any action adjacent to you, you will retrieve it from the battlefield.
 				""",
@@ -322,8 +322,12 @@ public static class FamiliarFeats
 				owner,
 				fTag.IllustrationOrDefault,
 				"Deploy Familiar",
-				$"Command {{Blue}}{fTag.FamiliarName ?? "Familiar"}{{/Blue}} to deploy onto the battlefield. It will have 1 action remaining afterwards.",
 				[ModData.ModTrait, Trait.Basic, Trait.Concentrate],
+				$$"""
+				  {b}Frequency{/b} once per turn
+
+				  Command {Blue}{{fTag.FamiliarName ?? "Familiar"}}{/Blue} to deploy onto the battlefield. It will have 1 action remaining afterwards.
+				  """,
 				Target.RangedEmptyTileForSummoning(1)
 					.WithAdditionalSelfRequirement(self =>
 					{
@@ -365,7 +369,7 @@ public static class FamiliarFeats
 
 				{b}Frequency{/b} once per turn
 
-				Take 2 actions as {{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}.
+				Take 2 actions as {Blue}{{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}{/Blue}.
 				""",
 				Target.Self()
 					.WithAdditionalRestriction(self =>
@@ -397,7 +401,7 @@ public static class FamiliarFeats
 
 				  {b}Frequency{/b} once per turn
 
-				  Take 1 action as {{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}.
+				  Take 1 action as {Blue}{{familiar?.Name ?? fTag.FamiliarName ?? "Familiar"}}{/Blue}.
 				  """,
 				Target.Self()
 					.WithAdditionalRestriction(self =>
