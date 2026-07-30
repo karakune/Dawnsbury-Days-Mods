@@ -16,6 +16,8 @@ public static class ModData
 {
     public const string IdPrepend = "Familiars.";
 
+    public static Trait ModTrait;
+
     /// <summary>
     /// Loads all mod data. This should typically be called by a mod before anything else.
     /// </summary>
@@ -33,22 +35,10 @@ public static class ModData
     /// </para>
     public static void LoadData()
     {
+        ModTrait = ModManager.ModBeingLoadedTrait!.Value; // Known not null at this stage
         ActionIds.Initialize();
         LongTermEffects.Initialize();
         QEffectIds.Initialize();
-    }
-
-    /// <summary>
-    /// Registers the source enum to the game, or returns the original if it's already registered.
-    /// </summary>
-    /// <param name="technicalName">The technicalName string of the enum being registered.</param>
-    /// <typeparam name="T">The enum being registered to.</typeparam>
-    /// <returns>The newly registered enum.</returns>
-    public static T SafelyRegister<T>(string technicalName) where T : struct, Enum
-    {
-        return ModManager.TryParse(technicalName, out T alreadyRegistered)
-            ? alreadyRegistered
-            : ModManager.RegisterEnumMember<T>(technicalName);
     }
 
     public static class ActionIds
@@ -59,9 +49,9 @@ public static class ModData
         
         public static void Initialize()
         {
-            CommandFamiliar = SafelyRegister<ActionId>("CommandFamiliar");
-            DeployFamiliar = SafelyRegister<ActionId>("DeployFamiliar");
-            RetrieveFamiliar = SafelyRegister<ActionId>("RetrieveFamiliar");
+            CommandFamiliar = ModManager.SafelyRegisterEnumMember<ActionId>("CommandFamiliar");
+            DeployFamiliar = ModManager.SafelyRegisterEnumMember<ActionId>("DeployFamiliar");
+            RetrieveFamiliar = ModManager.SafelyRegisterEnumMember<ActionId>("RetrieveFamiliar");
         }
     }
 
@@ -106,26 +96,53 @@ public static class ModData
         /// <summary>
         /// Wizard Arcane Thesis class feature, Improved Familiar
         /// </summary>
-        public static readonly FeatName ArcaneThesisImprovedFamiliar = ModManager.RegisterFeatName("ArcaneThesisImprovedFamiliar", "Improved Familiar Attunement");
+        public static readonly FeatName ArcaneThesisImprovedFamiliar = ModManager.SafelyRegisterEnumMember<FeatName>(
+            "ArcaneThesisImprovedFamiliar",
+            ["Improved Familiar Attunement"]);
 
-        public static readonly FeatName AutoDeployNo = ModManager.RegisterFeatName(IdPrepend + "FamiliarAutoDeployNo", "No");
-        public static readonly FeatName AutoDeployYes = ModManager.RegisterFeatName(IdPrepend + "FamiliarAutoDeployYes", "Yes");
+        public static readonly FeatName AutoDeployNo = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAutoDeployNo",
+            ["No"]);
+        public static readonly FeatName AutoDeployYes = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAutoDeployYes",
+            ["Yes"]);
 
         #region Familiar Abilities
 
-        public static readonly FeatName Amphibious = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityAmphibious", "Amphibious");
-        public static readonly FeatName Construct = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityConstruct", "Construct");
-        public static readonly FeatName Dragon = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityDragon", "Dragon");
-        public static readonly FeatName Echolocation = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityEcholocation", "Echolocation");
-        public static readonly FeatName FastMovement = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityFastMovement", "Fast Movement");
-        public static readonly FeatName Flier = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityFlier", "Flier");
-        public static readonly FeatName Independent = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityIndependent", "Independent");
-        public static readonly FeatName ManualDexterity = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityManualDexterity", "Manual Dexterity");
-        public static readonly FeatName Plant = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityPlant", "Plant");
-        public static readonly FeatName Tough = ModManager.RegisterFeatName(IdPrepend + "FamiliarAbilityTough", "Tough");
+        public static readonly FeatName Amphibious = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityAmphibious",
+            ["Amphibious"]);
+        public static readonly FeatName Construct = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityConstruct",
+            ["Construct"]);
+        public static readonly FeatName Dragon = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityDragon",
+            ["Dragon"]);
+        public static readonly FeatName Echolocation = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityEcholocation",
+            ["Echolocation"]);
+        public static readonly FeatName FastMovement = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityFastMovement",
+            ["Fast Movement"]);
+        public static readonly FeatName Flier = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityFlier",
+            ["Flier"]);
+        public static readonly FeatName Independent = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityIndependent",
+            ["Independent"]);
+        public static readonly FeatName ManualDexterity = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityManualDexterity",
+            ["Manual Dexterity"]);
+        public static readonly FeatName Plant = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityPlant",
+            ["Plant"]);
+        public static readonly FeatName Tough = ModManager.SafelyRegisterEnumMember<FeatName>(
+            IdPrepend + "FamiliarAbilityTough",
+            ["Tough"]);
 
         #endregion
     }
+    
     // TODO: token illustrations
     public static class Illustrations
     {
@@ -189,26 +206,47 @@ public static class ModData
         {
             // TODO: Document each of these IDs.
             
-            FamiliarCreature = ModManager.RegisterEnumMember<QEffectId>("FamiliarCreature");
-            FamiliarDeployed = ModManager.RegisterEnumMember<QEffectId>("FamiliarDeployed");
-            YourFamiliarIsDead = ModManager.RegisterEnumMember<QEffectId>("YourFamiliarIsDead");
-            FamiliarCanManipulate =  ModManager.RegisterEnumMember<QEffectId>("FamiliarCanManipulate");
-            FamiliarEcholocation =  ModManager.RegisterEnumMember<QEffectId>("FamiliarEcholocation");
+            FamiliarCreature = ModManager.SafelyRegisterEnumMember<QEffectId>("FamiliarCreature");
+            FamiliarDeployed = ModManager.SafelyRegisterEnumMember<QEffectId>("FamiliarDeployed");
+            YourFamiliarIsDead = ModManager.SafelyRegisterEnumMember<QEffectId>("YourFamiliarIsDead");
+            FamiliarCanManipulate =  ModManager.SafelyRegisterEnumMember<QEffectId>("FamiliarCanManipulate");
+            FamiliarEcholocation =  ModManager.SafelyRegisterEnumMember<QEffectId>("FamiliarEcholocation");
         }
     }
 
     public static class Traits
     {
         /// <summary>
-        /// The name of the mod, for the purposes of branding feats.
-        /// </summary>
-        public static readonly Trait ModName = ModManager.RegisterModNameTrait("DeployableFamiliars", "Deployable Familiars");
-        
-        /// <summary>
         /// If a modded feat grants a combat familiar, adding this trait will automatically convert that feat to grant a deployable familiar. Do not add this trait if the feat grants a familiar indirectly by granting the <see cref="FeatName.ClassFamiliar"/> or <see cref="FeatName.AnimalAccomplice"/> feats.
         /// </summary>
         public static readonly Trait DeployableFamiliarFeat = ModManager.RegisterTrait("DeployableFamiliarFeat", new TraitProperties("Deployable Familiar Feat", false));
         
         public static readonly Trait FamiliarDeploy = ModManager.RegisterTrait("FamiliarDeploy", new TraitProperties("", relevant: false));
+    }
+
+    extension(ModManager)
+    {
+        /// <summary>
+        /// Registers the source enum to the game, or returns the original if it's already registered.
+        /// </summary>
+        /// <param name="technicalName">The technicalName string of the enum being registered. If registering a trait, this is the displayName, according to the parameter specifications of <see cref="ModManager.RegisterTrait"/>.</param>
+        /// <param name="extraParams">An array of optional parameters. For a <see cref="FeatName"/>, the first parameter is a human-readable display name. For a <see cref="Trait"/>, the first parameter is a <see cref="TraitProperties"/>.</param>
+        /// <typeparam name="T">The enum type such as <see cref="SpellId"/>, <see cref="FeatName"/>, or <see cref="QEffectId"/>.</typeparam>
+        /// <returns>The newly registered enum.</returns>
+        public static T SafelyRegisterEnumMember<T>(string technicalName, object[]? extraParams = null) where T : struct, Enum
+        {
+            bool alreadyRegistered = ModManager.TryParse(technicalName, out T oldRegistration);
+            
+            if (alreadyRegistered)
+                return oldRegistration;
+            
+            Type type = typeof(T);
+            if (type == typeof(FeatName))
+                return (T)(Enum)ModManager.RegisterFeatName(technicalName, (string?)extraParams?[0]);
+            if (type == typeof(Trait))
+                return (T)(Enum)ModManager.RegisterTrait(technicalName, (TraitProperties?)extraParams?[0]);
+            else
+                return ModManager.RegisterEnumMember<T>(technicalName);
+        }
     }
 }

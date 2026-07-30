@@ -20,7 +20,7 @@ public static class FamiliarAbilities
 	public static void Load()
 	{
 		foreach (Feat ft in CreateFeats())
-			ModManager.AddFeat(ft, ModData.Traits.ModName);
+			ModManager.AddFeat(ft);
 	}
 
 	public static IEnumerable<Feat> CreateFeats()

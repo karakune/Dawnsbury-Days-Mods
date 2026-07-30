@@ -71,10 +71,10 @@ public static class FamiliarFeats
 		};
 
 		foreach (Feat feat in CreateFeats())
-			ModManager.AddFeat(feat, ModData.Traits.ModName);
+			ModManager.AddFeat(feat);
 		
 		foreach (Feat feat in CreateClassFeats())
-			ModManager.AddFeat(feat, ModData.Traits.ModName);
+			ModManager.AddFeat(feat);
 	}
 	
 	/// <summary>
@@ -322,8 +322,8 @@ public static class FamiliarFeats
 				owner,
 				fTag.IllustrationOrDefault,
 				"Deploy Familiar",
-				[ModData.Traits.ModName, Trait.Basic, Trait.Concentrate],
 				$"Command {{Blue}}{fTag.FamiliarName ?? "Familiar"}{{/Blue}} to deploy onto the battlefield. It will have 1 action remaining afterwards.",
+				[ModData.ModTrait, Trait.Basic, Trait.Concentrate],
 				Target.RangedEmptyTileForSummoning(1)
 					.WithAdditionalSelfRequirement(self =>
 					{
@@ -359,7 +359,7 @@ public static class FamiliarFeats
 				owner,
 				fTag.IllustrationOrDefault,
 				"Command Familiar",
-				[ModData.Traits.ModName, Trait.Basic, Trait.Auditory, Trait.Concentrate],
+				[ModData.ModTrait, Trait.Basic, Trait.Auditory, Trait.Concentrate],
 				$$"""
 				{i}You issue your familiar a command.{/i}
 
@@ -391,7 +391,7 @@ public static class FamiliarFeats
 				owner,
 				fTag.IllustrationOrDefault,
 				"Independent Familiar",
-				[ModData.Traits.ModName, Trait.Basic, Trait.Auditory, Trait.Concentrate],
+				[ModData.ModTrait, Trait.Basic, Trait.Auditory, Trait.Concentrate],
 				$$"""
 				  {i}Your familiar takes an action on its own.{/i}
 
