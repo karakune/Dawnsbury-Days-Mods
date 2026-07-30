@@ -198,17 +198,32 @@ public class DeployableFamiliarTag : FamiliarTag
 			PreventTakingAction = action =>
 			{
 				// No attacks, except Escape or Force Open
+				// Src: https://2e.aonprd.com/Feats.aspx?ID=5186
 				if (action.HasTrait(Trait.Attack)
 				    && (action.ActionId is not ActionId.Escape || !action.Name.ToLower().Contains("force open")))
 					return "Familiars can't attack except to Escape or Force Open";
+
+				bool canManipulate = action.Owner.HasEffect(ModData.QEffectIds.FamiliarCanManipulate);
 				
-				// Can't use manipulates or items
-				if (action.HasTrait(Trait.Manipulate)
-				    && !action.Owner.HasEffect(ModData.QEffectIds.FamiliarCanManipulate))
+				// Can't use manipulates
+				// Src: https://2e.aonprd.com/Familiars.aspx?ID=146
+				if (!canManipulate && action.HasTrait(Trait.Manipulate))
 					return "Familiars can't take manipulate actions";
 				
+				// Can't activate items. Can't even use most items.
+				// This is a broad prevention with specific whitelisting for basic actions.
+				// Src: https://2e.aonprd.com/Rules.aspx?ID=3209
 				if (action.Item is not null)
-					return "Familiars can't use items";
+				{
+					if (!canManipulate)
+						return "Familiars can't activate items";
+					if (action.ActionId is not 
+						    (ActionId.DrawItem or ActionId.DropItem
+						    or ActionId.HandOverItem or ActionId.PickUpItem
+						    or ActionId.ReplaceItemInHand or ActionId.StowItem
+						    or ActionId.OpenADoor))
+						return "Familiars can't activate items";
+				}
 				
 				// Can't command other creatures
 				if (action.ActionId is ActionId.CommandAnimalCompanion
