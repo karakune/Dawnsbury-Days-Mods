@@ -162,7 +162,7 @@ public static class ClassFeats
 				})));
 		}
 
-		var nails = new Item(IllustrationName.DragonClaws, "Eldritch Claws", WitchModData.Traits.ModName, Trait.Brawling, Trait.Agile,
+		var nails = new Item(IllustrationName.DragonClaws, "Eldritch Claws", Trait.Brawling, Trait.Agile,
 				Trait.Unarmed, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d6", DamageKind.Slashing))
 			.WithSoundEffect(SfxName.ScratchFlesh);
@@ -173,7 +173,7 @@ public static class ClassFeats
 			.WithOnCreature(creature => creature.WithAdditionalUnarmedStrike(nails));
 		yield return nailsFeat;
 
-		var teeth = new Item(IllustrationName.Jaws, "Iron Teeth", WitchModData.Traits.ModName, Trait.Brawling, TSympStrike)
+		var teeth = new Item(IllustrationName.Jaws, "Iron Teeth", Trait.Brawling, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d8", DamageKind.Piercing)).WithSoundEffect(SfxName.BiteApple);
 		var teethFeat = new TrueFeat(ModManager.RegisterFeatName("WitchArmamentsTeeth", "Witch's Armaments (Iron Teeth)"), 1,
 				"Your patron’s power changes your body to ensure you are never defenseless.",
@@ -185,7 +185,7 @@ public static class ClassFeats
 			});
 		yield return teethFeat;
 
-		var hair = new Item(IllustrationName.BlackTentacles, "Living Hair", WitchModData.Traits.ModName, Trait.Brawling, Trait.Agile,
+		var hair = new Item(IllustrationName.BlackTentacles, "Living Hair", Trait.Brawling, Trait.Agile,
 				Trait.Disarm, Trait.Finesse, Trait.Trip, Trait.Unarmed, TSympStrike)
 			.WithWeaponProperties(new WeaponProperties("1d4", DamageKind.Bludgeoning))
 			.WithSoundEffect(SfxName.BiteApple); // TODO: sound effect
@@ -244,7 +244,7 @@ public static class ClassFeats
 							
 						var strike = witch.CreateStrike(item, strikeModifiers: strikeModifiers);
 						strike.Name = item.Name + " (Sympathetic Strike)";
-						strike.Traits = new Traits([WitchModData.Traits.ModName, ..strike.Traits], strike);
+						strike.Traits = new Traits([..strike.Traits], strike);
 						return strike;
 					}
 				});

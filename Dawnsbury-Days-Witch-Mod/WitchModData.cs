@@ -38,7 +38,6 @@ public static class WitchModData
 	
 	public static class Traits
 	{
-		public static Trait ModName = ModManager.RegisterModNameTrait("RemasteredWitch", "Remastered Witch");
 		public static Trait Hex = ModManager.RegisterTrait("Hex");
 		public static Trait FirstHex = ModManager.RegisterTrait("First Hex", new TraitProperties("", relevant: false));
 		public static Trait Witch = ModManager.RegisterTrait("Witch", new TraitProperties("Witch", true)
